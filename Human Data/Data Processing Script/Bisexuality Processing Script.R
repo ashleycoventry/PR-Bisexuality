@@ -43,7 +43,7 @@ pdata$PIN<-paste0("p",sample(1:nrow(pdata)))
 qdata<-qdata[,c(18:28,30:38,40:111,307:380,382)]
 pdata<-pdata[,c(18:28,30:38,40:111,307:380,382)]
 
-#only keep bi participants
+###only keep bi participants
 #create separate variables for bisexual identity (LT and ST) so we can separate out for analyses
 qdata$bisexualLT <- ifelse(qdata$pref_check_1 == 1 & qdata$pref_check_2 == 1, 1, 0)
 qdata$bisexualST <- ifelse(qdata$pref_check_3 == 1 & qdata$pref_check_4 == 1, 1, 0)
@@ -52,6 +52,7 @@ pdata$bisexualLT <- ifelse(pdata$pref_check_1 == 1 & pdata$pref_check_2 == 1, 1,
 pdata$bisexualST <- ifelse(pdata$pref_check_3 == 1 & pdata$pref_check_4 == 1, 1, 0)
 #eliminate ppl with 0s in both columns (so not attracted LT/ST to both sexes)
 qdata <- subset(qdata, qdata$bisexualLT == 1 | qdata$bisexualST == 1)
+pdata <- subset(pdata, pdata$bisexualLT == 1 | pdata$bisexualST == 1)
 
 #merge datasets
 data<-rbind(qdata,pdata)
@@ -572,15 +573,6 @@ tablesso<-table(data$sso)
 tablesro<-table(data$sro)
 
 
-
-
-
-#randomly remove 115 hetwomen (they are over represented in the data)
-hetwomen <- data[data$gso == "hetwoman",]
-randsamp <- sample(hetwomen$PIN,115,replace = F)
-result<-subset(data, PIN %in% randsamp)
-ndata<-data[data$PIN%in%result$PIN==F,]
-
 ###Save Data###
 
 #Determine the date and time
@@ -588,16 +580,16 @@ date<-format(Sys.time(),format="%Y%m%d %H%M%S")
 
 #Save the data
 
-write.csv(ndata,paste0("/Users/ashle/Desktop/Research/Project Rainbow/Bisexuality /Data/Processed Data",date,".csv"), row.names = FALSE)
+write.csv(data,paste0("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/Human Data/Processed Data/",date,".csv"), row.names = FALSE)
 
 
-path<-choose.dir()
+
 
 format<-".csv"
 date<-format(Sys.time(),format="%m%d%Y %H%M%S")
-file<-file.path(paste0(path,"\\PR Bisexuality Data PROCESSED ",date,format))
+file<-file.path(paste0("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/Human Data/Processed Data/","\PR Bisexuality Data PROCESSED ",date,format))
 
-write.csv(ndata,file=file,row.names=F)
+write.csv(data,file=file,row.names=F)
 
 
 
