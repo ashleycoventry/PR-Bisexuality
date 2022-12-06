@@ -174,78 +174,6 @@ data$jealousy_comp<-rowSums(data[,93:96],na.rm=T)
 
 
 
-
-### create identity variables ###
-
-#remove any participant with NA for identity variable 
-#won't be issue for final survey because it is set up as forced response
-#actually couldn't do forced response for some because need to have a prefer not to answer
-data<-data[complete.cases(data[ ,c(3,5,6,17,19)]),]
-
-#create gender variable in words for each person
-data$g<-ifelse(data$gender=="0","woman",ifelse(data$gender=="1","man",ifelse(data$gender=="2","nonbinary","notlisted")))
-#create sex_orient variable in words for each person
-data$so<-ifelse(data$sex_orient=="0","het",ifelse(data$sex_orient=="1","gay",ifelse(data$sex_orient=="2","bi",ifelse(data$sex_orient=="3","ace","notlisted"))))
-#create sex variable in words for each person
-data$s<-ifelse(data$sex=="0","female",ifelse(data$sex=="1","male","intersex"))
-#create a romantic orientation variable in words for each person
-data$ro<-ifelse(data$rom_orient=="0","het",ifelse(data$rom_orient=="1","gay",ifelse(data$rom_orient=="2","bi",ifelse(data$rom_orient=="3","aro","notlisted"))))
-#create a trans/cis variable in words for each person
-data$tc<-ifelse(data$transgender=="1","cis","trans")
-
-#create "gso" variable which is a person's gender identity ("g") and sexual orientation ("so")
-data$gso<-paste(data$so,data$g,sep="")
-#create "sso" variable which is a person's sexual identity ("s") and sexual orientation ("so")
-data$sso<-paste(data$so,data$s,sep="")
-#create "gro" variable which is a person's gender identity ("g") and romantic orientation ("ro")
-data$gro<-paste(data$ro,data$g,sep="")
-#create "sro" variable which is a person's sexual identity ("s") and romantic orientation ("ro")
-data$sro<-paste(data$ro,data$s,sep="")
-#create "tcg" variable which is a persons trans/cis identity ("tc") and gender identity ("g")
-data$tcg<-paste(data$tc,data$g,sep="")
-
-#change gaywoman to lesbian for gso and gro
-data$gso<-ifelse(data$gso=="gaywoman","lesbian",data$gso)
-data$gro<-ifelse(data$gro=="gaywoman","lesbian",data$gro)
-
-
-
-#create self-reported sexual orientation labels
-data$so_selflabel<-ifelse(data$sex_orient_best=="0","ace",
-                          ifelse(data$sex_orient_best=="1","bi",
-                                 ifelse(data$sex_orient_best=="2","demi",
-                                        ifelse(data$sex_orient_best=="3","gay",
-                                               ifelse(data$sex_orient_best=="4","hetero",
-                                                      ifelse(data$sex_orient_best=="5","lesbian",
-                                                             ifelse(data$sex_orient_best=="6","omni",
-                                                                    ifelse(data$sex_orient_best=="7","pan",
-                                                                           ifelse(data$sex_orient_best=="8","queer","notlisted")))))))))
-#create self-reported romantic orientation labels
-data$ro_selflabel<-ifelse(data$rom_orient_best=="0","aro",
-                          ifelse(data$rom_orient_best=="1","bi",
-                                 ifelse(data$rom_orient_best=="2","demi",
-                                        ifelse(data$rom_orient_best=="3","hetero",
-                                               ifelse(data$rom_orient_best=="4","homo",
-                                                      ifelse(data$rom_orient_best=="5","omni",
-                                                             ifelse(data$rom_orient_best=="6","pan","notlisted")))))))
-
-
-
-#create sso,sro,gso,gro for self reported orientation labels
-#create "gso" variable which is a person's gender identity ("g") and sexual orientation self label ("so_selflabel")
-data$gso_selflabel<-paste(data$so_selflabel,data$g,sep="")
-#create "sso" variable which is a person's sexual identity ("s") and sexual orientation self label ("so_selflabel")
-data$sso_selflabel<-paste(data$so_selflabel,data$s,sep="")
-#create "gro" variable which is a person's gender identity ("g") and romantic orientation self label ("ro_selflabel")
-data$gro_selflabel<-paste(data$ro_selflabel,data$g,sep="")
-#create "sro" variable which is a person's sexual identity ("s") and romantic orientation self label ("ro_self label")
-data$sro_selflabel<-paste(data$ro_selflabel,data$s,sep="")
-
-
-
-
-
-
 ### Creating Preference Sets ###
 
 #we only will analyze one set of prefs at a time (one long-term and one short-term)
@@ -254,172 +182,66 @@ data$sro_selflabel<-paste(data$ro_selflabel,data$s,sep="")
 #one where those attracted to more than one gender have opposite sex prefs
 #will have two sets of preferences (opp sex and same sex prefs for multisexuals)
 
-#figure out who in dataset are multisexuals (those attracted to more than one gender)
-#multisexuals filled out preference measures for males and females
-#multisexuals = 1, monosexuals = 0
-data$multisexual<-ifelse(data$f_lt_check==1 & data$m_lt_check==1 | data$f_lt_check==1 & data$m_st_check==1 | data$f_st_check==1 & data$m_lt_check==1 | data$f_st_check==1 & data$m_st_check==1,"multi","mono")
-
-
 #determine everyone's first set of prefs (one long-term and one short-term) 
-#for monosexuals,  it's their preferences
-#for multisexuals, it's their same sex prefs
+#same sex prefs
 
-#Set 1 for Monosexuals#
-
-#separate data so just monosexuals
-monodata<-data[data$multisexual=="mono",]
-#create long-term prefs for those attracted to just males or females
-#health
-monodata$ssp_lt_health<-ifelse(monodata$f_lt_check==1,monodata$f_lt_health,
-                               ifelse(monodata$m_lt_check==1,monodata$m_lt_health,NA))
-#kindness
-monodata$ssp_lt_kind<-ifelse(monodata$f_lt_check==1,monodata$f_lt_kind,
-                             ifelse(monodata$m_lt_check==1,monodata$m_lt_kind,NA))
-#intelligence
-monodata$ssp_lt_intell<-ifelse(monodata$f_lt_check==1,monodata$f_lt_intell,
-                               ifelse(monodata$m_lt_check==1,monodata$m_lt_intell,NA))
-#resources
-monodata$ssp_lt_resources<-ifelse(monodata$f_lt_check==1,monodata$f_lt_resources,
-                                  ifelse(monodata$m_lt_check==1,monodata$m_lt_resources,NA))
-#physical attractiveness
-monodata$ssp_lt_physatt<-ifelse(monodata$f_lt_check==1,monodata$f_lt_physatt,
-                                ifelse(monodata$m_lt_check==1,monodata$m_lt_physatt,NA))
-#age
-monodata$ssp_lt_age<-ifelse(monodata$f_lt_check==1,monodata$f_lt_age,
-                            ifelse(monodata$m_lt_check==1,monodata$m_lt_age,NA))
-
-
-
-#create short-term prefs for those attracted to just males or females
-#health
-monodata$ssp_st_health<-ifelse(monodata$f_st_check==1,monodata$f_st_health,
-                               ifelse(monodata$m_st_check==1,monodata$m_st_health,NA))
-#kindness
-monodata$ssp_st_kind<-ifelse(monodata$f_st_check==1,monodata$f_st_kind,
-                             ifelse(monodata$m_st_check==1,monodata$m_st_kind,NA))
-#intelligence
-monodata$ssp_st_intell<-ifelse(monodata$f_st_check==1,monodata$f_st_intell,
-                               ifelse(monodata$m_st_check==1,monodata$m_st_intell,NA))
-#resources
-monodata$ssp_st_resources<-ifelse(monodata$f_st_check==1,monodata$f_st_resources,
-                                  ifelse(monodata$m_st_check==1,monodata$m_st_resources,NA))
-#physical attractiveness
-monodata$ssp_st_physatt<-ifelse(monodata$f_st_check==1,monodata$f_st_physatt,
-                                ifelse(monodata$m_st_check==1,monodata$m_st_physatt,NA))
-#age
-monodata$ssp_st_age<-ifelse(monodata$f_st_check==1,monodata$f_st_age,
-                            ifelse(monodata$m_st_check==1,monodata$m_st_age,NA))
-
-
-#Set 2 for Monosexuals#
-
-#create long-term prefs for those attracted to just males or females
-#health
-monodata$osp_lt_health<-ifelse(monodata$f_lt_check==1,monodata$f_lt_health,
-                               ifelse(monodata$m_lt_check==1,monodata$m_lt_health,NA))
-#kindness
-monodata$osp_lt_kind<-ifelse(monodata$f_lt_check==1,monodata$f_lt_kind,
-                             ifelse(monodata$m_lt_check==1,monodata$m_lt_kind,NA))
-#intelligence
-monodata$osp_lt_intell<-ifelse(monodata$f_lt_check==1,monodata$f_lt_intell,
-                               ifelse(monodata$m_lt_check==1,monodata$m_lt_intell,NA))
-#resources
-monodata$osp_lt_resources<-ifelse(monodata$f_lt_check==1,monodata$f_lt_resources,
-                                  ifelse(monodata$m_lt_check==1,monodata$m_lt_resources,NA))
-#physical attractiveness
-monodata$osp_lt_physatt<-ifelse(monodata$f_lt_check==1,monodata$f_lt_physatt,
-                                ifelse(monodata$m_lt_check==1,monodata$m_lt_physatt,NA))
-#age
-monodata$osp_lt_age<-ifelse(monodata$f_lt_check==1,monodata$f_lt_age,
-                            ifelse(monodata$m_lt_check==1,monodata$m_lt_age,NA))
-
-
-
-#create short-term prefs for those attracted to just males or females
-#health
-monodata$osp_st_health<-ifelse(monodata$f_st_check==1,monodata$f_st_health,
-                               ifelse(monodata$m_st_check==1,monodata$m_st_health,NA))
-#kindness
-monodata$osp_st_kind<-ifelse(monodata$f_st_check==1,monodata$f_st_kind,
-                             ifelse(monodata$m_st_check==1,monodata$m_st_kind,NA))
-#intelligence
-monodata$osp_st_intell<-ifelse(monodata$f_st_check==1,monodata$f_st_intell,
-                               ifelse(monodata$m_st_check==1,monodata$m_st_intell,NA))
-#resources
-monodata$osp_st_resources<-ifelse(monodata$f_st_check==1,monodata$f_st_resources,
-                                  ifelse(monodata$m_st_check==1,monodata$m_st_resources,NA))
-#physical attractiveness
-monodata$osp_st_physatt<-ifelse(monodata$f_st_check==1,monodata$f_st_physatt,
-                                ifelse(monodata$m_st_check==1,monodata$m_st_physatt,NA))
-#age
-monodata$osp_st_age<-ifelse(monodata$f_st_check==1,monodata$f_st_age,
-                            ifelse(monodata$m_st_check==1,monodata$m_st_age,NA))
-
-
-
-
-
-
-#Set 1 for Multisexuals#
-
-#create multisexual dataframe
-multidata<-data[data$multisexual=="multi",]
+#Set 1#
 
 #create long-term prefs for same sex
 #intersex people - male prefs for set 1
 #health
-multidata$ssp_lt_health<-ifelse(multidata$sex==0,multidata$f_lt_health,
-                                ifelse(multidata$sex==1,multidata$m_lt_health,
-                                       ifelse(multidata$sex==2,multidata$m_lt_health,NA)))
+data$ssp_lt_health<-ifelse(data$sex==0,data$f_lt_health,
+                                ifelse(data$sex==1,data$m_lt_health,
+                                       ifelse(data$sex==2,data$m_lt_health,NA)))
 #kindness
-multidata$ssp_lt_kind<-ifelse(multidata$sex==0,multidata$f_lt_kind,
-                              ifelse(multidata$sex==1,multidata$m_lt_kind,
-                                     ifelse(multidata$sex==2,multidata$m_lt_kind,NA)))
+data$ssp_lt_kind<-ifelse(data$sex==0,data$f_lt_kind,
+                              ifelse(data$sex==1,data$m_lt_kind,
+                                     ifelse(data$sex==2,data$m_lt_kind,NA)))
 #intelligence
-multidata$ssp_lt_intell<-ifelse(multidata$sex==0,multidata$f_lt_intell,
-                                ifelse(multidata$sex==1,multidata$m_lt_intell,
-                                       ifelse(multidata$sex==2,multidata$m_lt_intell,NA)))
+data$ssp_lt_intell<-ifelse(data$sex==0,data$f_lt_intell,
+                                ifelse(data$sex==1,data$m_lt_intell,
+                                       ifelse(data$sex==2,data$m_lt_intell,NA)))
 #resources
-multidata$ssp_lt_resources<-ifelse(multidata$sex==0,multidata$f_lt_resources,
-                                   ifelse(multidata$sex==1,multidata$m_lt_resources,
-                                          ifelse(multidata$sex==2,multidata$m_lt_resources,NA)))
+data$ssp_lt_resources<-ifelse(data$sex==0,data$f_lt_resources,
+                                   ifelse(data$sex==1,data$m_lt_resources,
+                                          ifelse(data$sex==2,data$m_lt_resources,NA)))
 #physical attractiveness
-multidata$ssp_lt_physatt<-ifelse(multidata$sex==0,multidata$f_lt_physatt,
-                                 ifelse(multidata$sex==1,multidata$m_lt_physatt,
-                                        ifelse(multidata$sex==2,multidata$m_lt_physatt,NA)))
+data$ssp_lt_physatt<-ifelse(data$sex==0,data$f_lt_physatt,
+                                 ifelse(data$sex==1,data$m_lt_physatt,
+                                        ifelse(data$sex==2,data$m_lt_physatt,NA)))
 #age
-multidata$ssp_lt_age<-ifelse(multidata$sex==0,multidata$f_lt_age,
-                             ifelse(multidata$sex==1,multidata$m_lt_age,
-                                    ifelse(multidata$sex==2,multidata$m_lt_age,NA)))
+data$ssp_lt_age<-ifelse(data$sex==0,data$f_lt_age,
+                             ifelse(data$sex==1,data$m_lt_age,
+                                    ifelse(data$sex==2,data$m_lt_age,NA)))
 
 
 
 #create short-term prefs for same sex
 #intersex people - male prefs for set 1
 #health
-multidata$ssp_st_health<-ifelse(multidata$sex==0,multidata$f_st_health,
-                                ifelse(multidata$sex==1,multidata$m_st_health,
-                                       ifelse(multidata$sex==2,multidata$m_st_health,NA)))
+data$ssp_st_health<-ifelse(data$sex==0,data$f_st_health,
+                                ifelse(data$sex==1,data$m_st_health,
+                                       ifelse(data$sex==2,data$m_st_health,NA)))
 #kindness
-multidata$ssp_st_kind<-ifelse(multidata$sex==0,multidata$f_st_kind,
-                              ifelse(multidata$sex==1,multidata$m_st_kind,
-                                     ifelse(multidata$sex==2,multidata$m_st_kind,NA)))
+data$ssp_st_kind<-ifelse(data$sex==0,data$f_st_kind,
+                              ifelse(data$sex==1,data$m_st_kind,
+                                     ifelse(data$sex==2,data$m_st_kind,NA)))
 #intelligence
-multidata$ssp_st_intell<-ifelse(multidata$sex==0,multidata$f_st_intell,
-                                ifelse(multidata$sex==1,multidata$m_st_intell,
-                                       ifelse(multidata$sex==2,multidata$m_st_intell,NA)))
+data$ssp_st_intell<-ifelse(data$sex==0,data$f_st_intell,
+                                ifelse(data$sex==1,data$m_st_intell,
+                                       ifelse(data$sex==2,data$m_st_intell,NA)))
 #resources
-multidata$ssp_st_resources<-ifelse(multidata$sex==0,multidata$f_st_resources,
-                                   ifelse(multidata$sex==1,multidata$m_st_resources,
-                                          ifelse(multidata$sex==2,multidata$m_st_resources,NA)))
+data$ssp_st_resources<-ifelse(data$sex==0,data$f_st_resources,
+                                   ifelse(data$sex==1,data$m_st_resources,
+                                          ifelse(data$sex==2,data$m_st_resources,NA)))
 #physical attractiveness
-multidata$ssp_st_physatt<-ifelse(multidata$sex==0,multidata$f_st_physatt,
-                                 ifelse(multidata$sex==1,multidata$m_st_physatt,
-                                        ifelse(multidata$sex==2,multidata$m_st_physatt,NA)))
+data$ssp_st_physatt<-ifelse(data$sex==0,data$f_st_physatt,
+                                 ifelse(data$sex==1,data$m_st_physatt,
+                                        ifelse(data$sex==2,data$m_st_physatt,NA)))
 #age
-multidata$ssp_st_age<-ifelse(multidata$sex==0,multidata$f_st_age,
-                             ifelse(multidata$sex==1,multidata$m_st_age,
-                                    ifelse(multidata$sex==2,multidata$m_st_age,NA)))
+data$ssp_st_age<-ifelse(data$sex==0,data$f_st_age,
+                             ifelse(data$sex==1,data$m_st_age,
+                                    ifelse(data$sex==2,data$m_st_age,NA)))
 
 
 
@@ -431,29 +253,29 @@ multidata$ssp_st_age<-ifelse(multidata$sex==0,multidata$f_st_age,
 #create long-term prefs for opposite sex
 #intersex people - female prefs for set 2
 #health
-multidata$osp_lt_health<-ifelse(multidata$sex==0,multidata$m_lt_health,
-                                ifelse(multidata$sex==1,multidata$f_lt_health,
-                                       ifelse(multidata$sex==2,multidata$f_lt_health,NA)))
+data$osp_lt_health<-ifelse(data$sex==0,data$m_lt_health,
+                                ifelse(data$sex==1,data$f_lt_health,
+                                       ifelse(data$sex==2,data$f_lt_health,NA)))
 #kindness
-multidata$osp_lt_kind<-ifelse(multidata$sex==0,multidata$m_lt_kind,
-                              ifelse(multidata$sex==1,multidata$f_lt_kind,
-                                     ifelse(multidata$sex==2,multidata$f_lt_kind,NA)))
+data$osp_lt_kind<-ifelse(data$sex==0,data$m_lt_kind,
+                              ifelse(data$sex==1,data$f_lt_kind,
+                                     ifelse(data$sex==2,data$f_lt_kind,NA)))
 #intelligence
-multidata$osp_lt_intell<-ifelse(multidata$sex==0,multidata$m_lt_intell,
-                                ifelse(multidata$sex==1,multidata$f_lt_intell,
-                                       ifelse(multidata$sex==2,multidata$f_lt_intell,NA)))
+data$osp_lt_intell<-ifelse(data$sex==0,data$m_lt_intell,
+                                ifelse(data$sex==1,data$f_lt_intell,
+                                       ifelse(data$sex==2,data$f_lt_intell,NA)))
 #resources
-multidata$osp_lt_resources<-ifelse(multidata$sex==0,multidata$m_lt_resources,
-                                   ifelse(multidata$sex==1,multidata$f_lt_resources,
-                                          ifelse(multidata$sex==2,multidata$f_lt_resources,NA)))
+data$osp_lt_resources<-ifelse(data$sex==0,data$m_lt_resources,
+                                   ifelse(data$sex==1,data$f_lt_resources,
+                                          ifelse(data$sex==2,data$f_lt_resources,NA)))
 #physical attractiveness
-multidata$osp_lt_physatt<-ifelse(multidata$sex==0,multidata$m_lt_physatt,
-                                 ifelse(multidata$sex==1,multidata$f_lt_physatt,
-                                        ifelse(multidata$sex==2,multidata$f_lt_physatt,NA)))
+data$osp_lt_physatt<-ifelse(data$sex==0,data$m_lt_physatt,
+                                 ifelse(data$sex==1,data$f_lt_physatt,
+                                        ifelse(data$sex==2,data$f_lt_physatt,NA)))
 #age
-multidata$osp_lt_age<-ifelse(multidata$sex==0,multidata$m_lt_age,
-                             ifelse(multidata$sex==1,multidata$f_lt_age,
-                                    ifelse(multidata$sex==2,multidata$f_lt_age,NA)))
+data$osp_lt_age<-ifelse(data$sex==0,data$m_lt_age,
+                             ifelse(data$sex==1,data$f_lt_age,
+                                    ifelse(data$sex==2,data$f_lt_age,NA)))
 
 
 
@@ -461,38 +283,29 @@ multidata$osp_lt_age<-ifelse(multidata$sex==0,multidata$m_lt_age,
 #create short-term prefs for opposite sex
 #intersex people - female prefs for set 2
 #health
-multidata$osp_st_health<-ifelse(multidata$sex==0,multidata$m_st_health,
-                                ifelse(multidata$sex==1,multidata$f_st_health,
-                                       ifelse(multidata$sex==2,multidata$f_st_health,NA)))
+data$osp_st_health<-ifelse(data$sex==0,data$m_st_health,
+                                ifelse(data$sex==1,data$f_st_health,
+                                       ifelse(data$sex==2,data$f_st_health,NA)))
 #kindness
-multidata$osp_st_kind<-ifelse(multidata$sex==0,multidata$m_st_kind,
-                              ifelse(multidata$sex==1,multidata$f_st_kind,
-                                     ifelse(multidata$sex==2,multidata$f_st_kind,NA)))
+data$osp_st_kind<-ifelse(data$sex==0,data$m_st_kind,
+                              ifelse(data$sex==1,data$f_st_kind,
+                                     ifelse(data$sex==2,data$f_st_kind,NA)))
 #intelligence
-multidata$osp_st_intell<-ifelse(multidata$sex==0,multidata$m_st_intell,
-                                ifelse(multidata$sex==1,multidata$f_st_intell,
-                                       ifelse(multidata$sex==2,multidata$f_st_intell,NA)))
+data$osp_st_intell<-ifelse(data$sex==0,data$m_st_intell,
+                                ifelse(data$sex==1,data$f_st_intell,
+                                       ifelse(data$sex==2,data$f_st_intell,NA)))
 #resources
-multidata$osp_st_resources<-ifelse(multidata$sex==0,multidata$m_st_resources,
-                                   ifelse(multidata$sex==1,multidata$f_st_resources,
-                                          ifelse(multidata$sex==2,multidata$f_st_resources,NA)))
+data$osp_st_resources<-ifelse(data$sex==0,data$m_st_resources,
+                                   ifelse(data$sex==1,data$f_st_resources,
+                                          ifelse(data$sex==2,data$f_st_resources,NA)))
 #physical attractiveness
-multidata$osp_st_physatt<-ifelse(multidata$sex==0,multidata$m_st_physatt,
-                                 ifelse(multidata$sex==1,multidata$f_st_physatt,
-                                        ifelse(multidata$sex==2,multidata$f_st_physatt,NA)))
+data$osp_st_physatt<-ifelse(data$sex==0,data$m_st_physatt,
+                                 ifelse(data$sex==1,data$f_st_physatt,
+                                        ifelse(data$sex==2,data$f_st_physatt,NA)))
 #age
-multidata$osp_st_age<-ifelse(multidata$sex==0,multidata$m_st_age,
-                             ifelse(multidata$sex==1,multidata$f_st_age,
-                                    ifelse(multidata$sex==2,multidata$f_st_age,NA)))
-
-
-#combine monodata and multidata into data
-
-data<-rbind(monodata,multidata)
-
-
-
-
+data$osp_st_age<-ifelse(data$sex==0,data$m_st_age,
+                             ifelse(data$sex==1,data$f_st_age,
+                                    ifelse(data$sex==2,data$f_st_age,NA)))
 
 
 ### clean desired partner number ###
@@ -542,12 +355,8 @@ data$sex_time_pca2<-timepcascores$RC2
 #change columns to factors
 data$gender<-as.factor(data$gender)
 data$sex<-as.factor(data$sex)
-data$tc<-as.factor(data$tc)
-data$tcg<-as.factor(data$tcg)
-data$gso<-as.factor(data$gso)
-data$gro<-as.factor(data$gro)
-data$sso<-as.factor(data$sso)
-data$sro<-as.factor(data$sro)
+
+
 
 
 #basic data check
@@ -560,17 +369,6 @@ mdage<-median(as.numeric(data$age),na.rm=T)
 tablesex<-table(data$sex)
 #gender
 tablegender<-table(data$gender)
-#transgender
-tabletcg<-table(data$transgender)
-tabletcglabel<-table(data$tcg)
-#gso
-tablegso<-table(data$gso)
-#gro
-tablegro<-table(data$gro)
-#sso
-tablesso<-table(data$sso)
-#sro
-tablesro<-table(data$sro)
 
 
 ###Save Data###
@@ -587,7 +385,7 @@ write.csv(data,paste0("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexual
 
 format<-".csv"
 date<-format(Sys.time(),format="%m%d%Y %H%M%S")
-file<-file.path(paste0("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/Human Data/Processed Data/","\PR Bisexuality Data PROCESSED ",date,format))
+file<-file.path(paste0("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/Human Data/Processed Data/","/PR Bisexuality Data PROCESSED ",date,format))
 
 write.csv(data,file=file,row.names=F)
 
