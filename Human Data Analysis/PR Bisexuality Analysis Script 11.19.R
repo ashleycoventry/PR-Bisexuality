@@ -26,19 +26,18 @@ prefs <- scale(data[,178:197])
 
 ###converting preferred age to preferred age difference
   #130 = m_lt_age, 142 = f_lt_age, 154 = f_st_age, 166 = m_st_age
-  #20 or younger = 1, 21-26 = 2, 27-32 = 3, 33-38 = 4, 39-44 = 5, 
-  #45-50 = 6, 51-56 = 7, 57-62 = 8, 63-68 = 9, 69-74 = 10
 
 ##converting participant age to same scale as ideal
-data$ageLik <- ifelse(data$age >= 69, 10,
-                      ifelse(data$age >= 63, 9,
-                             ifelse(data$age >= 57, 8,
-                                    ifelse(data$age >= 51, 7, 
-                                           ifelse(data$age >= 45, 6, 
-                                                  ifelse(data$age >= 39, 5, 
-                                                         ifelse(data$age >= 33, 4, 
-                                                                ifelse(data$age >= 27, 3, 
-                                                                       ifelse(data$age >= 21, 2, 1)))))))))
+data$ageLik <- ifelse(data$age >= 75, 10, 
+                      ifelse(data$age >= 69, 9,
+                      ifelse(data$age >= 63, 8,
+                             ifelse(data$age >= 57, 7,
+                                    ifelse(data$age >= 51, 6, 
+                                           ifelse(data$age >= 45, 5, 
+                                                  ifelse(data$age >= 39, 4, 
+                                                         ifelse(data$age >= 33, 3, 
+                                                                ifelse(data$age >= 27, 2, 
+                                                                       ifelse(data$age >= 21, 1, 0))))))))))
                       
 
 
