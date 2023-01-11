@@ -23,10 +23,6 @@ data<-read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022
 
 ### Standardize preferences ###
   #phys att; kind; intel; health; resources
-  #convert age to age diff
-  #how do i standardize these?
-  #what does it mean to standardize these lol
-  #zscore, scale()
 prefs <- scale(data[,178:197])
 
 ###converting preferred age to preferred age difference
@@ -194,7 +190,7 @@ StResourcesMM <- lmer(health + intell + kind + physatt +
 
 #health
 LtHealthAnova <- aov(health ~ sex + + partnerSex + (1|PIN), 
-                      data = LtData) 
+                      data = LtData) ##error message bc (1|PIN)
 
 
 
@@ -205,8 +201,11 @@ LtHealthAnova <- aov(health ~ sex + + partnerSex + (1|PIN),
 
 ##LT prefs violin plot
 
+LtData$partnerSex  <- as.factor(LtData$partnerSex)
 
 #health
+
+
 LtHealthPlot <- ggplot(LtData, aes(x=sex, y=health, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
@@ -244,7 +243,7 @@ LtResourcesPlot <- ggplot(LtData, aes(x=sex, y=resources, fill = partnerSex)) +
 
 ##ST Prefs violin plot
 
-
+StData$partnerSex  <- as.factor(StData$partnerSex)
 
 #health
 StHealthPlot <- ggplot(StData, aes(x=sex, y=health, fill = partnerSex)) +
@@ -288,5 +287,80 @@ StResourcesPlot <- ggplot(StData, aes(x=sex, y=resources, fill = partnerSex)) +
 ###Cluster analysis
   #across all traits
   #men rating women; men rating men; women rating men; women rating women
-  #ipsatize prefs
+  #still separate my LT and ST?
+
+##creating separate datasets
+
+
+##long term prefs
+#men rating men
+LtMxMData <- subset(LtData, partnerSex == 1 & sex == 1)
+naCheckMxM <- apply(LtMxMData[,4:8], 1, function(x) sum(is.na(x))>0)
+LtMxMData<- LtMxMData[!naCheckMxM,]
+
+#men rating women
+LtWxWData <- subset(LtData, partnerSex == 0 & sex == 1)
+naCheckWxW <- apply(LtWxWData[,4:8], 1, function(x) sum(is.na(x))>0)
+LtWxWData<- LtWxWData[!naCheckWxW,]
+  
+LtWxWData <- subset(LtData, partnerSex == 0 & sex == 0)
+naCheckWxW <- apply(LtWxWData[,4:8], 1, function(x) sum(is.na(x))>0)
+LtWxWData<- LtWxWData[!naCheckWxW,]
+  
+LtWxMData <- subset(LtData, partnerSex == 1 & sex == 0)
+naCheckWxM <- apply(LtWxMData[,4:8], 1, function(x) sum(is.na(x))>0)
+LtWxMData<- LtWxMData[!naCheckWxM,] 
+
+##ipsatizing preferences 
+
+#z-score (so takes into account avg value of that trait across ppl) and then ipsatize z-scored value 
+
+#MxW
+LtMxWData[,4:8] <- apply(LtMxWData[,4:8],2,scale)
+LtMxWData$mean<-sapply(unique(LtMxWData$PIN),function(x) 
+  mean(unlist(LtMxWData[LtMxWData$PIN==x,4:8]))
+)
+LtWxWData[,4:8]<-LtWxWData[,4:8] - LtWxWData$mean
+
+#MxM
+LtMxMData[,4:8] <- apply(LtMxMData[,4:8],2,scale)
+LtMxMData$mean<-sapply(unique(LtMxMData$PIN),function(x) 
+  mean(unlist(LtMxMData[LtMxMData$PIN==x,4:8]))
+)
+LtMxMData[,4:8]<-LtMxMData[,4:8] - LtMxMData$mean
+
+#WxW
+LtWxWData[,4:8] <- apply(LtWxWData[,4:8],2,scale)
+LtWxWData$mean<-sapply(unique(LtWxWData$PIN),function(x) 
+  mean(unlist(LtWxWData[LtWxWData$PIN==x,4:8]))
+)
+LtWxWData[,4:8]<-LtWxWData[,4:8] - LtWxWData$mean
+
+#WxM
+
+LtWxMData[,4:8] <- apply(LtWxMData[,4:8],2,scale)
+LtWxMData$mean<-sapply(unique(LtWxMData$PIN),function(x) 
+  mean(unlist(LtWxMData[LtWxMData$PIN==x,4:8]))
+)
+LtWxMData[,4:8]<-LtWxMData[,4:8] - LtWxMData$mean
+
+
+
+##Cluster Analysis for LT MxW
+
+#extract kmeans wSs
+kfitWssMxW<-sapply(1:7,function(x) kmeans(LtMxWData[,4:8],x)$tot.withinss)
+
+#scree plot
+screePlotMxW<-qplot(1:7,kfitWssMxW) #idk how to interpret this
+
+#compute differences in within ss across k for k-means clustering
+wssDiffsMxW<-diff(kfitWssMxW) 
+
+
+#add classification to OG dataframe
+
+#create vectors of preference means for each cluster 
+
+#compute variance between trait ratings for each cluster
 
