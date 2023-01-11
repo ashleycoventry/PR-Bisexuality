@@ -2,7 +2,7 @@
 ####### Ashley Coventry, Katy Walter, Ben Gelbart, Tamsin German, & Dan Conroy-Beam ########
 
 ###load packages###
-library(lme4)
+library(lmerTest)
 library(multilevelTools)
 library(tidyverse)
 library(ggplot2)
@@ -80,9 +80,8 @@ LtData$sex  <- as.factor(LtData$sex)
 
 
 #health
-LtHealthMM <- lmer(health + intell + kind + physatt + 
-                      resources ~ health + sex + partnerSex + (1|PIN),
-                    data = LtData) #is this right? 
+LtHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
+                    data = LtData[LtData$sex!=2,]) 
 
 
 
@@ -159,21 +158,6 @@ StPhysattMM <- lmer(health + intell + kind + physatt +
 StResourcesMM <- lmer(health + intell + kind + physatt + 
                         resources ~ resources + sex + partnerSex + (1|PIN),
                       data = StData) 
-
-
-
-### LT prefs (each trait) multilevel models ###
-
-
-#wait to do until confirm above code is correct
-
-
-
-
-### ST prefs (each trait) multilevel models ###
-
-
-
 
 
 
@@ -289,78 +273,10 @@ StResourcesPlot <- ggplot(StData, aes(x=sex, y=resources, fill = partnerSex)) +
   #men rating women; men rating men; women rating men; women rating women
   #still separate my LT and ST?
 
-##creating separate datasets
+
+#create dataframe with only preference ratings, PIN, sex, gender
+#combine LT and ST datasets?
 
 
-##long term prefs
-#men rating men
-LtMxMData <- subset(LtData, partnerSex == 1 & sex == 1)
-naCheckMxM <- apply(LtMxMData[,4:8], 1, function(x) sum(is.na(x))>0)
-LtMxMData<- LtMxMData[!naCheckMxM,]
-
-#men rating women
-LtWxWData <- subset(LtData, partnerSex == 0 & sex == 1)
-naCheckWxW <- apply(LtWxWData[,4:8], 1, function(x) sum(is.na(x))>0)
-LtWxWData<- LtWxWData[!naCheckWxW,]
-  
-LtWxWData <- subset(LtData, partnerSex == 0 & sex == 0)
-naCheckWxW <- apply(LtWxWData[,4:8], 1, function(x) sum(is.na(x))>0)
-LtWxWData<- LtWxWData[!naCheckWxW,]
-  
-LtWxMData <- subset(LtData, partnerSex == 1 & sex == 0)
-naCheckWxM <- apply(LtWxMData[,4:8], 1, function(x) sum(is.na(x))>0)
-LtWxMData<- LtWxMData[!naCheckWxM,] 
-
-##ipsatizing preferences 
-
-#z-score (so takes into account avg value of that trait across ppl) and then ipsatize z-scored value 
-
-#MxW
-LtMxWData[,4:8] <- apply(LtMxWData[,4:8],2,scale)
-LtMxWData$mean<-sapply(unique(LtMxWData$PIN),function(x) 
-  mean(unlist(LtMxWData[LtMxWData$PIN==x,4:8]))
-)
-LtWxWData[,4:8]<-LtWxWData[,4:8] - LtWxWData$mean
-
-#MxM
-LtMxMData[,4:8] <- apply(LtMxMData[,4:8],2,scale)
-LtMxMData$mean<-sapply(unique(LtMxMData$PIN),function(x) 
-  mean(unlist(LtMxMData[LtMxMData$PIN==x,4:8]))
-)
-LtMxMData[,4:8]<-LtMxMData[,4:8] - LtMxMData$mean
-
-#WxW
-LtWxWData[,4:8] <- apply(LtWxWData[,4:8],2,scale)
-LtWxWData$mean<-sapply(unique(LtWxWData$PIN),function(x) 
-  mean(unlist(LtWxWData[LtWxWData$PIN==x,4:8]))
-)
-LtWxWData[,4:8]<-LtWxWData[,4:8] - LtWxWData$mean
-
-#WxM
-
-LtWxMData[,4:8] <- apply(LtWxMData[,4:8],2,scale)
-LtWxMData$mean<-sapply(unique(LtWxMData$PIN),function(x) 
-  mean(unlist(LtWxMData[LtWxMData$PIN==x,4:8]))
-)
-LtWxMData[,4:8]<-LtWxMData[,4:8] - LtWxMData$mean
-
-
-
-##Cluster Analysis for LT MxW
-
-#extract kmeans wSs
-kfitWssMxW<-sapply(1:7,function(x) kmeans(LtMxWData[,4:8],x)$tot.withinss)
-
-#scree plot
-screePlotMxW<-qplot(1:7,kfitWssMxW) #idk how to interpret this
-
-#compute differences in within ss across k for k-means clustering
-wssDiffsMxW<-diff(kfitWssMxW) 
-
-
-#add classification to OG dataframe
-
-#create vectors of preference means for each cluster 
-
-#compute variance between trait ratings for each cluster
+#ipsatize traits
 
