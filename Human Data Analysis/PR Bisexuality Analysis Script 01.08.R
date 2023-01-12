@@ -20,6 +20,8 @@ set.seed(11182022)
 data<-read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
     #only bisexual people remain after processing
 
+#exclude intersex participants
+data <-  data[data$sex!=2,]
 
 ### Standardize preferences ###
   #phys att; kind; intel; health; resources
@@ -81,33 +83,28 @@ LtData$sex  <- as.factor(LtData$sex)
 
 #health
 LtHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
-                    data = LtData[LtData$sex!=2,]) 
+                    data = LtData) 
 
 
 
 #intelligence
-
-LtIntellMM <- lmer(health + intell + kind + physatt + 
-                     resources ~ intell + sex + partnerSex + (1|PIN),
+LtIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
                    data = LtData) 
 
 #kindness
 
-LtKindMM <- lmer(health + intell + kind + physatt + 
-                     resources ~ kind + sex + partnerSex + (1|PIN),
+LtKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
                    data = LtData) 
 
 
 #physical attractiveness
-LtPhysattMM <- lmer(health + intell + kind + physatt + 
-                   resources ~ physatt + sex + partnerSex + (1|PIN),
+LtPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
                  data = LtData) 
 
 
 #resources
 
-LtResourcesMM <- lmer(health + intell + kind + physatt + 
-                   resources ~ resources + sex + partnerSex + (1|PIN),
+LtResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
                  data = LtData) 
 
 
@@ -128,42 +125,37 @@ StData$sex  <- as.factor(StData$sex)
 
 
 #health
-StHealthMM <- lmer(health + intell + kind + physatt + 
-                     resources ~ health + sex + partnerSex + (1|PIN),
-                   data = StData) 
+StHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
+                 data = StData) 
 
 
 
 #intelligence
 
-StIntellMM <- lmer(health + intell + kind + physatt + 
-                     resources ~ intell + sex + partnerSex + (1|PIN),
+StIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
                    data = StData) 
 
 #kindness
 
-StKindMM <- lmer(health + intell + kind + physatt + 
-                   resources ~ kind + sex + partnerSex + (1|PIN),
-                 data = StData) 
+StKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
+                   data = StData) 
 
 
 #physical attractiveness
-StPhysattMM <- lmer(health + intell + kind + physatt + 
-                      resources ~ physatt + sex + partnerSex + (1|PIN),
-                    data = StData) 
+
+StPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
+                   data = StData)  
 
 
 #resources
 
-StResourcesMM <- lmer(health + intell + kind + physatt + 
-                        resources ~ resources + sex + partnerSex + (1|PIN),
-                      data = StData) 
+StResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
+                   data = StData) 
 
 
 
-
-### main effects (what test? anova?) ###
-  #do if not interaction found in 1 or 2
+### main effects - nested ANOVA ###
+  #running bc no interaction found in previous analyses
   #outcome variable: trait pref (do separate for LT vs ST)
   #predictor variables: own sex, partner sex
   #nested under participant ID (PIN)
@@ -173,8 +165,8 @@ StResourcesMM <- lmer(health + intell + kind + physatt +
 ##men
 
 #health
-LtHealthAnova <- aov(health ~ sex + + partnerSex + (1|PIN), 
-                      data = LtData) ##error message bc (1|PIN)
+LtHealthAnova <- aov(health ~ sex + partnerSex + (1|PIN), 
+                      data = LtData) 
 
 
 
