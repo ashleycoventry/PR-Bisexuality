@@ -15,7 +15,6 @@ set.seed(11182022)
 
 
 
-
 ### load data ###
 data<-read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
     #only bisexual people remain after processing
@@ -58,115 +57,152 @@ data$fLtAgeLik <- data$f_lt_age - data$ageLik
 #female ideal ST
 data$fStAgeLik <- data$f_st_age - data$ageLik
 
-
-### LT prefs (combined) multilevel model ###
-  #looking to see if there is a significant overall effect 
-  #of trait + own sex + partner sex on long term prefs
-  #nested under participant ID (PIN)
-
-#need to make data long --> tidy with partner sex column
+###Omnibus Analyses
 
 
+#longform data
+
+#LT 
 LtData <- data[,c(167, 5, 178:187)]
 LtData <- melt(LtData, id.vars=c("PIN", "sex"))
 LtData <- LtData %>% 
   separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
 LtData$partnerSex <- ifelse(LtData$partnerSex == "m", 0, 1)
 LtData <- LtData[,c(1:3, 5:6)]
-LtData <- LtData %>%
-  pivot_wider(names_from = trait, 
-              values_from = value)
-
 LtData$sex  <- as.factor(LtData$sex)
 
+#ST
 
-
-#health
-LtHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
-                    data = LtData) 
-
-
-
-#intelligence
-LtIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
-                   data = LtData) 
-
-#kindness
-
-LtKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
-                   data = LtData) 
-
-
-#physical attractiveness
-LtPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
-                 data = LtData) 
-
-
-#resources
-
-LtResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
-                 data = LtData) 
-
-
-
-### ST prefs (combined) multilevel model ###
-
-#making data long + column for partner sex
 StData <- data[,c(167, 5, 188:197)]
 StData <- melt(StData, id.vars=c("PIN", "sex"))
 StData <- StData %>% 
   separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
 StData <- StData[,c(1:3, 5:6)]
-StData <- StData %>%
+StData$sex  <- as.factor(StData$sex)
+
+#ombnibus test
+
+LtOmnibus <- lmer(value ~ trait*partnerSex + (1|PIN), 
+                   data = LtData) #sig interaction between resource prefs and partner sex
+
+StOmnibus <- lmer(value ~ trait*partnerSex + (1|PIN), 
+                  data = StData) #no sig interactions 
+
+
+
+###LT prefs multilevel models
+#looking to see if there is a significant overall effect 
+#of trait + own sex + partner sex on long term prefs
+#nested under participant ID (PIN)
+
+#tidy format for analyses
+LtDataTidy <- LtData %>%
   pivot_wider(names_from = trait, 
               values_from = value)
 
-StData$sex  <- as.factor(StData$sex)
+#health
+LtHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
+                    data = LtDataTidy) 
+
+
+
+#intelligence
+LtIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
+                   data = LtDataTidy) #significant effect of partner sex on intell pref
+
+#kindness
+
+LtKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
+                   data = LtDataTidy) 
+
+
+#physical attractiveness
+LtPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
+                 data = LtDataTidy) 
+
+
+#resources
+
+LtResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
+                 data = LtDataTidy) #signficant effect of partner sex
+
+
+
+### ST prefs multilevel model ###
+
+#tidy format for analyses
+StDataTidy <- StData %>%
+  pivot_wider(names_from = trait, 
+              values_from = value)
+
+
 
 
 #health
 StHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
-                 data = StData) 
+                 data = StDataTidy) 
 
 
 
 #intelligence
 
 StIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
-                   data = StData) 
+                   data = StDataTidy) 
 
 #kindness
 
 StKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
-                   data = StData) 
+                   data = StDataTidy)  #sig effect of sex and partner sex,
+                                       #sig interaction between sex and partner sex
 
 
 #physical attractiveness
 
 StPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
-                   data = StData)  
+                   data = StDataTidy)  #sig effect of partner sex 
 
 
 #resources
 
 StResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
-                   data = StData) 
+                   data = StDataTidy) #sig effect of partner sex
 
 
 
 ### main effects - nested ANOVA ###
-  #running bc no interaction found in previous analyses
-  #outcome variable: trait pref (do separate for LT vs ST)
-  #predictor variables: own sex, partner sex
-  #nested under participant ID (PIN)
+  #running bc no interaction found for some traits in previous analyses
 
-##LT
 
-##men
+##LT prefs that found no sig interactions
 
 #health
-LtHealthAnova <- aov(health ~ sex + partnerSex + (1|PIN), 
-                      data = LtData) 
+LtHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
+                   data = LtDataTidy) #not sig
+
+#kindness
+
+LtKindMain <- lmer(kind  ~ sex + partnerSex + (1|PIN),
+                 data = LtDataTidy) #sig main effect of sex and partner sex
+
+
+#physical attractiveness
+LtPhysattMain <- lmer(physatt  ~ sex + partnerSex + (1|PIN),
+                    data = LtDataTidy) #sig main effect of sex but not partner sex
+
+
+
+##St prefs that found no sig interactions
+
+#health
+StHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
+                   data = StDataTidy) #sig main effect of partner sex
+
+
+
+#intelligence
+
+StIntellMain <- lmer(intell  ~ sex + partnerSex + (1|PIN),
+                   data = StDataTidy) #sig main effect of sex
 
 
 
@@ -259,16 +295,16 @@ StResourcesPlot <- ggplot(StData, aes(x=sex, y=resources, fill = partnerSex)) +
 
 
 
-
 ###Cluster analysis
   #across all traits
   #men rating women; men rating men; women rating men; women rating women
-  #still separate my LT and ST?
 
 
 #create dataframe with only preference ratings, PIN, sex, gender
-#combine LT and ST datasets?
+
 
 
 #ipsatize traits
+
+#
 
