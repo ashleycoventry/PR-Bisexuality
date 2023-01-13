@@ -299,12 +299,43 @@ StResourcesPlot <- ggplot(StData, aes(x=sex, y=resources, fill = partnerSex)) +
   #across all traits
   #men rating women; men rating men; women rating men; women rating women
 
+##LT Prefs
 
-#create dataframe with only preference ratings, PIN, sex, gender
+#remove NAs from dataframe 
 
-
+nacheck <- apply(LtDataTidy[,1:8], 1, function(x) sum(is.na(x))>0)
+LtDataK<- LtDataTidy[!nacheck,]
 
 #ipsatize traits
+
+#z-score (so takes into account avg value of that trait across ppl)
+LtDataK[,4:8] <- apply(LtDataK[,4:8],2,scale)
+
+#ipsatize z-scored value ###ERROR bc # of means is less than rows in LtDataK
+LtDataK$mean<-sapply(unique(LtDataK$PIN),function(x) 
+  mean(unlist(LtDataK[LtDataK$PIN==x,4:8]))
+)
+LtDataK[,4:8]<-LtDataK[,4:8] - LtDataK$mean
+
+
+
+#extract kmeans wSs
+kfitWss<-sapply(1:7,function(x) kmeans(LtDataK[,4:8],x)$tot.withinss)
+
+#scree plot
+screePlot<-qplot(1:7,kfitWss) 
+
+##compute differences in within ss across k for k-means clustering
+wssDiffs<-diff(kfitWss) #4 clusters -- I think?
+
+##Add classification to the original dataframe
+
+kFit<-kmeans(LtDataK[,4:8],4)
+LtDataK$kFit <- kFit$cluster
+
+
+
+
 
 #
 
