@@ -64,30 +64,30 @@ data$fStAgeLik <- data$f_st_age - data$ageLik
 #longform data
 
 #LT 
-LtData <- data[,c(167, 5, 178:187)]
-LtData <- melt(LtData, id.vars=c("PIN", "sex"))
-LtData <- LtData %>% 
+ltData <- data[,c(167, 5, 178:187)]
+ltData <- melt(ltData, id.vars=c("PIN", "sex"))
+ltData <- ltData %>% 
   separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
-LtData$partnerSex <- ifelse(LtData$partnerSex == "m", 0, 1)
-LtData <- LtData[,c(1:3, 5:6)]
-LtData$sex  <- as.factor(LtData$sex)
+ltData$partnerSex <- ifelse(ltData$partnerSex == "m", 0, 1)
+ltData <- ltData[,c(1:3, 5:6)]
+ltData$sex  <- as.factor(ltData$sex)
 
 #ST
 
-StData <- data[,c(167, 5, 188:197)]
-StData <- melt(StData, id.vars=c("PIN", "sex"))
-StData <- StData %>% 
+stData <- data[,c(167, 5, 188:197)]
+stData <- melt(stData, id.vars=c("PIN", "sex"))
+stData <- stData %>% 
   separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
-StData <- StData[,c(1:3, 5:6)]
-StData$sex  <- as.factor(StData$sex)
+stData <- stData[,c(1:3, 5:6)]
+stData$sex  <- as.factor(stData$sex)
 
 #ombnibus test
 
-LtOmnibus <- lmer(value ~ trait*partnerSex + (1|PIN), 
-                   data = LtData) #sig interaction between resource prefs and partner sex
+ltOmnibus <- lmer(value ~ trait*partnerSex + (1|PIN), 
+                   data = ltData) #sig interaction between resource prefs and partner sex
 
-StOmnibus <- lmer(value ~ trait*partnerSex + (1|PIN), 
-                  data = StData) #no sig interactions 
+stOmnibus <- lmer(value ~ trait*partnerSex + (1|PIN), 
+                  data = stData) #no sig interactions 
 
 
 
@@ -97,42 +97,42 @@ StOmnibus <- lmer(value ~ trait*partnerSex + (1|PIN),
 #nested under participant ID (PIN)
 
 #tidy format for analyses
-LtDataTidy <- LtData %>%
+ltDataTidy <- ltData %>%
   pivot_wider(names_from = trait, 
               values_from = value)
 
 #health
-LtHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
-                    data = LtDataTidy) 
+ltHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
+                    data = ltDataTidy) 
 
 
 
 #intelligence
-LtIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
-                   data = LtDataTidy) #significant effect of partner sex on intell pref
+ltIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
+                   data = ltDataTidy) #significant effect of partner sex on intell pref
 
 #kindness
 
-LtKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
-                   data = LtDataTidy) 
+ltKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
+                   data = ltDataTidy) 
 
 
 #physical attractiveness
-LtPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
-                 data = LtDataTidy) 
+ltPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
+                 data = ltDataTidy) 
 
 
 #resources
 
-LtResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
-                 data = LtDataTidy) #signficant effect of partner sex
+ltResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
+                 data = ltDataTidy) #signficant effect of partner sex
 
 
 
 ### ST prefs multilevel model ###
 
 #tidy format for analyses
-StDataTidy <- StData %>%
+stDataTidy <- stData %>%
   pivot_wider(names_from = trait, 
               values_from = value)
 
@@ -140,33 +140,33 @@ StDataTidy <- StData %>%
 
 
 #health
-StHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
-                 data = StDataTidy) 
+stHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
+                 data = stDataTidy) 
 
 
 
 #intelligence
 
-StIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
-                   data = StDataTidy) 
+stIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
+                   data = stDataTidy) 
 
 #kindness
 
-StKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
-                   data = StDataTidy)  #sig effect of sex and partner sex,
+stKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
+                   data = stDataTidy)  #sig effect of sex and partner sex,
                                        #sig interaction between sex and partner sex
 
 
 #physical attractiveness
 
-StPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
-                   data = StDataTidy)  #sig effect of partner sex 
+stPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
+                   data = stDataTidy)  #sig effect of partner sex 
 
 
 #resources
 
-StResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
-                   data = StDataTidy) #sig effect of partner sex
+stResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
+                   data = stDataTidy) #sig effect of partner sex
 
 
 
@@ -177,33 +177,33 @@ StResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
 ##LT prefs that found no sig interactions
 
 #health
-LtHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
-                   data = LtDataTidy) #not sig
+ltHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
+                   data = ltDataTidy) #not sig
 
 #kindness
 
-LtKindMain <- lmer(kind  ~ sex + partnerSex + (1|PIN),
-                 data = LtDataTidy) #sig main effect of sex and partner sex
+ltKindMain <- lmer(kind  ~ sex + partnerSex + (1|PIN),
+                 data = ltDataTidy) #sig main effect of sex and partner sex
 
 
 #physical attractiveness
-LtPhysattMain <- lmer(physatt  ~ sex + partnerSex + (1|PIN),
-                    data = LtDataTidy) #sig main effect of sex but not partner sex
+ltPhysattMain <- lmer(physatt  ~ sex + partnerSex + (1|PIN),
+                    data = ltDataTidy) #sig main effect of sex but not partner sex
 
 
 
 ##St prefs that found no sig interactions
 
 #health
-StHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
-                   data = StDataTidy) #sig main effect of partner sex
+stHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
+                   data = stDataTidy) #sig main effect of partner sex
 
 
 
 #intelligence
 
-StIntellMain <- lmer(intell  ~ sex + partnerSex + (1|PIN),
-                   data = StDataTidy) #sig main effect of sex
+stIntellMain <- lmer(intell  ~ sex + partnerSex + (1|PIN),
+                   data = stDataTidy) #sig main effect of sex
 
 
 
@@ -214,40 +214,40 @@ StIntellMain <- lmer(intell  ~ sex + partnerSex + (1|PIN),
 
 ##LT prefs violin plot
 
-LtData$partnerSex  <- as.factor(LtData$partnerSex)
+ltData$partnerSex  <- as.factor(ltData$partnerSex)
 
 #health
 
 
-LtHealthPlot <- ggplot(LtData, aes(x=sex, y=health, fill = partnerSex)) +
+ltHealthPlot <- ggplot(ltData, aes(x=sex, y=health, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Health Preferences by Sex",x="Participant Sex", y = "LT Health Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #intelligence
-LtIntelPlot <- ggplot(LtData, aes(x=sex, y=intell, fill = partnerSex)) +
+ltIntelPlot <- ggplot(ltData, aes(x=sex, y=intell, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Intelligence Preferences by Sex",x="Participant Sex", y = "LT Intelligence Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #kindness
-LtKindPlot <- ggplot(LtData, aes(x=sex, y=kind, fill = partnerSex)) +
+ltKindPlot <- ggplot(ltData, aes(x=sex, y=kind, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Kindness Preferences by Sex",x="Participant Sex", y = "LT Kindness Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #physical attractiveness
-LtPhysattPlot <- ggplot(LtData, aes(x=sex, y=physatt, fill = partnerSex)) +
+ltPhysattPlot <- ggplot(ltData, aes(x=sex, y=physatt, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Physical Attractiveness Preferences by Sex",x="Participant Sex", y = "LT Physical Attractiveness Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #resources
-LtResourcesPlot <- ggplot(LtData, aes(x=sex, y=resources, fill = partnerSex)) +
+ltResourcesPlot <- ggplot(ltData, aes(x=sex, y=resources, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Resources Preferences by Sex",x="Participant Sex", y = "LT Resources Preference") +
@@ -256,38 +256,38 @@ LtResourcesPlot <- ggplot(LtData, aes(x=sex, y=resources, fill = partnerSex)) +
 
 ##ST Prefs violin plot
 
-StData$partnerSex  <- as.factor(StData$partnerSex)
+stData$partnerSex  <- as.factor(stData$partnerSex)
 
 #health
-StHealthPlot <- ggplot(StData, aes(x=sex, y=health, fill = partnerSex)) +
+stHealthPlot <- ggplot(stData, aes(x=sex, y=health, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Health Preferences by Sex",x="Participant Sex", y = "ST Health Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #intelligence
-StIntelPlot <- ggplot(StData, aes(x=sex, y=intell, fill = partnerSex)) +
+stIntelPlot <- ggplot(stData, aes(x=sex, y=intell, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Intelligence Preferences by Sex",x="Participant Sex", y = "ST Intelligence Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #kindness
-StKindPlot <- ggplot(StData, aes(x=sex, y=kind, fill = partnerSex)) +
+stKindPlot <- ggplot(stData, aes(x=sex, y=kind, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Kindness Preferences by Sex",x="Participant Sex", y = "ST Kindness Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #physical attractiveness
-StPhysattPlot <- ggplot(StData, aes(x=sex, y=physatt, fill = partnerSex)) +
+stPhysattPlot <- ggplot(stData, aes(x=sex, y=physatt, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Physical Attractiveness Preferences by Sex",x="Participant Sex", y = "ST Physical Attractiveness Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #resources
-StResourcesPlot <- ggplot(StData, aes(x=sex, y=resources, fill = partnerSex)) +
+stResourcesPlot <- ggplot(stData, aes(x=sex, y=resources, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Resources Preferences by Sex",x="Participant Sex", y = "ST Resources Preference") +
@@ -304,53 +304,150 @@ StResourcesPlot <- ggplot(StData, aes(x=sex, y=resources, fill = partnerSex)) +
 
 #remove NAs from dataframe 
 
-nacheck <- apply(LtDataTidy[,1:8], 1, function(x) sum(is.na(x))>0)
-LtDataK<- LtDataTidy[!nacheck,]
+nacheckLt <- apply(ltDataTidy[,1:8], 1, function(x) sum(is.na(x))>0)
+ltDataK<- ltDataTidy[!nacheckLt,]
 
 #ipsatize traits
 
 
 #z-score (so takes into account avg value of that trait across ppl)
-LtDataK[,4:8] <- apply(LtDataK[,4:8],2,scale)
+ltDataK[,4:8] <- apply(ltDataK[,4:8],2,scale)
 
 #ipsatize z-scored value 
-#for loop isn't working bc issues with PIN column
-#dan: If not, you can try wrapping the mean() function in rep(...,2) so that each participant's mean is just repeated twice. 
-#That only works if their two rows are next to each other though
 
-LtDataK <- LtDataK %>% arrange(PIN)
 
-#idk if below will work? 
-LtDataK$mean<-if(LtDataK[LtDataK$PIN==LtDataK$PIN[i]]){
-  sapply(unique(LtDataK$PIN),function(x) 
-    rep(mean(unlist(LtDataK[LtDataK$PIN==x,4:8])), 2)
-  )
-} else{
-  sapply(unique(LtDataK$PIN),function(x) 
-    mean(unlist(LtDataK[LtDataK$PIN==x,4:8])))
+#adding empty columns to dataframe
+avColsLt <- c('ipHealth', 'ipIntell', 'ipKind', 'ipPhysatt', 'ipResources')
+ltDataK[ , avColsLt] <- NA
+
+
+#take means of traits for every PIN and subtract mean from indiv traits & place in new columns
+for (i in 1:nrow(ltDataK)){
+  focalPrefsLt <- ltDataK[i,4:8]
+  avPrefsLt <- rowMeans(ltDataK[ltDataK$PIN == ltDataK$PIN[i],4:8], na.rm = T)
+  focalPrefsLt <- focalPrefsLt - avPrefsLt
+  ltDataK[i,9:13] <- focalPrefsLt
+  
 }
 
 
 
 
-
 #extract kmeans wSs
-kfitWss<-sapply(1:7,function(x) kmeans(LtDataK[,4:8],x)$tot.withinss)
+kfitWssLt<-sapply(1:7,function(x) kmeans(ltDataK[,9:13],x)$tot.withinss)
 
 #scree plot
-screePlot<-qplot(1:7,kfitWss) 
+screePlotLt<-qplot(1:7,kfitWssLt) 
 
 ##compute differences in within ss across k for k-means clustering
-wssDiffs<-diff(kfitWss) #4 clusters -- I think?
+wssDiffsLt<-diff(kfitWssLt) #4 clusters -- I think?
 
 ##Add classification to the original dataframe
 
-kFit<-kmeans(LtDataK[,4:8],4)
-LtDataK$kFit <- kFit$cluster
+kFitLt<-kmeans(ltDataK[,9:13],4)
+ltDataK$kFitLt <- kFitLt$cluster
+
+
+##Create vectors of preference means for each cluster 
+clustCentersLt<-kFitLt$centers
+
+##Look at breakdown by cluster, sex, and partner sex #0 = women, #1 = men
+clustSexLt<-table(ltDataK$sex,ltDataK$kFitLt, ltDataK$partnerSex)
+
+
+#are men and women are choosing clusters at diff rates?
+chisqSexLt<-chisq.test(table(ltDataK$sex,ltDataK$kFitLt)) #yes 
+
+#are participants choosing clusters at diff rates based on ideal partner sex?
+chisqPSexLt <- chisq.test(table(ltDataK$partnerSex,ltDataK$kFitLt)) #no
+
+### Plotting ###
+
+##plot bar graph with each trait mean for each 3 clusters (# clusters depends on scree)
+meanTraitLt <- c(clustCentersLt[1,], clustCentersLt[2,], clustCentersLt[3,], clustCentersLt[4,])
+mateTypeLt <-c(rep("1", 5), rep("2", 5), rep("3", 5), rep("4", 5))
+traitLt <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources"), 4))  
+plottingLt <- data.frame(meanTraitLt, mateTypeLt, traitLt)
+kFitPlotLt <- ggplot(data=plottingLt, aes(x=mateTypeLt, y=meanTraitLt, fill=traitLt)) +
+  geom_bar(stat="identity", color="black", position=position_dodge())+
+  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
+  scale_fill_discrete(name = "Trait")
 
 
 
 
 
-#
+##ST Prefs
+
+#remove NAs from dataframe 
+
+nacheckSt <- apply(stDataTidy[,1:8], 1, function(x) sum(is.na(x))>0)
+stDataK<- stDataTidy[!nacheckSt,]
+
+#ipsatize traits
+
+
+#z-score (so takes into account avg value of that trait across ppl)
+stDataK[,4:8] <- apply(stDataK[,4:8],2,scale)
+
+#ipsatize z-scored value 
+
+
+#adding empty columns to dataframe
+avColsSt <- c('ipHealth', 'ipIntell', 'ipKind', 'ipPhysatt', 'ipResources')
+stDataK[ , avColsSt] <- NA
+
+
+#take means of traits for every PIN and subtract mean from indiv traits & place in new columns
+for (i in 1:nrow(stDataK)){
+  focalPrefsSt <- stDataK[i,4:8]
+  avPrefsSt <- rowMeans(stDataK[stDataK$PIN == stDataK$PIN[i],4:8], na.rm = T)
+  focalPrefsSt <- focalPrefsSt - avPrefsSt
+  stDataK[i,9:13] <- focalPrefsSt
+  
+}
+
+
+
+
+#extract kmeans wSs
+kfitWssSt<-sapply(1:7,function(x) kmeans(stDataK[,9:13],x)$tot.withinss)
+
+#scree plot
+screePlotSt<-qplot(1:7,kfitWssSt) 
+
+##compute differences in within ss across k for k-means clustering
+wssDiffsSt<-diff(kfitWssSt) #4 clusters?
+
+##Add classification to the original dataframe
+
+kFitSt<-kmeans(stDataK[,9:13],4)
+stDataK$kFitSt <- kFitSt$cluster
+
+
+##Create vectors of preference means for each cluster 
+clustCentersSt<-kFitSt$centers
+
+##Look at breakdown by cluster, sex, and partner sex #0 = women, #1 = men
+clustSexSt<-table(stDataK$sex,stDataK$kFitSt, stDataK$partnerSex)
+
+
+#are men and women are choosing clusters at diff rates?
+chisqSexSt<-chisq.test(table(stDataK$sex,stDataK$kFitSt)) #yes 
+
+#are participants choosing clusters at diff rates based on ideal partner sex?
+chisqPSexSt <- chisq.test(table(stDataK$partnerSex,stDataK$kFitSt)) #yes
+
+### Plotting ###
+
+##plot bar graph with each trait mean for each 3 clusters (# clusters depends on scree)
+meanTraitSt <- c(clustCentersSt[1,], clustCentersSt[2,], clustCentersSt[3,], clustCentersSt[4,])
+mateTypeSt <-c(rep("1", 5), rep("2", 5), rep("3", 5), rep("4", 5))
+traitSt <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources"), 4))  
+plottingSt <- data.frame(meanTraitSt, mateTypeSt, traitSt)
+kFitPlotSt <- ggplot(data=plottingSt, aes(x=mateTypeSt, y=meanTraitSt, fill=traitSt)) +
+  geom_bar(stat="identity", color="black", position=position_dodge())+
+  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
+  scale_fill_discrete(name = "Trait")
+
 
