@@ -68,7 +68,7 @@ ltData <- data[,c(167, 5, 178:187)]
 ltData <- melt(ltData, id.vars=c("PIN", "sex"))
 ltData <- ltData %>% 
   separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
-ltData$partnerSex <- ifelse(ltData$partnerSex == "m", 0, 1)
+ltData$partnerSex <- ifelse(ltData$partnerSex == "m", 1, 0)
 ltData <- ltData[,c(1:3, 5:6)]
 ltData$sex  <- as.factor(ltData$sex)
 
@@ -82,6 +82,7 @@ stData <- data[,c(167, 5, 188:197)]
 stData <- melt(stData, id.vars=c("PIN", "sex"))
 stData <- stData %>% 
   separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
+stData$partnerSex <- ifelse(stData$partnerSex == "m", 1, 0)
 stData <- stData[,c(1:3, 5:6)]
 stData$sex  <- as.factor(stData$sex)
 
@@ -199,35 +200,35 @@ ltHealthPlot <- ggplot(ltDataTidy, aes(x=sex, y=health, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Health Preferences by Sex",x="Participant Sex", y = "LT Health Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 #intelligence
 ltIntelPlot <- ggplot(ltDataTidy, aes(x=sex, y=intell, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Intelligence Preferences by Sex",x="Participant Sex", y = "LT Intelligence Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 #kindness
 ltKindPlot <- ggplot(ltDataTidy, aes(x=sex, y=kind, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Kindness Preferences by Sex",x="Participant Sex", y = "LT Kindness Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 #physical attractiveness
 ltPhysattPlot <- ggplot(ltDataTidy, aes(x=sex, y=physatt, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Physical Attractiveness Preferences by Sex",x="Participant Sex", y = "LT Physical Attractiveness Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 #resources
 ltResourcesPlot <- ggplot(ltDataTidy, aes(x=sex, y=resources, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Resources Preferences by Sex",x="Participant Sex", y = "LT Resources Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 
 ##ST Prefs violin plot
@@ -239,35 +240,35 @@ stHealthPlot <- ggplot(stDataTidy, aes(x=sex, y=health, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Health Preferences by Sex",x="Participant Sex", y = "ST Health Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 #intelligence
 stIntelPlot <- ggplot(stDataTidy, aes(x=sex, y=intell, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Intelligence Preferences by Sex",x="Participant Sex", y = "ST Intelligence Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 #kindness
 stKindPlot <- ggplot(stDataTidy, aes(x=sex, y=kind, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Kindness Preferences by Sex",x="Participant Sex", y = "ST Kindness Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 #physical attractiveness
 stPhysattPlot <- ggplot(stDataTidy, aes(x=sex, y=physatt, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Physical Attractiveness Preferences by Sex",x="Participant Sex", y = "ST Physical Attractiveness Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 #resources
 stResourcesPlot <- ggplot(stDataTidy, aes(x=sex, y=resources, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Resources Preferences by Sex",x="Participant Sex", y = "ST Resources Preference") +
-  scale_fill_discrete(name = "Parter Sex")
+  scale_fill_discrete(name = "Partner Sex")
 
 
 
