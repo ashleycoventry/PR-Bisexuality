@@ -72,6 +72,10 @@ ltData$partnerSex <- ifelse(ltData$partnerSex == "m", 0, 1)
 ltData <- ltData[,c(1:3, 5:6)]
 ltData$sex  <- as.factor(ltData$sex)
 
+#make sure there are no NAs in sex or partner sex columns
+nacheckLt <- apply(ltData[,2:3], 1, function(x) sum(is.na(x))>0)
+ltData<- ltData[!nacheckLt,]
+
 #ST
 
 stData <- data[,c(167, 5, 188:197)]
@@ -81,129 +85,101 @@ stData <- stData %>%
 stData <- stData[,c(1:3, 5:6)]
 stData$sex  <- as.factor(stData$sex)
 
+#make sure there are no NAs in sex or partner sex columns
+nacheckSt <- apply(stData[,2:3], 1, function(x) sum(is.na(x))>0)
+stData<- stData[!nacheckSt,]
+
 #ombnibus test
 
-ltOmnibus <- lmer(value ~ trait*partnerSex + (1|PIN), 
-                   data = ltData) #sig interaction between resource prefs and partner sex
+ltOmnibus <- lmer(value ~ partnerSex +  trait*sex + (1|PIN), 
+                   data = ltData) 
 
-stOmnibus <- lmer(value ~ trait*partnerSex + (1|PIN), 
-                  data = stData) #no sig interactions 
+stOmnibus <- lmer(value ~ partnerSex +  trait*sex + (1|PIN), 
+                  data = stData) 
+
+#make dataframe with every combo of trait, sex, partner sex and use predict function to predict pref values for each combo
+predictDataLt <- expand.grid( unique(ltData$sex), unique(ltData$partnerSex), unique(ltData$trait))
+predictDataLt <- predictDataLt %>%
+  rename(
+    sex = Var1,
+    partnerSex = Var2,
+    trait = Var3
+  )
+
+predictDataSt <- expand.grid(unique(stData$sex), unique(stData$partnerSex), unique(stData$trait))
+predictDataSt <- predictDataSt %>%
+  rename(
+    sex = Var1,
+    partnerSex = Var2,
+    trait = Var3
+  )
+
+#use predict function
+predictDataLt$predictedValues <- predict(ltOmnibus, newdata = predictDataLt) 
+#will not work with or without PIN :( (with PIN, error says too many levels)
 
 
 
-###LT prefs multilevel models
-#looking to see if there is a significant overall effect 
-#of trait + own sex + partner sex on long term prefs
-#nested under participant ID (PIN)
+###LT prefs (using nested anova to look for main effects)
 
 #tidy format for analyses
 ltDataTidy <- ltData %>%
   pivot_wider(names_from = trait, 
               values_from = value)
 
+
 #health
-ltHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
-                    data = ltDataTidy) 
-
-
-
-#intelligence
-ltIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
-                   data = ltDataTidy) #significant effect of partner sex on intell pref
+ltHealthMain <- lmer(scale(health)  ~ sex + partnerSex + (1|PIN),
+                     data = ltDataTidy) #not sig
 
 #kindness
-
-ltKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
-                   data = ltDataTidy) 
+ltKindMain <- lmer(scale(kind)  ~ sex + partnerSex + (1|PIN),
+                   data = ltDataTidy) #sig main effect of sex and partner sex
 
 
 #physical attractiveness
-ltPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
-                 data = ltDataTidy) 
+ltPhysattMain <- lmer(scale(physatt)  ~ sex + partnerSex + (1|PIN),
+                      data = ltDataTidy) #sig main effect of sex but not partner sex
 
+#intell
+ltIntellMain <- lmer(scale(intell)  ~ sex + partnerSex + (1|PIN),
+                     data = ltDataTidy) #sig effect of partner sex, not sex
 
 #resources
-
-ltResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
-                 data = ltDataTidy) #signficant effect of partner sex
-
+ltResourceMain <- lmer(scale(resources)  ~ sex + partnerSex + (1|PIN),
+                       data = ltDataTidy) #effect of partner sex, not sex
 
 
-### ST prefs multilevel model ###
+### ST prefs main effects ###
 
 #tidy format for analyses
 stDataTidy <- stData %>%
   pivot_wider(names_from = trait, 
               values_from = value)
 
-
-
-
-#health
-stHealthMM <- lmer(health  ~ sex * partnerSex + (1|PIN),
-                 data = stDataTidy) 
-
-
-
-#intelligence
-
-stIntellMM <- lmer(intell  ~ sex * partnerSex + (1|PIN),
-                   data = stDataTidy) 
-
 #kindness
-
-stKindMM <- lmer(kind  ~ sex * partnerSex + (1|PIN),
-                   data = stDataTidy)  #sig effect of sex and partner sex,
-                                       #sig interaction between sex and partner sex
-
+stKindMain <- lmer(kind ~ sex + partnerSex + (1|PIN), 
+                   data = stDataTidy) #sig main effect of partner sex and sex
 
 #physical attractiveness
-
-stPhysattMM <- lmer(physatt  ~ sex * partnerSex + (1|PIN),
-                   data = stDataTidy)  #sig effect of partner sex 
-
-
-#resources
-
-stResourcesMM <- lmer(resources  ~ sex * partnerSex + (1|PIN),
-                   data = stDataTidy) #sig effect of partner sex
-
-
-
-### main effects - nested ANOVA ###
-  #running bc no interaction found for some traits in previous analyses
-
-
-##LT prefs that found no sig interactions
-
-#health
-ltHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
-                   data = ltDataTidy) #not sig
-
-#kindness
-
-ltKindMain <- lmer(kind  ~ sex + partnerSex + (1|PIN),
-                 data = ltDataTidy) #sig main effect of sex and partner sex
-
-
-#physical attractiveness
-ltPhysattMain <- lmer(physatt  ~ sex + partnerSex + (1|PIN),
-                    data = ltDataTidy) #sig main effect of sex but not partner sex
-
-
-
-##St prefs that found no sig interactions
+stPhysattMain <- lmer(physatt ~ sex + partnerSex + (1|PIN), 
+                   data = stDataTidy) #sig main effect of partner sex
 
 #health
 stHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
-                   data = stDataTidy) #sig main effect of partner sex
-
-
+                     data = stDataTidy) #sig main effect of partner sex
 
 #intelligence
 
 stIntellMain <- lmer(intell  ~ sex + partnerSex + (1|PIN),
-                   data = stDataTidy) #sig main effect of sex
+                     data = stDataTidy) #sig main effect of sex, not partner sex
+
+#resources
+stResourceMain <- lmer(scale(resources)  ~ sex + partnerSex + (1|PIN),
+                       data = stDataTidy) #sig main effect of partner sex
+
+
+
 
 
 
@@ -214,40 +190,40 @@ stIntellMain <- lmer(intell  ~ sex + partnerSex + (1|PIN),
 
 ##LT prefs violin plot
 
-ltData$partnerSex  <- as.factor(ltData$partnerSex)
+ltDataTidy$partnerSex  <- as.factor(ltDataTidy$partnerSex)
 
 #health
 
 
-ltHealthPlot <- ggplot(ltData, aes(x=sex, y=health, fill = partnerSex)) +
+ltHealthPlot <- ggplot(ltDataTidy, aes(x=sex, y=health, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Health Preferences by Sex",x="Participant Sex", y = "LT Health Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #intelligence
-ltIntelPlot <- ggplot(ltData, aes(x=sex, y=intell, fill = partnerSex)) +
+ltIntelPlot <- ggplot(ltDataTidy, aes(x=sex, y=intell, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Intelligence Preferences by Sex",x="Participant Sex", y = "LT Intelligence Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #kindness
-ltKindPlot <- ggplot(ltData, aes(x=sex, y=kind, fill = partnerSex)) +
+ltKindPlot <- ggplot(ltDataTidy, aes(x=sex, y=kind, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Kindness Preferences by Sex",x="Participant Sex", y = "LT Kindness Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #physical attractiveness
-ltPhysattPlot <- ggplot(ltData, aes(x=sex, y=physatt, fill = partnerSex)) +
+ltPhysattPlot <- ggplot(ltDataTidy, aes(x=sex, y=physatt, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Physical Attractiveness Preferences by Sex",x="Participant Sex", y = "LT Physical Attractiveness Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #resources
-ltResourcesPlot <- ggplot(ltData, aes(x=sex, y=resources, fill = partnerSex)) +
+ltResourcesPlot <- ggplot(ltDataTidy, aes(x=sex, y=resources, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Long Term Resources Preferences by Sex",x="Participant Sex", y = "LT Resources Preference") +
@@ -256,38 +232,38 @@ ltResourcesPlot <- ggplot(ltData, aes(x=sex, y=resources, fill = partnerSex)) +
 
 ##ST Prefs violin plot
 
-stData$partnerSex  <- as.factor(stData$partnerSex)
+stDataTidy$partnerSex  <- as.factor(stDataTidy$partnerSex)
 
 #health
-stHealthPlot <- ggplot(stData, aes(x=sex, y=health, fill = partnerSex)) +
+stHealthPlot <- ggplot(stDataTidy, aes(x=sex, y=health, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Health Preferences by Sex",x="Participant Sex", y = "ST Health Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #intelligence
-stIntelPlot <- ggplot(stData, aes(x=sex, y=intell, fill = partnerSex)) +
+stIntelPlot <- ggplot(stDataTidy, aes(x=sex, y=intell, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Intelligence Preferences by Sex",x="Participant Sex", y = "ST Intelligence Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #kindness
-stKindPlot <- ggplot(stData, aes(x=sex, y=kind, fill = partnerSex)) +
+stKindPlot <- ggplot(stDataTidy, aes(x=sex, y=kind, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Kindness Preferences by Sex",x="Participant Sex", y = "ST Kindness Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #physical attractiveness
-stPhysattPlot <- ggplot(stData, aes(x=sex, y=physatt, fill = partnerSex)) +
+stPhysattPlot <- ggplot(stDataTidy, aes(x=sex, y=physatt, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Physical Attractiveness Preferences by Sex",x="Participant Sex", y = "ST Physical Attractiveness Preference") +
   scale_fill_discrete(name = "Parter Sex")
 
 #resources
-stResourcesPlot <- ggplot(stData, aes(x=sex, y=resources, fill = partnerSex)) +
+stResourcesPlot <- ggplot(stDataTidy, aes(x=sex, y=resources, fill = partnerSex)) +
   geom_violin() + 
   scale_x_discrete(limits=c("0", "1")) +
   labs(title="Plot Short Term Resources Preferences by Sex",x="Participant Sex", y = "ST Resources Preference") +
@@ -352,8 +328,8 @@ ltDataK$kFitLt <- kFitLt$cluster
 clustCentersLt<-kFitLt$centers
 
 ##Look at breakdown by cluster, sex, and partner sex #0 = women, #1 = men
-clustSexLt<-table(ltDataK$sex,ltDataK$kFitLt, ltDataK$partnerSex)
-
+clustSexLt<-table(ltDataK$sex, ltDataK$kFitLt, ltDataK$partnerSex)/rowSums(table(ltDataK$sex, ltDataK$kFitLt, ltDataK$partnerSex))
+#make two sep tables based on sex and get proportions
 
 #are men and women are choosing clusters at diff rates?
 chisqSexLt<-chisq.test(table(ltDataK$sex,ltDataK$kFitLt)) #yes 
