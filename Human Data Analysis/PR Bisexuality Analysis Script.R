@@ -55,11 +55,13 @@ data$f_St_AgeLik <- data$f_st_age - data$ageLik
 
 
 ### Standardize preferences ###
+
 #phys att; kind; intel; health; resources
-
-#ideal age!
-
 data[,178:197] <- apply(data[,178:197], 2, function(x)
+  as.numeric(scale(x)))
+
+#ideal age
+data[,227:230] <- apply(data[, 227:230], 2, function(x)
   as.numeric(scale(x)))
 
 
@@ -131,22 +133,15 @@ predictDataLt$predictedValues <- predict(ltOmnibus, newdata = predictDataLt, re.
 predictPlotSexLt <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues, fill=sex))  + 
   geom_bar(stat = "identity", position=position_dodge()) + facet_wrap(~partnerSex)
 
-#plot predicted values dividing by ideal partner sex
-predictDataLt$partnerSex <- as.factor(predictDataLt$partnerSex)
-predictPlotPsexLt <- ggplot(data = predictDataLt, 
-                            aes(x=trait, y=predictedValues, fill=partnerSex)) + 
-  geom_bar(stat = "identity", position=position_dodge())
 
 ##St predict
 #use predict function
 predictDataSt$predictedValues <- predict(stOmnibus, newdata = predictDataSt, re.form = NA) 
 
 #plot predicted values splitting by sex
-predictPlotSexSt <- ggplot(data = predictDataSt, aes(x=trait, y=predictedValues, fill=sex))  + geom_bar(stat = "identity", position=position_dodge())
+predictPlotSexSt <- ggplot(data = predictDataSt, aes(x=trait, y=predictedValues, fill=sex))  + 
+  geom_bar(stat = "identity", position=position_dodge()) + facet_wrap(~partnerSex)
 
-#plot predicted values dividing by ideal partner sex
-predictDataSt$partnerSex <- as.character(predictDataSt$partnerSex) 
-predictPlotPsexSt <- ggplot(data = predictDataSt, aes(x=trait, y=predictedValues, fill=partnerSex))  + geom_bar(stat = "identity", position=position_dodge())
 
 
 
@@ -319,7 +314,7 @@ stAgePlot <- ggplot(stDataTidy, aes(x=sex, y=AgeLik, fill = partnerSex)) +
 
 
 ###Cluster analysis
-  #across all traits
+  #across all traits, excluding age 
   #men rating women; men rating men; women rating men; women rating women
 
 ##LT Prefs
@@ -327,31 +322,30 @@ stAgePlot <- ggplot(stDataTidy, aes(x=sex, y=AgeLik, fill = partnerSex)) +
 #remove NAs from dataframe 
 
 nacheckLt <- apply(ltDataTidy[,1:9], 1, function(x) sum(is.na(x))>0)
-ltDataK<- ltDataTidy[!nacheckLt,]
+ltDataK<- ltDataTidy[!nacheckLt,1:8] #excludes age also
 
 ###ipsatize traits
 
 
 ##z-score (so takes into account avg value of that trait across ppl)
-ltDataK[,4:9] <- apply(ltDataK[,4:9],2,scale)
+ltDataK[,4:8] <- apply(ltDataK[,4:8],2,scale)
 
 ##ipsatize z-scored values
 
 #adding empty columns to dataframe
-avColsLt <- c('ipHealth', 'ipIntell', 'ipKind', 'ipPhysatt', 'ipResources', 'ipAge')
+avColsLt <- c('ipHealth', 'ipIntell', 'ipKind', 'ipPhysatt', 'ipResources')
 ltDataK[ , avColsLt] <- NA
 
 
 #take means of traits for every PIN and subtract mean from indiv traits & place in new columns
 for (i in 1:nrow(ltDataK)){
-  focalPrefsLt <- ltDataK[i,4:9]
-  avPrefsLt <- rowMeans(ltDataK[ltDataK$PIN == ltDataK$PIN[i],4:9], na.rm = T)
+  focalPrefsLt <- ltDataK[i,4:8]
+  avPrefsLt <- rowMeans(ltDataK[ltDataK$PIN == ltDataK$PIN[i],4:8], na.rm = T)
   focalPrefsLt <- focalPrefsLt - avPrefsLt
-  ltDataK[i,10:15] <- focalPrefsLt
+  ltDataK[i,10:14] <- focalPrefsLt
   
 }
 
-##without age included
 
 #extract kmeans wSs
 kfitWssLt<-sapply(1:7,function(x) kmeans(ltDataK[,10:14],x)$tot.withinss)
@@ -360,7 +354,7 @@ kfitWssLt<-sapply(1:7,function(x) kmeans(ltDataK[,10:14],x)$tot.withinss)
 screePlotLt<-qplot(1:7,kfitWssLt) 
 
 ##compute differences in within ss across k for k-means clustering
-wssDiffsLt<-diff(kfitWssLt) #4 clusters -- I think?
+wssDiffsLt<-diff(kfitWssLt) 
 
 ##Add classification to the original dataframe
 
@@ -383,61 +377,24 @@ clustSexLtM <- table(ltDataK$partnerSex[ltDataK$sex == 1], ltDataK$kFitLt[ltData
   rowSums(table(ltDataK$partnerSex[ltDataK$sex == 1], ltDataK$kFitLt[ltDataK$sex == 1]))
 
 
-#are men and women are choosing clusters at diff rates?
-chisqSexLt<-chisq.test(table(ltDataK$sex,ltDataK$kFitLt)) #yes 
-
-#are participants choosing clusters at diff rates based on ideal partner sex?
-chisqPSexLt <- chisq.test(table(ltDataK$partnerSex,ltDataK$kFitLt)) #no
-
+#are men and women are choosing clusters at diff rates? 
+  #have to separate based on ideal male v female partners bc independence assumption
+chisqSexLtIdealF<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 0],ltDataK$kFitLt[ltDataK$partnerSex == 0])) #yes 
+chisqSexLtIdealM<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 1],ltDataK$kFitLt[ltDataK$partnerSex == 1])) #no
 
 
+#predicting partner sex from cluster and sex?
+logRegModelLt <- glmer(partnerSex ~ kFitLt + sex + (1|PIN), data = ltDataK, family = "binomial") 
+ 
 
 
 
-##cluster analysis with age included
-
-#extract kmeans wSs
-kfitWssLtAge<-sapply(1:7,function(x) kmeans(ltDataK[,10:15],x)$tot.withinss)
-
-#scree plot
-screePlotLtAge<-qplot(1:7,kfitWssLtAge) 
-
-##compute differences in within ss across k for k-means clustering
-wssDiffsLtAge<-diff(kfitWssLtAge) #4 clusters -- I think?
-
-##Add classification to the original dataframe
-
-kFitLtAge<-kmeans(ltDataK[,10:15],4)
-ltDataK$kFitLtAge <- kFitLtAge$cluster
-
-
-##Create vectors of preference means for each cluster 
-clustCentersLtAge<-kFitLtAge$centers
-
-##Look at breakdown by cluster, sex, and partner sex
-clustSexLtAge<-table(ltDataK$sex, ltDataK$kFitLtAge, ltDataK$partnerSex)/rowSums(table(ltDataK$sex, ltDataK$kFitLtAge, ltDataK$partnerSex))
-
-#cluster choice for female participants
-clustSexLtAgeF <- table(ltDataK$partnerSex[ltDataK$sex == 0], ltDataK$kFitLtAge[ltDataK$sex == 0])/
-  rowSums(table(ltDataK$partnerSex[ltDataK$sex == 0], ltDataK$kFitLtAge[ltDataK$sex == 0]))
-
-#cluster choice for male participants
-clustSexLtAgeM <- table(ltDataK$partnerSex[ltDataK$sex == 1], ltDataK$kFitLtAge[ltDataK$sex == 1])/
-  rowSums(table(ltDataK$partnerSex[ltDataK$sex == 1], ltDataK$kFitLtAge[ltDataK$sex == 1]))
-
-
-#are men and women are choosing clusters at diff rates?
-chisqSexLtAge<-chisq.test(table(ltDataK$sex,ltDataK$kFitLtAge)) #yes 
-
-#are participants choosing clusters at diff rates based on ideal partner sex?
-chisqPSexLtAge <- chisq.test(table(ltDataK$partnerSex,ltDataK$kFitLtAge)) #no
 
 
 
 
 ### Plotting ###
 
-##without age
 
 ##plot bar graph with each trait mean for each 4 clusters (# clusters depends on scree)
 meanTraitLt <- c(clustCentersLt[1,], clustCentersLt[2,], clustCentersLt[3,], clustCentersLt[4,])
@@ -451,50 +408,38 @@ kFitPlotLt <- ggplot(data=plottingLt, aes(x=mateTypeLt, y=meanTraitLt, fill=trai
 
 
 
-##with age 
-meanTraitLtAge <- c(clustCentersLtAge[1,], clustCentersLtAge[2,], clustCentersLtAge[3,], clustCentersLtAge[4,])
-mateTypeLtAge <-c(rep("1", 6), rep("2", 6), rep("3", 6), rep("4", 6))
-traitLtAge <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources", "age"), 4))  
-plottingLtAge <- data.frame(meanTraitLtAge, mateTypeLtAge, traitLtAge)
-kFitPlotLtAge <- ggplot(data=plottingLtAge, aes(x=mateTypeLtAge, y=meanTraitLtAge, fill=traitLtAge)) +
-  geom_bar(stat="identity", color="black", position=position_dodge())+
-  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
-  scale_fill_discrete(name = "Trait")
-
-
-
 
 ##ST Prefs
 
 #remove NAs from dataframe 
 
 nacheckSt <- apply(stDataTidy[,1:9], 1, function(x) sum(is.na(x))>0)
-stDataK<- stDataTidy[!nacheckSt,]
+stDataK<- stDataTidy[!nacheckSt,1:8]
 
 #ipsatize traits
 
 
 #z-score (so takes into account avg value of that trait across ppl)
-stDataK[,4:9] <- apply(stDataK[,4:9],2,scale)
+stDataK[,4:8] <- apply(stDataK[,4:8],2,scale)
 
 
 #adding empty columns to dataframe
-avColsSt <- c('ipHealth', 'ipIntell', 'ipKind', 'ipPhysatt', 'ipResources', 'ipAge')
+avColsSt <- c('ipHealth', 'ipIntell', 'ipKind', 'ipPhysatt', 'ipResources')
 stDataK[ , avColsSt] <- NA
 
 
 #take means of traits for every PIN and subtract mean from indiv traits & place in new columns
 for (i in 1:nrow(stDataK)){
-  focalPrefsSt <- stDataK[i,4:9]
-  avPrefsSt <- rowMeans(stDataK[stDataK$PIN == stDataK$PIN[i],4:9], na.rm = T)
+  focalPrefsSt <- stDataK[i,4:8]
+  avPrefsSt <- rowMeans(stDataK[stDataK$PIN == stDataK$PIN[i],4:8], na.rm = T)
   focalPrefsSt <- focalPrefsSt - avPrefsSt
-  stDataK[i,10:15] <- focalPrefsSt
+  stDataK[i,10:14] <- focalPrefsSt
   
 }
 
 
 
-##cluster analysis without age
+##st prefs cluster analysis 
 
 
 #extract kmeans wSs
@@ -527,72 +472,17 @@ clustSexStM <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt[stData
   rowSums(table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt[stDataK$sex == 1]))
 
 
-#are men and women are choosing clusters at diff rates?
-chisqSexSt<-chisq.test(table(stDataK$sex,stDataK$kFitSt)) #yes 
 
-#are participants choosing clusters at diff rates based on ideal partner sex?
-chisqPSexSt <- chisq.test(table(stDataK$partnerSex,stDataK$kFitSt)) #yes
-
-#chisq indiv by gender
-chisqPSexStF <- chisq.test(table(stDataK$partnerSex[stDataK$sex == 0],stDataK$kFitSt[stDataK$sex == 0]))
-  #sig
-
-chisqPSexStM <- chisq.test(table(stDataK$partnerSex[stDataK$sex == 1],stDataK$kFitSt[stDataK$sex == 1]))
-  #not sig
+#are men and women are choosing clusters at diff rates? 
+#have to separate based on ideal male v female partners bc independence assumption
+chisqSexStIdealF<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0])) #no 
+chisqSexStIdealM<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt[stDataK$partnerSex == 1])) #no
 
 
+#are participants choosing clusters at diff rates based on ideal partner sex
+#log reg predicting psex from kfit and sex?
 
-
-
-
-##cluster analysis with age
-
-
-
-#extract kmeans wSs
-kfitWssStAge<-sapply(1:7,function(x) kmeans(stDataK[,10:15],x)$tot.withinss)
-
-#scree plot
-screePlotStAge<-qplot(1:7,kfitWssStAge) 
-
-##compute differences in within ss across k for k-means clustering
-wssDiffsStAge<-diff(kfitWssStAge) #4 clusters?
-
-##Add classification to the original dataframe
-
-kFitStAge<-kmeans(stDataK[,10:15],4)
-stDataK$kFitStAge <- kFitStAge$cluster
-
-
-##Create vectors of preference means for each cluster 
-clustCentersStAge<-kFitStAge$centers
-
-##Look at breakdown by cluster, sex, and partner sex #0 = women, #1 = men
-clustSexStAge<-table(stDataK$sex,stDataK$kFitStAge, stDataK$partnerSex)
-
-#cluster choice for female participants
-clustSexStAgeF <- table(stDataK$partnerSex[stDataK$sex == 0], stDataK$kFitStAge[stDataK$sex == 0])/
-  rowSums(table(stDataK$partnerSex[stDataK$sex == 0], stDataK$kFitStAge[stDataK$sex == 0]))
-
-#cluster choice for male participants
-clustSexStAgeM <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitStAge[stDataK$sex == 1])/
-  rowSums(table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitStAge[stDataK$sex == 1]))
-
-
-#are men and women are choosing clusters at diff rates?
-chisqSexStAge<-chisq.test(table(stDataK$sex,stDataK$kFitStAge)) #yes 
-
-#are participants choosing clusters at diff rates based on ideal partner sex?
-chisqPSexStAge <- chisq.test(table(stDataK$partnerSex,stDataK$kFitStAge)) #yes
-
-#chisq indiv by gender
-chisqPSexStAgeF <- chisq.test(table(stDataK$partnerSex[stDataK$sex == 0],stDataK$kFitStAge[stDataK$sex == 0]))
-#not sig
-
-chisqPSexStAgeM <- chisq.test(table(stDataK$partnerSex[stDataK$sex == 1],stDataK$kFitStAge[stDataK$sex == 1]))
-#not sig
-
-
+logRegModelSt <- glmer(partnerSex ~ kFitSt + sex + (1|PIN), data = stDataK, family = "binomial") 
 
 
 
@@ -600,24 +490,12 @@ chisqPSexStAgeM <- chisq.test(table(stDataK$partnerSex[stDataK$sex == 1],stDataK
 
 ### Plotting ###
 
-##without age
-
 ##plot bar graph with each trait mean for each 3 clusters (# clusters depends on scree)
 meanTraitSt <- c(clustCentersSt[1,], clustCentersSt[2,], clustCentersSt[3,], clustCentersSt[4,])
 mateTypeSt <-c(rep("1", 5), rep("2", 5), rep("3", 5), rep("4", 5))
 traitSt <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources"), 4))  
 plottingSt <- data.frame(meanTraitSt, mateTypeSt, traitSt)
 kFitPlotSt <- ggplot(data=plottingSt, aes(x=mateTypeSt, y=meanTraitSt, fill=traitSt)) +
-  geom_bar(stat="identity", color="black", position=position_dodge())+
-  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
-  scale_fill_discrete(name = "Trait")
-
-##with age
-meanTraitStAge <- c(clustCentersStAge[1,], clustCentersStAge[2,], clustCentersStAge[3,], clustCentersStAge[4,])
-mateTypeStAge <-c(rep("1", 6), rep("2", 6), rep("3", 6), rep("4", 6))
-traitStAge <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources", "age"), 4))  
-plottingStAge <- data.frame(meanTraitStAge, mateTypeStAge, traitStAge)
-kFitPlotStAge <- ggplot(data=plottingStAge, aes(x=mateTypeStAge, y=meanTraitStAge, fill=traitStAge)) +
   geom_bar(stat="identity", color="black", position=position_dodge())+
   theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
   scale_fill_discrete(name = "Trait")
