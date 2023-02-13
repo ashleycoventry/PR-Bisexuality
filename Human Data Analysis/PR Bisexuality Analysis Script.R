@@ -56,9 +56,11 @@ data$f_St_AgeLik <- data$f_st_age - data$ageLik
 
 ### Standardize preferences ###
 #phys att; kind; intel; health; resources
-data[,178:197] <- scale(data[,178:197])
-#ideal age
-data[,227:230] <- scale(data[,227:230])
+
+#ideal age!
+
+data[,178:197] <- apply(data[,178:197], 2, function(x)
+  as.numeric(scale(x)))
 
 
 
@@ -126,11 +128,14 @@ predictDataSt <- predictDataSt %>%
 predictDataLt$predictedValues <- predict(ltOmnibus, newdata = predictDataLt, re.form = NA) 
 
 #plot predicted values splitting by sex
-predictPlotSexLt <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues, fill=sex))  + geom_bar(stat = "identity", position=position_dodge())
+predictPlotSexLt <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues, fill=sex))  + 
+  geom_bar(stat = "identity", position=position_dodge()) + facet_wrap(~partnerSex)
 
 #plot predicted values dividing by ideal partner sex
-predictDataLt$partnerSex <- as.character(predictDataLt$partnerSex) 
-predictPlotPsexLt <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues, fill=partnerSex))  + geom_bar(stat = "identity", position=position_dodge())
+predictDataLt$partnerSex <- as.factor(predictDataLt$partnerSex)
+predictPlotPsexLt <- ggplot(data = predictDataLt, 
+                            aes(x=trait, y=predictedValues, fill=partnerSex)) + 
+  geom_bar(stat = "identity", position=position_dodge())
 
 ##St predict
 #use predict function
