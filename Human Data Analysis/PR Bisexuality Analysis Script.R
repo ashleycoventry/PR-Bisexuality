@@ -54,16 +54,6 @@ data$f_Lt_AgeLik <- data$f_lt_age - data$ageLik
 data$f_St_AgeLik <- data$f_st_age - data$ageLik
 
 
-### Standardize preferences ###
-
-#phys att; kind; intel; health; resources
-data[,178:197] <- apply(data[,178:197], 2, function(x)
-  as.numeric(scale(x)))
-
-#ideal age
-data[,227:230] <- apply(data[, 227:230], 2, function(x)
-  as.numeric(scale(x)))
-
 
 
 ###Omnibus Analyses
@@ -84,6 +74,9 @@ ltData$sex  <- as.factor(ltData$sex)
 nacheckLt <- apply(ltData[,2:3], 1, function(x) sum(is.na(x))>0)
 ltData<- ltData[!nacheckLt,]
 
+#Standardize preferences
+ltData$value<-scale(ltData$value)
+
 #ST
 
 stData <- data[,c(167, 5, 188:197, 228, 230)]
@@ -97,6 +90,9 @@ stData$sex  <- as.factor(stData$sex)
 #make sure there are no NAs in sex or partner sex columns
 nacheckSt <- apply(stData[,2:3], 1, function(x) sum(is.na(x))>0)
 stData<- stData[!nacheckSt,]
+
+#Standardize preferencse
+stData$value<-scale(stData$value)
 
 #ombnibus test
 
