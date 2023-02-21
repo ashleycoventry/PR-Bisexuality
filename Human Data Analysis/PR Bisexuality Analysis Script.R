@@ -53,7 +53,13 @@ data$f_Lt_AgeLik <- data$f_lt_age - data$ageLik
 #female ideal ST
 data$f_St_AgeLik <- data$f_st_age - data$ageLik
 
+##add avg of other pref ratings to age 
+  #so that when prefs + age are standardized, age is centered around 0
 
+#data$m_Lt_AgeLik <- mean(c(data[,178:187],na.rm=T)) + data$m_Lt_AgeLik #(adding Lt pref avgs only)
+#data$f_Lt_AgeLik  <- mean(c(data[,178:187],na.rm=T)) + data$f_Lt_AgeLik
+#data$m_St_AgeLik <- mean(c(data[,188:197],na.rm = T)) + data$m_St_AgeLik #(adding st pref avg only)
+#data$f_St_AgeLik <- mean(c(data[,188:197],na.rm = T)) + f_St_AgeLik
 
 
 ###Omnibus Analyses
@@ -338,13 +344,13 @@ for (i in 1:nrow(ltDataK)){
   focalPrefsLt <- ltDataK[i,4:8]
   avPrefsLt <- rowMeans(ltDataK[ltDataK$PIN == ltDataK$PIN[i],4:8], na.rm = T)
   focalPrefsLt <- focalPrefsLt - avPrefsLt
-  ltDataK[i,10:14] <- focalPrefsLt
+  ltDataK[i,9:13] <- focalPrefsLt
   
 }
 
 
 #extract kmeans wSs
-kfitWssLt<-sapply(1:7,function(x) kmeans(ltDataK[,10:14],x)$tot.withinss)
+kfitWssLt<-sapply(1:7,function(x) kmeans(ltDataK[,9:13],x)$tot.withinss)
 
 #scree plot
 screePlotLt<-qplot(1:7,kfitWssLt) 
@@ -354,7 +360,7 @@ wssDiffsLt<-diff(kfitWssLt)
 
 ##Add classification to the original dataframe
 
-kFitLt<-kmeans(ltDataK[,10:14],4)
+kFitLt<-kmeans(ltDataK[,9:13],4)
 ltDataK$kFitLt <- kFitLt$cluster
 
 
@@ -379,13 +385,10 @@ chisqSexLtIdealF<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 0],ltDataK$
 chisqSexLtIdealM<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 1],ltDataK$kFitLt[ltDataK$partnerSex == 1])) #no
 
 
-#predicting partner sex from cluster and sex?
-logRegModelLt <- glmer(partnerSex ~ kFitLt + sex + (1|PIN), data = ltDataK, family = "binomial") 
+#do clusters differ by partner sex?
+ltDataK$kFitLt <-as.factor(ltDataK$kFitLt)
+logRegModelLt <- glmer(partnerSex ~ kFitLt + (1|PIN), data = ltDataK, family = "binomial") 
  
-
-
-
-
 
 
 
