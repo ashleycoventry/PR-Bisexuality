@@ -386,8 +386,8 @@ chisqSexLtIdealM<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 1],ltDataK$
 
 
 #do clusters differ by partner sex?
-ltDataK$kFitLt <-as.factor(ltDataK$kFitLt)
-logRegModelLt <- glmer(partnerSex ~ kFitLt + (1|PIN), data = ltDataK, family = "binomial") 
+#ltDataK$kFitLt <-as.factor(ltDataK$kFitLt)
+#logRegModelLt <- glmer(partnerSex ~ kFitLt + (1|PIN), data = ltDataK, family = "binomial") 
  
 
 
@@ -474,14 +474,17 @@ clustSexStM <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt[stData
 
 #are men and women are choosing clusters at diff rates? 
 #have to separate based on ideal male v female partners bc independence assumption
-chisqSexStIdealF<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0])) #no 
+chisqSexStIdealF<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0]))#no
+fisherSexStIdealF <- fisher.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0]))
+  #needed fisher bc warning with chi square
+
 chisqSexStIdealM<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt[stDataK$partnerSex == 1])) #no
 
 
 #are participants choosing clusters at diff rates based on ideal partner sex
 #log reg predicting psex from kfit and sex?
 
-logRegModelSt <- glmer(partnerSex ~ kFitSt + sex + (1|PIN), data = stDataK, family = "binomial") 
+#logRegModelSt <- glmer(partnerSex ~ kFitSt + sex + (1|PIN), data = stDataK, family = "binomial") 
 
 
 
