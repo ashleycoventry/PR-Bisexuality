@@ -56,10 +56,10 @@ data$f_St_AgeLik <- data$f_st_age - data$ageLik
 ##add avg of other pref ratings to age 
   #so that when prefs + age are standardized, age is centered around 0
 
-#data$m_Lt_AgeLik <- mean(c(data[,178:187],na.rm=T)) + data$m_Lt_AgeLik #(adding Lt pref avgs only)
-#data$f_Lt_AgeLik  <- mean(c(data[,178:187],na.rm=T)) + data$f_Lt_AgeLik
-#data$m_St_AgeLik <- mean(c(data[,188:197],na.rm = T)) + data$m_St_AgeLik #(adding st pref avg only)
-#data$f_St_AgeLik <- mean(c(data[,188:197],na.rm = T)) + f_St_AgeLik
+data$m_Lt_AgeLik <- mean(unlist(data[,178:187]),na.rm=T) + data$m_Lt_AgeLik #(adding Lt pref avgs only)
+data$f_Lt_AgeLik  <- mean(unlist(data[,178:187]),na.rm=T) + data$f_Lt_AgeLik
+data$m_St_AgeLik <- mean(unlist(data[,188:197]),na.rm = T) + data$m_St_AgeLik #(adding st pref avg only)
+data$f_St_AgeLik <- mean(unlist(data[,188:197]),na.rm = T) + data$f_St_AgeLik
 
 
 ###Omnibus Analyses
@@ -432,7 +432,7 @@ for (i in 1:nrow(stDataK)){
   focalPrefsSt <- stDataK[i,4:8]
   avPrefsSt <- rowMeans(stDataK[stDataK$PIN == stDataK$PIN[i],4:8], na.rm = T)
   focalPrefsSt <- focalPrefsSt - avPrefsSt
-  stDataK[i,10:14] <- focalPrefsSt
+  stDataK[i,9:13] <- focalPrefsSt
   
 }
 
@@ -442,7 +442,7 @@ for (i in 1:nrow(stDataK)){
 
 
 #extract kmeans wSs
-kfitWssSt<-sapply(1:7,function(x) kmeans(stDataK[,10:14],x)$tot.withinss)
+kfitWssSt<-sapply(1:7,function(x) kmeans(stDataK[,9:13],x)$tot.withinss)
 
 #scree plot
 screePlotSt<-qplot(1:7,kfitWssSt) 
@@ -452,7 +452,7 @@ wssDiffsSt<-diff(kfitWssSt) #4 clusters?
 
 ##Add classification to the original dataframe
 
-kFitSt<-kmeans(stDataK[,10:14],4)
+kFitSt<-kmeans(stDataK[,9:13],4)
 stDataK$kFitSt <- kFitSt$cluster
 
 
@@ -471,14 +471,42 @@ clustSexStM <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt[stData
   rowSums(table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt[stDataK$sex == 1]))
 
 
+###Chisq Analyses
 
-#are men and women are choosing clusters at diff rates? 
+##are men and women are choosing clusters at diff rates? 
 #have to separate based on ideal male v female partners bc independence assumption
 chisqSexStIdealF<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0]))#no
 fisherSexStIdealF <- fisher.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0]))
   #needed fisher bc warning with chi square
 
 chisqSexStIdealM<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt[stDataK$partnerSex == 1])) #no
+
+
+##chisq -- male partner cluster x female partner cluster
+
+#create separate DF with pin + cluster + partner sex
+columns <- c(1, 3, 14)
+chisqDataSt <- stDataK[,columns]
+
+#create 2 new blank columns: male cluster and female cluster
+chisqDataSt$MaleClust <- NA
+chisqDataSt$FemaleClust <- NA
+
+#add cluster to column corresponding to correct partner sex
+
+for(i in 1:nrow(chisqDataSt)){
+  if(chisqDataSt$partnerSex[i] == 1){
+    chisqDataSt$MaleClust[i] <- chisqDataSt$kFitSt[i]
+  } else {
+    chisqDataSt$FemaleClust[i] <- chisqDataSt$kFitSt[i]
+  }
+  
+}
+
+#run chisq,excluding NAs
+pSexClustChisq <- chisq.test(table(chisqDataSt$MaleClust, chisqDataSt$FemaleClust))
+
+
 
 
 #are participants choosing clusters at diff rates based on ideal partner sex
