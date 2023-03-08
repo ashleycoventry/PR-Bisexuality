@@ -75,6 +75,7 @@ ltData <- ltData %>%
 ltData$partnerSex <- ifelse(ltData$partnerSex == "m", 1, 0)
 ltData <- ltData[,c(1:3, 5:6)]
 ltData$sex  <- as.factor(ltData$sex)
+ltData$partnerSex  <- as.factor(ltData$partnerSex)
 
 #make sure there are no NAs in sex or partner sex columns
 nacheckLt <- apply(ltData[,2:3], 1, function(x) sum(is.na(x))>0)
@@ -92,6 +93,7 @@ stData <- stData %>%
 stData$partnerSex <- ifelse(stData$partnerSex == "m", 1, 0)
 stData <- stData[,c(1:3, 5:6)]
 stData$sex  <- as.factor(stData$sex)
+stData$partnerSex  <- as.factor(stData$partnerSex)
 
 #make sure there are no NAs in sex or partner sex columns
 nacheckSt <- apply(stData[,2:3], 1, function(x) sum(is.na(x))>0)
@@ -161,7 +163,7 @@ ltHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
 
 #kindness
 ltKindMain <- lmer(kind  ~ sex + partnerSex + (1|PIN),
-                   data = ltDataTidy) #sig main effect of sex
+                   data = ltDataTidy) #sig main effect of sex and psex
 
 
 #physical attractiveness
@@ -170,11 +172,11 @@ ltPhysattMain <- lmer(physatt  ~ sex + partnerSex + (1|PIN),
 
 #intell
 ltIntellMain <- lmer(intell  ~ sex + partnerSex + (1|PIN),
-                     data = ltDataTidy) #no sig effects 
+                     data = ltDataTidy) #sig effect of psex
 
 #resources
 ltResourceMain <- lmer(resources  ~ sex + partnerSex + (1|PIN),
-                       data = ltDataTidy) #no sig effects
+                       data = ltDataTidy) #sig main effect of partner sex
 
 #ideal age
 ltAgeMain <- lmer(AgeLik ~ sex + partnerSex + (1|PIN), 
@@ -189,7 +191,7 @@ stDataTidy <- stData %>%
 
 #kindness
 stKindMain <- lmer(kind ~ sex + partnerSex + (1|PIN), 
-                   data = stDataTidy) #sig main effect of sex
+                   data = stDataTidy) #sig main effect of sex and partner sex
 
 #physical attractiveness
 stPhysattMain <- lmer(physatt ~ sex + partnerSex + (1|PIN), 
@@ -367,7 +369,7 @@ ltDataK$kFitLt <- kFitLt$cluster
 ##Create vectors of preference means for each cluster 
 clustCentersLt<-kFitLt$centers
 
-##Look at breakdown by cluster, sex, and partner sex
+##Look at breakdown by cluster, sex, and partner sex (divider is the last listed thing)
 clustSexLt<-table(ltDataK$sex, ltDataK$kFitLt, ltDataK$partnerSex)/rowSums(table(ltDataK$sex, ltDataK$kFitLt, ltDataK$partnerSex))
 
 #cluster breakdown of women
@@ -503,7 +505,6 @@ clustSexStM <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt[stData
 
 ##are men and women are choosing clusters at diff rates? 
 #have to separate based on ideal male v female partners bc independence assumption
-chisqSexStIdealF<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0]))#no
 fisherSexStIdealF <- fisher.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0]))
   #needed fisher bc warning with chi square
 
