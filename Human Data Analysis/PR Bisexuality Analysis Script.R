@@ -385,10 +385,38 @@ chisqSexLtIdealF<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 0],ltDataK$
 chisqSexLtIdealM<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 1],ltDataK$kFitLt[ltDataK$partnerSex == 1])) #no
 
 
-#do clusters differ by partner sex?
-#ltDataK$kFitLt <-as.factor(ltDataK$kFitLt)
-#logRegModelLt <- glmer(partnerSex ~ kFitLt + (1|PIN), data = ltDataK, family = "binomial") 
- 
+##chisq -- male partner cluster x female partner cluster
+
+#create separate DF with pin + cluster + partner sex
+columns <- c(1, 3, 14)
+chisqDataLt <- ltDataK[,columns]
+
+#create 2 new blank columns: male cluster and female cluster
+chisqDataLt$MaleClust <- NA
+chisqDataLt$FemaleClust <- NA
+
+#add cluster to column corresponding to correct partner sex
+
+for(i in 1:nrow(chisqDataLt)){
+  if(chisqDataLt$partnerSex[i] == 1){
+    chisqDataLt$MaleClust[i] <- chisqDataLt$kFitLt[i]
+  } else {
+    chisqDataLt$FemaleClust[i] <- chisqDataLt$kFitLt[i]
+  }
+  
+}
+
+#make df wide so each ID is only one row
+chisqDataLt <- pivot_wider(chisqDataLt, id_cols = PIN, names_from = partnerSex, values_from = c("kFitLt", "MaleClust", "FemaleClust"))
+#subset so only relevant columns are kept
+chisqDataLt <- subset(chisqDataLt, select = c(PIN, MaleClust_1, FemaleClust_0))
+#rename columns
+names(chisqDataLt) <- c("PIN", "maleClust", "femaleClust")
+
+#run chisq,excluding NAs
+pSexClustChisqLt <- chisq.test(table(chisqDataLt$maleClust, chisqDataLt$femaleClust)) #sig
+  
+
 
 
 
@@ -503,17 +531,18 @@ for(i in 1:nrow(chisqDataSt)){
   
 }
 
+#make df wide so each ID is only one row
+chisqDataSt <- pivot_wider(chisqDataSt, id_cols = PIN, names_from = partnerSex, values_from = c("kFitSt", "MaleClust", "FemaleClust"))
+#subset so only relevant columns are kept
+chisqDataSt <- subset(chisqDataSt, select = c(PIN, MaleClust_1, FemaleClust_0))
+#rename columns
+names(chisqDataSt) <- c("PIN", "maleClust", "femaleClust")
+
 #run chisq,excluding NAs
-pSexClustChisq <- chisq.test(table(chisqDataSt$MaleClust, chisqDataSt$FemaleClust))
-
-
-
-
-#are participants choosing clusters at diff rates based on ideal partner sex
-#log reg predicting psex from kfit and sex?
-
-#logRegModelSt <- glmer(partnerSex ~ kFitSt + sex + (1|PIN), data = stDataK, family = "binomial") 
-
+pSexClustChisqSt <- chisq.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust))
+  #warning about approximation (bc some cells have 0) so tried fisher test below: 
+pSexClustFisherSt <- fisher.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust))
+  #error about size of workspace. no solution working. 
 
 
 
