@@ -135,7 +135,17 @@ predictDataLt$predictedValues <- predict(ltOmnibus, newdata = predictDataLt, re.
 
 #plot predicted values splitting by sex
 predictPlotSexLt <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues, fill=sex))  + 
-  geom_bar(stat = "identity", position=position_dodge()) + facet_wrap(~partnerSex)
+  geom_bar(stat = "identity", position=position_dodge())+ facet_wrap(~partnerSex) +
+  scale_fill_discrete(labels=c('Female Participants', 'Male Participants')) +
+  labs(y= "Predicted Trait Values", x = "Trait")
+
+#ggsave("predictPlotLt.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+predictPlotSexLt2 <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues, fill=sex))+  
+  geom_bar(stat = "identity", position=position_dodge())+ 
+  geom_bar_pattern(stat = "identity", aes(pattern = partnerSex), position = position_dodge()) +
+  scale_fill_discrete(labels=c('Female Participants', 'Male Participants')) +
+  labs(y= "Predicted Trait Values", x = "Trait")
 
 
 ##St predict
@@ -144,8 +154,11 @@ predictDataSt$predictedValues <- predict(stOmnibus, newdata = predictDataSt, re.
 
 #plot predicted values splitting by sex
 predictPlotSexSt <- ggplot(data = predictDataSt, aes(x=trait, y=predictedValues, fill=sex))  + 
-  geom_bar(stat = "identity", position=position_dodge()) + facet_wrap(~partnerSex)
+  geom_bar(stat = "identity", position=position_dodge()) + facet_wrap(~partnerSex) +
+  scale_fill_discrete(labels=c('Female Participants', 'Male Participants')) +
+  labs(y= "Predicted Trait Values", x = "Trait")
 
+#ggsave("predictPlotSt.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -158,28 +171,28 @@ ltDataTidy <- ltData %>%
 
 
 #health
-ltHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
+ltHealthMain <- lmer(health  ~ sex*partnerSex + (1|PIN),
                      data = ltDataTidy) #not sig
 
 #kindness
-ltKindMain <- lmer(kind  ~ sex + partnerSex + (1|PIN),
-                   data = ltDataTidy) #sig main effect of sex and psex
+ltKindMain <- lmer(kind  ~ sex*partnerSex + (1|PIN),
+                   data = ltDataTidy) #sig main effect of sex and psex, no sig interaction
 
 
 #physical attractiveness
-ltPhysattMain <- lmer(physatt  ~ sex + partnerSex + (1|PIN),
+ltPhysattMain <- lmer(physatt  ~ sex*partnerSex + (1|PIN),
                       data = ltDataTidy) #sig main effect of sex 
 
 #intell
-ltIntellMain <- lmer(intell  ~ sex + partnerSex + (1|PIN),
+ltIntellMain <- lmer(intell  ~ sex*partnerSex + (1|PIN),
                      data = ltDataTidy) #sig effect of psex
 
 #resources
-ltResourceMain <- lmer(resources  ~ sex + partnerSex + (1|PIN),
+ltResourceMain <- lmer(resources  ~ sex*partnerSex + (1|PIN),
                        data = ltDataTidy) #sig main effect of partner sex
 
 #ideal age
-ltAgeMain <- lmer(AgeLik ~ sex + partnerSex + (1|PIN), 
+ltAgeMain <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
                   data = ltDataTidy) #effect of partner sex and sex 
 
 ### ST prefs main effects ###
@@ -190,30 +203,31 @@ stDataTidy <- stData %>%
               values_from = value)
 
 #kindness
-stKindMain <- lmer(kind ~ sex + partnerSex + (1|PIN), 
-                   data = stDataTidy) #sig main effect of sex and partner sex
+stKindMain <- lmer(kind ~ sex*partnerSex + (1|PIN), 
+                   data = stDataTidy) 
+                #sig main effect of sex and partner sex, and sig interaction
 
 #physical attractiveness
-stPhysattMain <- lmer(physatt ~ sex + partnerSex + (1|PIN), 
-                   data = stDataTidy) #no sig effects 
+stPhysattMain <- lmer(physatt ~ sex*partnerSex + (1|PIN), 
+                   data = stDataTidy) #sig main effect of psex 
 
 #health
-stHealthMain <- lmer(health  ~ sex + partnerSex + (1|PIN),
+stHealthMain <- lmer(health  ~ sex*partnerSex + (1|PIN),
                      data = stDataTidy) #no sig effects
 
 #intelligence
 
-stIntellMain <- lmer(intell  ~ sex + partnerSex + (1|PIN),
+stIntellMain <- lmer(intell  ~ sex*partnerSex + (1|PIN),
                      data = stDataTidy) #sig main effect of sex, not partner sex
 
 #resources
-stResourceMain <- lmer(resources  ~ sex + partnerSex + (1|PIN),
-                       data = stDataTidy) #no sig effects after standardizing
+stResourceMain <- lmer(resources  ~ sex*partnerSex + (1|PIN),
+                       data = stDataTidy) #sig effect of psex, no interaction
 
 
 #age
-stAgeMain <- lmer(AgeLik ~ sex + partnerSex + (1|PIN), 
-                  data = stDataTidy) #sig main effect of sex
+stAgeMain <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
+                  data = stDataTidy) #sig main effect of sex and psex, no interaction
 
 
 
@@ -435,6 +449,49 @@ kFitPlotLt <- ggplot(data=plottingLt, aes(x=mateTypeLt, y=meanTraitLt, fill=trai
   theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
   scale_fill_discrete(name = "Trait")
 
+#Multipanel figure
+
+
+#cluster 1 (title will change based on clusters)
+meanTrait1Lt <- clustCentersLt[1,]
+trait1Lt <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting1Lt <- data.frame(meanTrait1, trait1)
+plot1Lt <- ggplot(data=plotting1Lt, aes(x=trait1Lt, y=meanTrait1Lt)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-0.7,0.7) +
+  ggtitle("Cluster 1: Rich and Kind") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+#cluster 2 
+meanTrait2Lt <- clustCentersLt[2,]
+trait2Lt <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting2Lt <- data.frame(meanTrait2, trait2)
+plot2Lt <- ggplot(data=plotting2Lt, aes(x=trait2Lt, y=meanTrait2Lt)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.7,0.7) +
+  ggtitle("Cluster 2: Kind and Smart") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+#cluster 3 
+meanTrait3Lt <- clustCentersLt[3,]
+trait3Lt <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting3Lt <- data.frame(meanTrait3, trait3)
+plot3Lt <- ggplot(data=plotting3Lt, aes(x=trait3Lt, y=meanTrait3Lt)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.7,0.7) +
+  ggtitle("Cluster 3: Hot and Healthy") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+#cluster 4
+meanTrait4Lt <- clustCentersLt[4,]
+trait4Lt <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting4Lt <- data.frame(meanTrait4, trait4)
+plot4Lt <- ggplot(data=plotting4Lt, aes(x=trait4Lt, y=meanTrait4Lt)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "yellow")+ 
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.7,0.7) +
+  ggtitle("Cluster 4: Smart") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+
+
+#combine clusters into one graph
+PRpanelPlotLt<-ggarrange(plot1Lt,plot2Lt,plot3Lt, plot4Lt,labels=c("A","B","C", "D"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
 
 
 
@@ -559,4 +616,49 @@ kFitPlotSt <- ggplot(data=plottingSt, aes(x=mateTypeSt, y=meanTraitSt, fill=trai
   geom_bar(stat="identity", color="black", position=position_dodge())+
   theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
   scale_fill_discrete(name = "Trait")
+
+
+#Multipanel figure
+
+
+#cluster 1 (title will change based on clusters)
+meanTrait1St <- clustCentersSt[1,]
+trait1St <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting1St <- data.frame(meanTrait1St, trait1St)
+plot1St <- ggplot(data=plotting1St, aes(x=trait1St, y=meanTrait1St)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-1.6,1.6) +
+  ggtitle("Cluster 1: Hot and Healthy") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+#cluster 2 
+meanTrait2St <- clustCentersSt[2,]
+trait2St <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting2St <- data.frame(meanTrait2St, trait2St)
+plot2St <- ggplot(data=plotting2St, aes(x=trait2St, y=meanTrait2St)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
+  ggtitle("Cluster 2: Smart and Hot") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+#cluster 3 
+meanTrait3St <- clustCentersSt[3,]
+trait3St <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting3St <- data.frame(meanTrait3St, trait3St)
+plot3St <- ggplot(data=plotting3St, aes(x=trait3St, y=meanTrait3St)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
+  ggtitle("Cluster 3: Rich and Kind") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+#cluster 4
+meanTrait4St <- clustCentersSt[4,]
+trait4St <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting4St <- data.frame(meanTrait4St, trait4St)
+plot4St <- ggplot(data=plotting4St, aes(x=trait4St, y=meanTrait4St)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "yellow")+ 
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
+  ggtitle("Cluster 4:Rich and Healthy") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+
+
+#combine clusters into one graph
+PRpanelPlotSt<-ggarrange(plot1St,plot2St,plot3St, plot4St,labels=c("A","B","C", "D"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
 
