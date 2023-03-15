@@ -8,6 +8,7 @@ library(tidyverse)
 library(ggplot2)
 library(reshape2)
 library(tidyr)
+library(ggpubr) #for panel plot
 
 
 ### set seed ###
@@ -455,7 +456,7 @@ kFitPlotLt <- ggplot(data=plottingLt, aes(x=mateTypeLt, y=meanTraitLt, fill=trai
 #cluster 1 (title will change based on clusters)
 meanTrait1Lt <- clustCentersLt[1,]
 trait1Lt <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting1Lt <- data.frame(meanTrait1, trait1)
+plotting1Lt <- data.frame(meanTrait1Lt, trait1Lt)
 plot1Lt <- ggplot(data=plotting1Lt, aes(x=trait1Lt, y=meanTrait1Lt)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-0.7,0.7) +
@@ -464,7 +465,7 @@ plot1Lt <- ggplot(data=plotting1Lt, aes(x=trait1Lt, y=meanTrait1Lt)) +
 #cluster 2 
 meanTrait2Lt <- clustCentersLt[2,]
 trait2Lt <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting2Lt <- data.frame(meanTrait2, trait2)
+plotting2Lt <- data.frame(meanTrait2Lt, trait2Lt)
 plot2Lt <- ggplot(data=plotting2Lt, aes(x=trait2Lt, y=meanTrait2Lt)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.7,0.7) +
@@ -473,7 +474,7 @@ plot2Lt <- ggplot(data=plotting2Lt, aes(x=trait2Lt, y=meanTrait2Lt)) +
 #cluster 3 
 meanTrait3Lt <- clustCentersLt[3,]
 trait3Lt <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting3Lt <- data.frame(meanTrait3, trait3)
+plotting3Lt <- data.frame(meanTrait3Lt, trait3Lt)
 plot3Lt <- ggplot(data=plotting3Lt, aes(x=trait3Lt, y=meanTrait3Lt)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.7,0.7) +
@@ -482,7 +483,7 @@ plot3Lt <- ggplot(data=plotting3Lt, aes(x=trait3Lt, y=meanTrait3Lt)) +
 #cluster 4
 meanTrait4Lt <- clustCentersLt[4,]
 trait4Lt <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting4Lt <- data.frame(meanTrait4, trait4)
+plotting4Lt <- data.frame(meanTrait4Lt, trait4Lt)
 plot4Lt <- ggplot(data=plotting4Lt, aes(x=trait4Lt, y=meanTrait4Lt)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "yellow")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.7,0.7) +
