@@ -599,7 +599,8 @@ names(chisqDataSt) <- c("PIN", "maleClust", "femaleClust")
 #run chisq,excluding NAs
 pSexClustChisqSt <- chisq.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust))
   #warning about approximation (bc some cells have 0) so tried fisher test below: 
-pSexClustFisherSt <- fisher.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust))
+pSexClustFisherSt <- fisher.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust),
+                                 simulate.p.value = T)
   #error about size of workspace. no solution working. 
 
 
