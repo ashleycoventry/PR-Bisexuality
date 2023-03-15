@@ -9,6 +9,7 @@ library(ggplot2)
 library(reshape2)
 library(tidyr)
 library(ggpubr) #for panel plot
+library(ggpattern)
 
 
 ### set seed ###
@@ -142,9 +143,9 @@ predictPlotSexLt <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues,
 
 #ggsave("predictPlotLt.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
-predictPlotSexLt2 <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues, fill=sex))+  
+predictPlotSexLt2 <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues, fill=sex, pattern = partnerSex))+  
   geom_bar(stat = "identity", position=position_dodge())+ 
-  geom_bar_pattern(stat = "identity", aes(pattern = partnerSex), position = position_dodge()) +
+  geom_bar_pattern(stat = "identity", position = position_dodge()) +
   scale_fill_discrete(labels=c('Female Participants', 'Male Participants')) +
   labs(y= "Predicted Trait Values", x = "Trait")
 
@@ -602,7 +603,7 @@ pSexClustChisqSt <- chisq.test(table(chisqDataSt$maleClust, chisqDataSt$femaleCl
   #warning about approximation (bc some cells have 0) so tried fisher test below: 
 pSexClustFisherSt <- fisher.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust),
                                  simulate.p.value = T)
-  #error about size of workspace. no solution working. 
+  
 
 
 
