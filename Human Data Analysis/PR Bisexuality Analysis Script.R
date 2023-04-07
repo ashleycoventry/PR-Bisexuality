@@ -598,9 +598,7 @@ chisqDataSt <- subset(chisqDataSt, select = c(PIN, MaleClust_1, FemaleClust_0))
 #rename columns
 names(chisqDataSt) <- c("PIN", "maleClust", "femaleClust")
 
-#run chisq,excluding NAs
-pSexClustChisqSt <- chisq.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust))
-  #warning about approximation (bc some cells have 0) so tried fisher test below: 
+#run fisher instead of chisq bc some cells have 0
 pSexClustFisherSt <- fisher.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust),
                                  simulate.p.value = T)
   
