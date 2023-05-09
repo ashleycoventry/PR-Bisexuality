@@ -164,7 +164,7 @@ predictPlotSexSt <- ggplot(data = predictDataSt, aes(x=trait, y=predictedValues,
 
 
 
-###LT prefs (using nested anova to look for main effects)
+###LT prefs (using nested anova to look for interaction effects)
 
 #tidy format for analyses
 ltDataTidy <- ltData %>%
@@ -178,24 +178,23 @@ ltHealthMain <- lmer(health  ~ sex*partnerSex + (1|PIN),
 
 #kindness
 ltKindMain <- lmer(kind  ~ sex*partnerSex + (1|PIN),
-                   data = ltDataTidy) #sig main effect of sex and psex, no sig interaction
+                   data = ltDataTidy) #no interaction
 
 
 #physical attractiveness
 ltPhysattMain <- lmer(physatt  ~ sex*partnerSex + (1|PIN),
-                      data = ltDataTidy) #sig main effect of sex 
+                      data = ltDataTidy) #not sig
 
 #intell
 ltIntellMain <- lmer(intell  ~ sex*partnerSex + (1|PIN),
-                     data = ltDataTidy) #sig effect of psex
+                     data = ltDataTidy) #not sig
 
 #resources
 ltResourceMain <- lmer(resources  ~ sex*partnerSex + (1|PIN),
-                       data = ltDataTidy) #sig main effect of partner sex
-
+                       data = ltDataTidy) #not sig
 #ideal age
 ltAgeMain <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
-                  data = ltDataTidy) #effect of partner sex and sex 
+                  data = ltDataTidy) #not sig 
 
 ### ST prefs main effects ###
 
@@ -207,29 +206,29 @@ stDataTidy <- stData %>%
 #kindness
 stKindMain <- lmer(kind ~ sex*partnerSex + (1|PIN), 
                    data = stDataTidy) 
-                #sig main effect of sex and partner sex, and sig interaction
+                #sig interaction
 
 #physical attractiveness
 stPhysattMain <- lmer(physatt ~ sex*partnerSex + (1|PIN), 
-                   data = stDataTidy) #sig main effect of psex 
+                   data = stDataTidy) 
 
 #health
 stHealthMain <- lmer(health  ~ sex*partnerSex + (1|PIN),
-                     data = stDataTidy) #no sig effects
+                     data = stDataTidy)
 
 #intelligence
 
 stIntellMain <- lmer(intell  ~ sex*partnerSex + (1|PIN),
-                     data = stDataTidy) #sig main effect of sex, not partner sex
+                     data = stDataTidy) 
 
 #resources
 stResourceMain <- lmer(resources  ~ sex*partnerSex + (1|PIN),
-                       data = stDataTidy) #sig effect of psex, no interaction
+                       data = stDataTidy) 
 
 
 #age
 stAgeMain <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
-                  data = stDataTidy) #sig main effect of sex and psex, no interaction
+                  data = stDataTidy) 
 
 
 
