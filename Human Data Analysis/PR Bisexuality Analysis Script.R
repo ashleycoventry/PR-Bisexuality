@@ -177,8 +177,8 @@ ltHealthInt <- lmer(health  ~ sex*partnerSex + (1|PIN),
                      data = ltDataTidy) #not sig
 
 ltHealthMain <- lmer(health  ~ sex+partnerSex + (1|PIN),
-                     data = ltDataTidy)
-#kindness
+                     data = ltDataTidy) #not sig
+#kindness 
 ltKindInt <- lmer(kind  ~ sex*partnerSex + (1|PIN),
                    data = ltDataTidy) #no interaction
 
@@ -493,7 +493,7 @@ plotting1Lt <- data.frame(meanTrait1Lt, trait1Lt)
 plot1Lt <- ggplot(data=plotting1Lt, aes(x=trait1Lt, y=meanTrait1Lt)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-0.7,0.7) +
-  ggtitle("Cluster 1: Rich and Kind") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 2 
 meanTrait2Lt <- clustCentersLt[2,]
@@ -502,7 +502,7 @@ plotting2Lt <- data.frame(meanTrait2Lt, trait2Lt)
 plot2Lt <- ggplot(data=plotting2Lt, aes(x=trait2Lt, y=meanTrait2Lt)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.7,0.7) +
-  ggtitle("Cluster 2: Kind and Smart") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 3 
 meanTrait3Lt <- clustCentersLt[3,]
@@ -511,7 +511,7 @@ plotting3Lt <- data.frame(meanTrait3Lt, trait3Lt)
 plot3Lt <- ggplot(data=plotting3Lt, aes(x=trait3Lt, y=meanTrait3Lt)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.7,0.7) +
-  ggtitle("Cluster 3: Hot and Healthy") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 4
 meanTrait4Lt <- clustCentersLt[4,]
@@ -520,7 +520,7 @@ plotting4Lt <- data.frame(meanTrait4Lt, trait4Lt)
 plot4Lt <- ggplot(data=plotting4Lt, aes(x=trait4Lt, y=meanTrait4Lt)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "yellow")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.7,0.7) +
-  ggtitle("Cluster 4: Smart") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 
 
@@ -581,7 +581,7 @@ stDataK$kFitSt <- kFitSt$cluster
 clustCentersSt<-kFitSt$centers
 
 ##Look at breakdown by cluster, sex, and partner sex #0 = women, #1 = men
-clustSexSt<-table(stDataK$sex,stDataK$kFitSt, stDataK$partnerSex)
+clustSexSt<-table(stDataK$sex,stDataK$kFitSt, stDataK$partnerSex)/rowSums(table(stDataK$sex, stDataK$kFitSt, stDataK$partnerSex))
 
 #cluster choice for female participants
 clustSexStF <- table(stDataK$partnerSex[stDataK$sex == 0], stDataK$kFitSt[stDataK$sex == 0])/
@@ -661,7 +661,7 @@ plotting1St <- data.frame(meanTrait1St, trait1St)
 plot1St <- ggplot(data=plotting1St, aes(x=trait1St, y=meanTrait1St)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-1.6,1.6) +
-  ggtitle("Cluster 1: Hot and Healthy") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 2 
 meanTrait2St <- clustCentersSt[2,]
@@ -670,7 +670,7 @@ plotting2St <- data.frame(meanTrait2St, trait2St)
 plot2St <- ggplot(data=plotting2St, aes(x=trait2St, y=meanTrait2St)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
-  ggtitle("Cluster 2: Smart and Hot") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 3 
 meanTrait3St <- clustCentersSt[3,]
@@ -679,7 +679,7 @@ plotting3St <- data.frame(meanTrait3St, trait3St)
 plot3St <- ggplot(data=plotting3St, aes(x=trait3St, y=meanTrait3St)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
-  ggtitle("Cluster 3: Rich and Kind") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 4
 meanTrait4St <- clustCentersSt[4,]
@@ -688,7 +688,7 @@ plotting4St <- data.frame(meanTrait4St, trait4St)
 plot4St <- ggplot(data=plotting4St, aes(x=trait4St, y=meanTrait4St)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "yellow")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
-  ggtitle("Cluster 4:Rich and Healthy") +theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 
 
