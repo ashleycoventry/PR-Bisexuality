@@ -160,6 +160,12 @@ predictPlotSexSt <- ggplot(data = predictDataSt, aes(x=trait, y=predictedValues,
   scale_fill_discrete(labels=c('Female Participants', 'Male Participants')) +
   labs(y= "Predicted Trait Values", x = "Trait")
 
+predictPlotSexSt2 <- ggplot(data = predictDataSt, aes(x=trait, y=predictedValues, fill=sex, pattern = partnerSex))+  
+  geom_bar(stat = "identity", position=position_dodge())+ 
+  geom_bar_pattern(stat = "identity", position = position_dodge()) +
+  scale_fill_discrete(labels=c('Female Participants', 'Male Participants')) +
+  labs(y= "Predicted Trait Values", x = "Trait")
+
 #ggsave("predictPlotSt.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
@@ -432,7 +438,7 @@ clustSexLtM <- table(ltDataK$partnerSex[ltDataK$sex == 1], ltDataK$kFitLt[ltData
 #are men and women are choosing clusters at diff rates? 
   #have to separate based on ideal male v female partners bc independence assumption
 chisqSexLtIdealF<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 0],ltDataK$kFitLt[ltDataK$partnerSex == 0])) #yes 
-chisqSexLtIdealM<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 1],ltDataK$kFitLt[ltDataK$partnerSex == 1])) #no
+chisqSexLtIdealM<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 1],ltDataK$kFitLt[ltDataK$partnerSex == 1])) #yes
 
 
 ##chisq -- male partner cluster x female partner cluster
