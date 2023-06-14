@@ -58,11 +58,12 @@ data$f_St_AgeLik <- data$f_st_age - data$ageLik
 
 ##add avg of other pref ratings to age 
   #so that when prefs + age are standardized, age is centered around 0
+#hashtagged out bc we currently aren't standardizing
 
-data$m_Lt_AgeLik <- mean(unlist(data[,178:187]),na.rm=T) + data$m_Lt_AgeLik #(adding Lt pref avgs only)
-data$f_Lt_AgeLik  <- mean(unlist(data[,178:187]),na.rm=T) + data$f_Lt_AgeLik
-data$m_St_AgeLik <- mean(unlist(data[,188:197]),na.rm = T) + data$m_St_AgeLik #(adding st pref avg only)
-data$f_St_AgeLik <- mean(unlist(data[,188:197]),na.rm = T) + data$f_St_AgeLik
+#data$m_Lt_AgeLik <- mean(unlist(data[,178:187]),na.rm=T) + data$m_Lt_AgeLik #(adding Lt pref avgs only)
+#data$f_Lt_AgeLik  <- mean(unlist(data[,178:187]),na.rm=T) + data$f_Lt_AgeLik
+#data$m_St_AgeLik <- mean(unlist(data[,188:197]),na.rm = T) + data$m_St_AgeLik #(adding st pref avg only)
+#data$f_St_AgeLik <- mean(unlist(data[,188:197]),na.rm = T) + data$f_St_AgeLik
 
 
 ###Omnibus Analyses
