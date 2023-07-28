@@ -211,7 +211,7 @@ ltIntellInt <- lmer(intell  ~ sex*partnerSex + (1|PIN),
                      data = ltDataTidy) #not sig
 
 ltIntellMain <- lmer(intell  ~ sex+partnerSex + (1|PIN),
-                    data = ltDataTidy) #sig effect of sex
+                    data = ltDataTidy) #sig effect of psex
 
 #resources
 ltResourceInt <- lmer(resources  ~ sex*partnerSex + (1|PIN),
@@ -238,6 +238,12 @@ stDataTidy <- stData %>%
 stKindInt <- lmer(kind ~ sex*partnerSex + (1|PIN), 
                    data = stDataTidy) 
                 #sig interaction
+
+  #plot of interaction to visualize
+#library(interactions)
+#cat_plot(stKindInt, pred = partnerSex, modx = sex, geom = "line", point.shape = TRUE)
+#cat_plot(stKindInt, pred = sex, modx = partnerSex, geom = "line", point.shape = TRUE)
+
 
 #physical attractiveness
 stPhysattInt <- lmer(physatt ~ sex*partnerSex + (1|PIN), 
@@ -730,7 +736,7 @@ plot4Lt <- ggplot(data=plotting4Lt, aes(x=trait4Lt, y=meanTrait4Lt)) +
 
 
 #combine clusters into one graph
-PRpanelPlotLt<-ggarrange(plot1Lt,plot2Lt,plot3Lt, plot4Lt,labels=c("A","B","C", "D"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
+PRpanelPlotLt<-ggarrange(plot1Lt,plot2Lt,plot3Lt, plot4Lt,labels=c("Wealthy & Kind","Kind & Smart","Attractive & Healthy", "Smart"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
 
 
 
@@ -1138,6 +1144,6 @@ plot3St3 <- ggplot(data=plotting3St3, aes(x=trait3St3, y=meanTrait3St3)) +
 
 
 #combine clusters into one graph
-PRpanelPlotSt3<-ggarrange(plot1St3,plot2St3,plot3St3,labels=c("A","B","C"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
+PRpanelPlotSt3<-ggarrange(plot1St3,plot2St3,plot3St3,labels=c("Kind & Wealthy","Well-Rounded","Attractive & Healthy"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
 
 
