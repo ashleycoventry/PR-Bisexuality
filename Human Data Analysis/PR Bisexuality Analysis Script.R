@@ -1,5 +1,5 @@
 #####Project Rainbow Analysis Script -- Bisexual Preferences#####
-####### Ashley Coventry, Katy Walter, Ben Gelbart, Tamsin German, & Dan Conroy-Beam ########
+####### Ashley Coventry, Katy Walter, Ben Gelbart, Tamsin German, & Dan Conroy-Beam #######
 
 ###load packages###
 library(lmerTest)
