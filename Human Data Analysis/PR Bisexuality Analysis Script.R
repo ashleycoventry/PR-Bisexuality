@@ -407,7 +407,7 @@ ltDataFemalePartner <- subset(ltData, ltData$partnerSex == 0)
 
 ltRidgeplot <- ggplot(ltData, aes(x = value, y = trait, fill = group)) +
   geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("0" = "darkblue", "1" = "yellow", "2" ="lightblue", "3" = "lightyellow"), 
+  scale_fill_manual(values = c("0" = "darkblue", "1" = "orangered", "2" ="lightblue", "3" = "orange"), 
                     labels = c("Male Participant/Male Target", "Male Participant/Female Target", "Female Participant/Male Target", "Female Participant/Female Target")) +
   labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
   scale_y_discrete(labels = c("Age Difference", "Health", "Intelligence", "Kindness", "Attractiveness", "Resources"))+
@@ -427,29 +427,37 @@ ltRidgeplotMalePartners <- ggplot(ltDataMalePartner, aes(x = value, y = trait, f
   labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
   scale_y_discrete(labels = c("Age Difference", "Health", "Intelligence", "Kindness", "Attractiveness", "Resources"))+
   theme_ridges()+
+  ggtitle("Preferences for Ideal Female Partners") +
   theme(
-    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
-    axis.title.y = element_text(hjust = 0.5)) +
-  ggtitle("Preferences for Ideal Male Partners")
+    axis.title.x = element_text(size = 18, hjust = 0.5),  # Increase x-axis title size
+    axis.title.y = element_text(size = 18, hjust = 0.5),  # Increase y-axis title size
+    axis.text.x = element_text(size = 16),  # Increase x-axis label size
+    axis.text.y = element_text(size = 16),  # Increase y-axis label size
+    plot.title = element_text(size = 22),
+    legend.title = element_text(size = 18))   # Increase plot title size
 
 #only female partners
 ltRidgeplotFemalePartners <- ggplot(ltDataFemalePartner, aes(x = value, y = trait, fill = group)) +
   geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("1" = "yellow", "3" = "lightyellow"), 
+  scale_fill_manual(values = c("1" = "orangered", "3" = "orange"), 
                     labels = c("Male Participant/Female Target", "Female Participant/Female Target")) +
   labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
   scale_y_discrete(labels = c("Age Difference", "Health", "Intelligence", "Kindness", "Attractiveness", "Resources"))+
   theme_ridges()+
+  ggtitle("Preferences for Ideal Female Partners") +
   theme(
-    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
-    axis.title.y = element_text(hjust = 0.5)) +
-  ggtitle("Preferences for Ideal Female Partners")
+      axis.title.x = element_text(size = 18, hjust = 0.5),  # Increase x-axis title size
+      axis.title.y = element_text(size = 18, hjust = 0.5),  # Increase y-axis title size
+      axis.text.x = element_text(size = 16),  # Increase x-axis label size
+      axis.text.y = element_text(size = 16),  # Increase y-axis label size
+      plot.title = element_text(size = 22), 
+      legend.title = element_text(size = 18))   # Increase plot title size
+
 
 #panel plot with both targets side by side
-ridgelinePanelPlotLt<-ggarrange(ltRidgeplotMalePartners, ltRidgeplotFemalePartners, labels=c("Male Targets","Female Targets"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
+ridgelinePanelPlotLt<-ggarrange(ltRidgeplotFemalePartners, ltRidgeplotMalePartners, nrow=2, ncol=1)
 
-#ggsave("ridgePanelPlotLt.jpeg", plot=last_plot(), width=700, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
+#ggsave("ridgePanelPlotLt.jpeg", plot=last_plot(), width=400, height=650, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -478,7 +486,7 @@ stDataFemalePartner <- subset(stData, stData$partnerSex == 0)
 
 stRidgeplot <- ggplot(stData, aes(x = value, y = trait, fill = group)) +
   geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("0" = "lightblue", "1" = "darkblue", "2" = "yellow", "3" = "lightyellow"), 
+  scale_fill_manual(values = c("0" = "darkblue", "1" = "orangered", "2" = "lightblue", "3" = "orange"), 
                     labels = c("Male Participant/Male Target", "Male Participant/Female Target", "Female Participant/Male Target", "Female Participant/Female Target")) +
   labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
   scale_y_discrete(labels = c("Age Difference", "Health", "Intelligence", "Kindness", "Attractiveness", "Resources"))+
@@ -507,7 +515,7 @@ stRidgeplotMalePartners <- ggplot(stDataMalePartner, aes(x = value, y = trait, f
 #only female partners
 stRidgeplotFemalePartners <- ggplot(stDataFemalePartner, aes(x = value, y = trait, fill = group)) +
   geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("1" = "yellow", "3" = "lightyellow"), 
+  scale_fill_manual(values = c("1" = "orangered", "3" = "orange"), 
                     labels = c("Male Participant/Female Target", "Female Participant/Female Target")) +  labs(x = "Preference Value", y = "Trait") +
   labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
   theme_ridges()+
@@ -519,10 +527,9 @@ stRidgeplotFemalePartners <- ggplot(stDataFemalePartner, aes(x = value, y = trai
 
 
 #panel plot with both targets side by side
-ridgelinePanelPlotSt<-ggarrange(stRidgeplotMalePartners, stRidgeplotFemalePartners, labels=c("Male Targets","Female Targets"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
+ridgelinePanelPlotSt<-ggarrange(stRidgeplotFemalePartners, stRidgeplotMalePartners,nrow=2, ncol=1)
 
-#ggsave("ridgePanelPlotSt.jpeg", plot=last_plot(), width=700, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
+#ggsave("ridgePanelPlotSt.jpeg", plot=last_plot(), width=400, height=650, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
