@@ -403,7 +403,19 @@ ltData$group <- as.factor(ltData$group)
 ltDataMalePartner <- subset(ltData, ltData$partnerSex == 1)
 ltDataFemalePartner <- subset(ltData, ltData$partnerSex == 0)
 
-#overall plot (everyone together)
+##overall plot faceted by partner sex
+
+#labelling facet fxn
+facetNames <- list(
+  "0" = "Female Partners",
+  "1" = "Male Partners"
+)
+
+labellerFacet <- function(variable, value){
+  return(facetNames[value])
+}
+
+#actual plot now
 
 ltRidgeplot <- ggplot(ltData, aes(x = value, y = trait, fill = group)) +
   geom_density_ridges(scale = 1, alpha = 0.6) +
@@ -415,8 +427,12 @@ ltRidgeplot <- ggplot(ltData, aes(x = value, y = trait, fill = group)) +
   theme(
     axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
     axis.title.y = element_text(hjust = 0.5)) +
-  ggtitle("Preferences for Ideal Partners")
-#ggsave("ridgelineLt.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+  ggtitle("Preferences for Ideal Partners") +
+  facet_wrap(~partnerSex, ncol = 1, labeller=labellerFacet)
+
+#ggsave("ridgelineLt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+
 
 
 #only male partners
@@ -457,6 +473,9 @@ ltRidgeplotFemalePartners <- ggplot(ltDataFemalePartner, aes(x = value, y = trai
 #panel plot with both targets side by side
 ridgelinePanelPlotLt<-ggarrange(ltRidgeplotFemalePartners, ltRidgeplotMalePartners, nrow=2, ncol=1)
 
+#combine plots using facet_wrap
+combinedRidgelineLT <- ggplot()
+
 #ggsave("ridgePanelPlotLt.jpeg", plot=last_plot(), width=400, height=650, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
@@ -494,7 +513,10 @@ stRidgeplot <- ggplot(stData, aes(x = value, y = trait, fill = group)) +
   theme(
     axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
     axis.title.y = element_text(hjust = 0.5)) +
-  ggtitle("Preferences for Ideal Partners")
+  ggtitle("Preferences for Ideal Partners") +
+  facet_wrap(~partnerSex, ncol = 1, labeller=labellerFacet)
+
+#ggsave("ridgelineSt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
  
