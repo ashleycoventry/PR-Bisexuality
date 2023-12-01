@@ -421,7 +421,7 @@ labellerFacet <- function(variable, value){
 }
 
 
-##mirror density plot
+##facted mirror density plot
 
 ltMirrorPlot <- ggplot(ltData, aes(x = value, fill = group)) +
   #top
@@ -430,11 +430,13 @@ ltMirrorPlot <- ggplot(ltData, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = ltData[ltData$partnerSex == 1,], alpha = 0.6) + #male targets
-  facet_wrap(~trait, ncol = 1, labeller = labellerFacet)+
-  scale_fill_manual(values = c("0" = "darkblue", "1" = "orangered", "2" ="lightblue", "3" = "orange"), 
-                    labels = c("Male Participant/Male Target", "Male Participant/Female Target", 
-                               "Female Participant/Male Target", "Female Participant/Female Target")) +
+  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
+  scale_fill_manual(values = c("1" = "orangered", "3" = "orange", "0" = "darkblue", "2" ="lightblue"), 
+                    labels = c("Male Participant/Female Target", "Female Participant/Female Target",
+                               "Male Participant/Male Target",  "Female Participant/Male Target"),
+                    breaks = c("1", "3", "0", "2")) +
   labs(x = "Preference Value", y = "Density", fill = "Participant Sex/Target Sex") +
+  theme_grey(base_size = 20) +
   theme(
     axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
     axis.title.y = element_text(hjust = 0.5)) +
@@ -476,6 +478,30 @@ stData$group <- as.factor(stData$group)
 #separate dataframe by men and women and then male vs female partners
 stDataMalePartner <- subset(stData, stData$partnerSex == 1)
 stDataFemalePartner <- subset(stData, stData$partnerSex == 0)
+
+
+
+##faceted density plot (mirrored)
+
+stMirrorPlot <- ggplot(stData, aes(x = value, fill = group)) +
+  #top
+  geom_density(aes(y = after_stat(density)),
+               data = stData[stData$partnerSex == 0,], alpha = 0.6) + #female targets
+  #bottom
+  geom_density(aes(y = -after_stat(density)),
+               data = stData[stData$partnerSex == 1,], alpha = 0.6) + #male targets
+  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
+  scale_fill_manual(values = c("1" = "orangered", "3" = "orange", "0" = "darkblue", "2" ="lightblue"), 
+                    labels = c("Male Participant/Female Target", "Female Participant/Female Target",
+                               "Male Participant/Male Target",  "Female Participant/Male Target"),
+                    breaks = c("1", "3", "0", "2")) +
+  labs(x = "Preference Value", y = "Density", fill = "Participant Sex/Target Sex") +
+  theme_grey(base_size = 20) +
+  theme(
+    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
+    axis.title.y = element_text(hjust = 0.5)) +
+  ggtitle("Preferences for Ideal Partners") 
+
 
 
 
@@ -621,6 +647,7 @@ LtMatrixPlotFemale <- ggplot(LtMatrixDataFemale, aes(x= sex, y = cluster, fill =
   scale_fill_gradient(low = "white", high = "darkgreen") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
+  ggtitle("Percentage of Female Targets in Each Cluster") +
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
 #ggsave("LtMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
@@ -642,8 +669,12 @@ LtMatrixPlotMale <- ggplot(LtMatrixDataMale, aes(x= sex, y = cluster, fill = clu
   scale_fill_gradient(low = "white", high = "darkgreen") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
+  ggtitle("Percentage of Male Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
+
+#panel plot of both of these graphs
+ltMatrixPanel <- ggarrange(LtMatrixPlotFemale, LtMatrixPlotMale, nrow=2, ncol=1)
 
 ##male compared to female partners
 
@@ -875,6 +906,8 @@ StMatrixPlotMale <- ggplot(StMatrixDataMale, aes(x= sex, y = cluster, fill = clu
   scale_fill_gradient(low = "white", high = "darkgreen") +
   scale_x_discrete(labels = c('Women','Men')) 
 
+
+
 ##male compared to female partners
 
 #create matrix dataframe
@@ -1045,6 +1078,7 @@ StMatrixPlotFemale3 <- ggplot(StMatrixDataFemale3, aes(x= sex, y = cluster, fill
   scale_fill_gradient(low = "white", high = "darkgreen") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
+  ggtitle("Percentage of Female Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
 #ggsave("StMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
@@ -1068,7 +1102,14 @@ StMatrixPlotMale3 <- ggplot(StMatrixDataMale3, aes(x= sex, y = cluster, fill = c
   scale_fill_gradient(low = "white", high = "darkgreen") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
+  ggtitle("Percentage of Male Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+
+
+#panel plot of both of these graphs
+stMatrixPanel3 <- ggarrange(StMatrixPlotFemale3, StMatrixPlotMale3, nrow=2, ncol=1)
+
+
 
 ##male compared to female partners
 
