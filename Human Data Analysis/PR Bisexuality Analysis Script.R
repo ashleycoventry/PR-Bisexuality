@@ -185,42 +185,43 @@ ltDataTidy <- ltData %>%
   pivot_wider(names_from = trait, 
               values_from = value)
 
+#standardizing outcome variable (traits)
 
-#health
-ltHealthInt <- lmer(health  ~ sex*partnerSex + (1|PIN),
-                     data = ltDataTidy) #not sig
+#health 
+ltHealthInt <- lmer(scale(health)  ~ sex*partnerSex + (1|PIN),
+                     data = ltDataTidy)#not sig
 
-ltHealthMain <- lmer(health  ~ sex+partnerSex + (1|PIN),
+ltHealthMain <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN),
                      data = ltDataTidy) #not sig
 #kindness 
-ltKindInt <- lmer(kind  ~ sex*partnerSex + (1|PIN),
+ltKindInt <- lmer(scale(kind)  ~ sex*partnerSex + (1|PIN),
                    data = ltDataTidy) #no interaction
 
-ltKindMain <- lmer(kind  ~ sex+partnerSex + (1|PIN),
+ltKindMain <- lmer(scale(kind)  ~ sex+partnerSex + (1|PIN),
                   data = ltDataTidy) #sig main of sex and psex
 
 #physical attractiveness
-ltPhysattInt <- lmer(physatt  ~ sex*partnerSex + (1|PIN),
+ltPhysattInt <- lmer(scale(physatt)  ~ sex*partnerSex + (1|PIN),
                       data = ltDataTidy) #not sig
 
-ltPhysattMain <- lmer(physatt  ~ sex+partnerSex + (1|PIN),
+ltPhysattMain <- lmer(scale(physatt)  ~ sex+partnerSex + (1|PIN),
                      data = ltDataTidy) #sig main effect of sex
 
 #intell
-ltIntellInt <- lmer(intell  ~ sex*partnerSex + (1|PIN),
+ltIntellInt <- lmer(scale(intell)  ~ sex*partnerSex + (1|PIN),
                      data = ltDataTidy) #not sig
 
-ltIntellMain <- lmer(intell  ~ sex+partnerSex + (1|PIN),
+ltIntellMain <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
                     data = ltDataTidy) #sig effect of psex
 
 #resources
-ltResourceInt <- lmer(resources  ~ sex*partnerSex + (1|PIN),
+ltResourceInt <- lmer(scale(resources)  ~ sex*partnerSex + (1|PIN),
                        data = ltDataTidy) #not sig
 
-ltResourceMain <- lmer(resources  ~ sex+partnerSex + (1|PIN),
+ltResourceMain <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                       data = ltDataTidy)  #sig main effect of psex, not sex
 
-#ideal age
+#ideal age (NOT STANDARDIZED)
 ltAgeInt <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
                   data = ltDataTidy) #not sig 
 
@@ -235,7 +236,7 @@ stDataTidy <- stData %>%
               values_from = value)
 
 #kindness
-stKindInt <- lmer(kind ~ sex*partnerSex + (1|PIN), 
+stKindInt <- lmer(scale(kind) ~ sex*partnerSex + (1|PIN), 
                    data = stDataTidy) 
                 #sig interaction
 
@@ -246,37 +247,37 @@ stKindInt <- lmer(kind ~ sex*partnerSex + (1|PIN),
 
 
 #physical attractiveness
-stPhysattInt <- lmer(physatt ~ sex*partnerSex + (1|PIN), 
+stPhysattInt <- lmer(scale(physatt) ~ sex*partnerSex + (1|PIN), 
                    data = stDataTidy) 
 
-stPhysattMain <- lmer(physatt ~ sex+partnerSex + (1|PIN), 
+stPhysattMain <- lmer(scale(physatt) ~ sex+partnerSex + (1|PIN), 
                       data = stDataTidy) #only sig main effect of partner sex
 
 
 #health
-stHealthInt <- lmer(health  ~ sex*partnerSex + (1|PIN),
+stHealthInt <- lmer(scale(health)  ~ sex*partnerSex + (1|PIN),
                      data = stDataTidy)
 
-stHealthMain <- lmer(health  ~ sex+partnerSex + (1|PIN),
+stHealthMain <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN),
                      data = stDataTidy) #sig main effect of partner sex
 
 
 #intelligence
 
-stIntellInt <- lmer(intell  ~ sex*partnerSex + (1|PIN),
+stIntellInt <- lmer(scale(intell)  ~ sex*partnerSex + (1|PIN),
                      data = stDataTidy)  
 
-stIntellMain <- lmer(intell  ~ sex+partnerSex + (1|PIN),
+stIntellMain <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
                     data = stDataTidy) #sig main effect of partner sex
 
 #resources
-stResourceInt <- lmer(resources  ~ sex*partnerSex + (1|PIN),
+stResourceInt <- lmer(scale(resources)  ~ sex*partnerSex + (1|PIN),
                        data = stDataTidy) 
 
-stResourceMain <- lmer(resources  ~ sex+partnerSex + (1|PIN),
+stResourceMain <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                       data = stDataTidy) #sig effect of partner sex
 
-#age
+#age (NOT STANDARDIZED)
 stAgeInt <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
                   data = stDataTidy) 
 
@@ -407,15 +408,41 @@ ltDataFemalePartner <- subset(ltData, ltData$partnerSex == 0)
 
 #labelling facet fxn
 facetNames <- list(
-  "0" = "Female Partners",
-  "1" = "Male Partners"
+  "AgeLik" = "Age Difference",
+  "health" = "Health",
+  "intell" = "Intelligence",
+  "kind" = "Kindness",
+  "physatt" = "Physical Attractiveness",
+  "resources" = "Resources"
 )
 
 labellerFacet <- function(variable, value){
   return(facetNames[value])
 }
 
-#actual plot now
+
+##mirror density plot
+
+ltMirrorPlot <- ggplot(ltData, aes(x = value, fill = group)) +
+  #top
+  geom_density(aes(y = after_stat(density)),
+               data = ltData[ltData$partnerSex == 0,], alpha = 0.6) + #female targets
+  #bottom
+  geom_density(aes(y = -after_stat(density)),
+               data = ltData[ltData$partnerSex == 1,], alpha = 0.6) + #male targets
+  facet_wrap(~trait, ncol = 1, labeller = labellerFacet)+
+  scale_fill_manual(values = c("0" = "darkblue", "1" = "orangered", "2" ="lightblue", "3" = "orange"), 
+                    labels = c("Male Participant/Male Target", "Male Participant/Female Target", 
+                               "Female Participant/Male Target", "Female Participant/Female Target")) +
+  labs(x = "Preference Value", y = "Density", fill = "Participant Sex/Target Sex") +
+  theme(
+    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
+    axis.title.y = element_text(hjust = 0.5)) +
+  ggtitle("Preferences for Ideal Partners") 
+
+
+
+#faceted ridgeline plot
 
 ltRidgeplot <- ggplot(ltData, aes(x = value, y = trait, fill = group)) +
   geom_density_ridges(scale = 1, alpha = 0.6) +
@@ -431,54 +458,6 @@ ltRidgeplot <- ggplot(ltData, aes(x = value, y = trait, fill = group)) +
   facet_wrap(~partnerSex, ncol = 1, labeller=labellerFacet)
 
 #ggsave("ridgelineLt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-
-
-
-#only male partners
-ltRidgeplotMalePartners <- ggplot(ltDataMalePartner, aes(x = value, y = trait, fill = group)) +
-  geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("0" = "darkblue", "2" ="lightblue"), 
-                    labels = c("Male Participant/Male Target", "Female Participant/Male Target")) +
-  labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
-  scale_y_discrete(labels = c("Age Difference", "Health", "Intelligence", "Kindness", "Attractiveness", "Resources"))+
-  theme_ridges()+
-  ggtitle("Preferences for Ideal Female Partners") +
-  theme(
-    axis.title.x = element_text(size = 18, hjust = 0.5),  # Increase x-axis title size
-    axis.title.y = element_text(size = 18, hjust = 0.5),  # Increase y-axis title size
-    axis.text.x = element_text(size = 16),  # Increase x-axis label size
-    axis.text.y = element_text(size = 16),  # Increase y-axis label size
-    plot.title = element_text(size = 22),
-    legend.title = element_text(size = 18))   # Increase plot title size
-
-#only female partners
-ltRidgeplotFemalePartners <- ggplot(ltDataFemalePartner, aes(x = value, y = trait, fill = group)) +
-  geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("1" = "orangered", "3" = "orange"), 
-                    labels = c("Male Participant/Female Target", "Female Participant/Female Target")) +
-  labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
-  scale_y_discrete(labels = c("Age Difference", "Health", "Intelligence", "Kindness", "Attractiveness", "Resources"))+
-  theme_ridges()+
-  ggtitle("Preferences for Ideal Female Partners") +
-  theme(
-      axis.title.x = element_text(size = 18, hjust = 0.5),  # Increase x-axis title size
-      axis.title.y = element_text(size = 18, hjust = 0.5),  # Increase y-axis title size
-      axis.text.x = element_text(size = 16),  # Increase x-axis label size
-      axis.text.y = element_text(size = 16),  # Increase y-axis label size
-      plot.title = element_text(size = 22), 
-      legend.title = element_text(size = 18))   # Increase plot title size
-
-
-#panel plot with both targets side by side
-ridgelinePanelPlotLt<-ggarrange(ltRidgeplotFemalePartners, ltRidgeplotMalePartners, nrow=2, ncol=1)
-
-#combine plots using facet_wrap
-combinedRidgelineLT <- ggplot()
-
-#ggsave("ridgePanelPlotLt.jpeg", plot=last_plot(), width=400, height=650, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-
 
 
 
@@ -518,40 +497,6 @@ stRidgeplot <- ggplot(stData, aes(x = value, y = trait, fill = group)) +
 
 #ggsave("ridgelineSt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
-
- 
-
-#only male partners
-stRidgeplotMalePartners <- ggplot(stDataMalePartner, aes(x = value, y = trait, fill = group)) +
-  geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("0" = "darkblue", "2" ="lightblue"), 
-                    labels = c("Male Participant/Male Target", "Female Participant/Male Target")) +  
-  labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
-  scale_y_discrete(labels = c("Age Difference", "Health", "Intelligence", "Kindness", "Attractiveness", "Resources"))+
-  theme_ridges()+
-  theme(
-    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
-    axis.title.y = element_text(hjust = 0.5)) +
-  ggtitle("Preferences for Ideal Male Partners")
-
-#only female partners
-stRidgeplotFemalePartners <- ggplot(stDataFemalePartner, aes(x = value, y = trait, fill = group)) +
-  geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("1" = "orangered", "3" = "orange"), 
-                    labels = c("Male Participant/Female Target", "Female Participant/Female Target")) +  labs(x = "Preference Value", y = "Trait") +
-  labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
-  theme_ridges()+
-  theme(
-    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
-    axis.title.y = element_text(hjust = 0.5)) +
-    labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
-  ggtitle("Preferences for Ideal Female Partners")
-
-
-#panel plot with both targets side by side
-ridgelinePanelPlotSt<-ggarrange(stRidgeplotFemalePartners, stRidgeplotMalePartners,nrow=2, ncol=1)
-
-#ggsave("ridgePanelPlotSt.jpeg", plot=last_plot(), width=400, height=650, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
