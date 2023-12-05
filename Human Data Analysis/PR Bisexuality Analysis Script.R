@@ -885,7 +885,10 @@ StMatrixPlotFemale <- ggplot(StMatrixDataFemale, aes(x= sex, y = cluster, fill =
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataFemale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "darkgreen") +
-  scale_x_discrete(labels = c('Female','Male'))  
+  scale_x_discrete(labels = c('Female','Male')) +
+  scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
+  ggtitle("Percentage of Female Targets in Each Cluster")+
+  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
 #ggsave("StMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -904,9 +907,16 @@ StMatrixPlotMale <- ggplot(StMatrixDataMale, aes(x= sex, y = cluster, fill = clu
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataMale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "darkgreen") +
-  scale_x_discrete(labels = c('Women','Men')) 
+  scale_x_discrete(labels = c('Female','Male')) +
+  scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
+  ggtitle("Percentage of Male Targets in Each Cluster")+
+  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
 
+# PANEL PLOT
+
+
+stMatrixPanel4 <- ggarrange(StMatrixPlotFemale, StMatrixPlotMale, nrow=2, ncol=1)
 
 ##male compared to female partners
 
@@ -922,7 +932,11 @@ StMatrixDataPartners[,3] <-round(StMatrixDataPartners[,3],2)
 StMatrixPlotPartners<- ggplot(StMatrixDataPartners, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataPartners$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") 
+  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_x_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
+  scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
+  labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
+
 
 
 
@@ -981,7 +995,9 @@ plot4St <- ggplot(data=plotting4St, aes(x=trait4St, y=meanTrait4St)) +
 
 
 #combine clusters into one graph
-PRpanelPlotSt<-ggarrange(plot1St,plot2St,plot3St, plot4St,labels=c("A","B","C", "D"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
+PRpanelPlotSt<-ggarrange(plot1St,plot2St,plot3St, plot4St,
+                         labels=c("Attractive and Healthy","Smart and Attractive","Wealthy and Kind", "Wealthy, Healthy, and Kind"), 
+                         nrow=1, ncol=4,font.label = list(size = 13, color = "black")) 
 
 
 
