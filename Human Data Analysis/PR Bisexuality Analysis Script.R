@@ -387,7 +387,6 @@ stAgePlot <- ggplot(stDataTidy, aes(x=sex, y=AgeLik, fill = partnerSex)) +
 
 
 
-
 ###Ridgeline Plots
 #traits on Y axis; values on X axis with different colors for each group (male/male, male/female, female/male, female/female)
 
@@ -408,12 +407,12 @@ ltDataFemalePartner <- subset(ltData, ltData$partnerSex == 0)
 
 #labelling facet fxn
 facetNames <- list(
-  "AgeLik" = "Age Difference",
-  "health" = "Health",
-  "intell" = "Intelligence",
-  "kind" = "Kindness",
-  "physatt" = "Physical Attractiveness",
-  "resources" = "Resources"
+  "AgeLik" = "(A) Age Difference",
+  "health" = " (B) Health",
+  "intell" = " (C) Intelligence",
+  "kind" = " (D) Kindness",
+  "physatt" = " (E) Physical Attractiveness",
+  "resources" = " (F) Resources"
 )
 
 labellerFacet <- function(variable, value){
@@ -462,7 +461,23 @@ ltRidgeplot <- ggplot(ltData, aes(x = value, y = trait, fill = group)) +
 #ggsave("ridgelineLt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
+##box plot faceted by trait
 
+ltBoxplot <- ggplot(ltData, aes(x=sex, y=value, fill = partnerSex)) +
+  geom_boxplot(width = .7) + 
+  scale_x_discrete(limits=c("0", "1"), labels = c("Female", "Male")) +
+  labs(x="Participant Sex", y = "Trait") +
+  scale_fill_discrete(name = "Partner Sex", labels = c("Female", "Male")) +
+  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet) +
+  theme(
+    text = element_text(size = 14),  # Adjust the text size as needed
+    axis.title = element_text(size = 16),  # Adjust the axis title size
+    axis.text = element_text(size = 12),   # Adjust the axis text size
+    legend.title = element_text(size = 14),  # Adjust the legend title size
+    legend.text = element_text(size = 12)    # Adjust the legend text size
+  )
+
+#ggsave("boxPlotLt.jpeg", plot=last_plot(), width=250, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 ##st prefs
 
@@ -524,6 +539,25 @@ stRidgeplot <- ggplot(stData, aes(x = value, y = trait, fill = group)) +
 #ggsave("ridgelineSt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
+#boxplot faceted by trait
+
+stBoxplot <- ggplot(stData, aes(x=sex, y=value, fill = partnerSex)) +
+  geom_boxplot(width = .7) + 
+  scale_x_discrete(limits=c("0", "1"), labels = c("Female", "Male")) +
+  labs(x="Participant Sex", y = "Trait") +
+  scale_fill_discrete(name = "Partner Sex", labels = c("Female", "Male")) +
+  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet) +
+  theme(
+    text = element_text(size = 14),  # Adjust the text size as needed
+    axis.title = element_text(size = 16),  # Adjust the axis title size
+    axis.text = element_text(size = 12),   # Adjust the axis text size
+    legend.title = element_text(size = 14),  # Adjust the legend title size
+    legend.text = element_text(size = 12)    # Adjust the legend text size
+  )
+
+#ggsave("boxPlotSt.jpeg", plot=last_plot(), width=250, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+
 
 
 
@@ -554,7 +588,8 @@ ltDataK[ , avColsLt] <- NA
 #take means of traits for every PIN and subtract mean from indiv traits & place in new columns
 for (i in 1:nrow(ltDataK)){
   focalPrefsLt <- ltDataK[i,4:8]
-  avPrefsLt <- rowMeans(ltDataK[ltDataK$PIN == ltDataK$PIN[i],4:8], na.rm = T)
+  #within person, across targets
+  avPrefsLt <- mean(rowMeans(ltDataK[ltDataK$PIN == ltDataK$PIN[i],4:8], na.rm = T))
   focalPrefsLt <- focalPrefsLt - avPrefsLt
   ltDataK[i,9:13] <- focalPrefsLt
   
@@ -782,7 +817,7 @@ stDataK[ , avColsSt] <- NA
 #take means of traits for every PIN and subtract mean from indiv traits & place in new columns
 for (i in 1:nrow(stDataK)){
   focalPrefsSt <- stDataK[i,4:8]
-  avPrefsSt <- rowMeans(stDataK[stDataK$PIN == stDataK$PIN[i],4:8], na.rm = T)
+  avPrefsSt <- mean(rowMeans(stDataK[stDataK$PIN == stDataK$PIN[i],4:8], na.rm = T))
   focalPrefsSt <- focalPrefsSt - avPrefsSt
   stDataK[i,9:13] <- focalPrefsSt
   
@@ -800,7 +835,7 @@ kfitWssSt<-sapply(1:7,function(x) kmeans(stDataK[,9:13],x)$tot.withinss)
 screePlotSt<-qplot(1:7,kfitWssSt) 
 
 ##compute differences in within ss across k for k-means clustering
-wssDiffsSt<-diff(kfitWssSt) #4 clusters?
+wssDiffsSt<-diff(kfitWssSt)
 
 ##Add classification to the original dataframe
 
