@@ -238,13 +238,9 @@ stDataTidy <- stData %>%
 #kindness
 stKindInt <- lmer(scale(kind) ~ sex*partnerSex + (1|PIN), 
                    data = stDataTidy) 
-                #sig interaction
 
-  #plot of interaction to visualize
-#library(interactions)
-#cat_plot(stKindInt, pred = partnerSex, modx = sex, geom = "line", point.shape = TRUE)
-#cat_plot(stKindInt, pred = sex, modx = partnerSex, geom = "line", point.shape = TRUE)
-
+stKindMain <- lmer(scale(kind) ~ sex+partnerSex + (1|PIN), 
+                  data = stDataTidy) 
 
 #physical attractiveness
 stPhysattInt <- lmer(scale(physatt) ~ sex*partnerSex + (1|PIN), 
@@ -430,16 +426,16 @@ ltMirrorPlot <- ggplot(ltData, aes(x = value, fill = group)) +
   geom_density(aes(y = -after_stat(density)),
                data = ltData[ltData$partnerSex == 1,], alpha = 0.6) + #male targets
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
-  scale_fill_manual(values = c("1" = "orangered", "3" = "orange", "0" = "darkblue", "2" ="lightblue"), 
-                    labels = c("Male Participant/Female Target", "Female Participant/Female Target",
-                               "Male Participant/Male Target",  "Female Participant/Male Target"),
-                    breaks = c("1", "3", "0", "2")) +
+  scale_fill_manual(values = c("1" = "blue", "3" = "orange", "0" = "blue", "2" ="orange"), 
+                    labels = c("Male Participant", "Female Participant"),
+                    breaks = c("1", "3")) +
   labs(x = "Preference Value", y = "Density", fill = "Participant Sex/Target Sex") +
   theme_grey(base_size = 20) +
   theme(
     axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
     axis.title.y = element_text(hjust = 0.5)) +
-  ggtitle("Preferences for Ideal Partners") 
+  ggtitle("Preferences for Ideal Partners") +
+  geom_hline(yintercept = 0, color = "black", linetype = "solid", size = .5)  # Add a black vertical line at x = 0
 
 
 
@@ -679,11 +675,11 @@ LtMatrixDataFemale[,3] <-round(LtMatrixDataFemale[,3],2)
 LtMatrixPlotFemale <- ggplot(LtMatrixDataFemale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = LtMatrixDataFemale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
-  ggtitle("Percentage of Female Targets in Each Cluster") +
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+  ggtitle("A") +
+  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency (%)")
 
 #ggsave("LtMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -701,15 +697,18 @@ LtMatrixDataMale[,3] <-round(LtMatrixDataMale[,3],2)
 LtMatrixPlotMale <- ggplot(LtMatrixDataMale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = LtMatrixDataMale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
-  ggtitle("Percentage of Male Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+  ggtitle("B")+
+  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency (%)")
 
 
 #panel plot of both of these graphs
-ltMatrixPanel <- ggarrange(LtMatrixPlotFemale, LtMatrixPlotMale, nrow=2, ncol=1)
+ltMatrixPanel <- ggarrange(LtMatrixPlotFemale, LtMatrixPlotMale, nrow=1, ncol=2)
+#ggsave("LtMatrixPlotPanel.jpeg", plot=last_plot(), width=300, height=200, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+
 
 ##male compared to female partners
 
@@ -725,11 +724,12 @@ LtMatrixDataPartners[,3] <-round(LtMatrixDataPartners[,3],2)
 LtMatrixPlotPartners<- ggplot(LtMatrixDataPartners, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = LtMatrixDataPartners$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
   scale_y_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
 
+#ggsave("LtMatrixPlotPartners.jpeg", plot=last_plot(), width=250, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -791,7 +791,10 @@ plot4Lt <- ggplot(data=plotting4Lt, aes(x=trait4Lt, y=meanTrait4Lt)) +
 
 
 #combine clusters into one graph
-PRpanelPlotLt<-ggarrange(plot1Lt,plot2Lt,plot3Lt, plot4Lt,labels=c("Wealthy & Kind","Kind & Smart","Attractive & Healthy", "Smart"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
+PRpanelPlotLt<-ggarrange(plot1Lt,plot2Lt,plot3Lt, plot4Lt,labels=c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
+
+#ggsave("PRpanelPlotLt.jpeg", plot=last_plot(), width=300, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
 
 
 
@@ -862,8 +865,8 @@ clustSexStM <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt[stData
 
 ##are men and women are choosing clusters at diff rates? 
 #have to separate based on ideal male v female partners bc independence assumption
-fisherSexStIdealF <- fisher.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0]))
-  #needed fisher bc warning with chi square
+chisqSexStIdealF <- chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0]))
+
 
 chisqSexStIdealM<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt[stDataK$partnerSex == 1])) #no
 
@@ -896,9 +899,9 @@ chisqDataSt <- subset(chisqDataSt, select = c(PIN, MaleClust_1, FemaleClust_0))
 #rename columns
 names(chisqDataSt) <- c("PIN", "maleClust", "femaleClust")
 
-#run fisher instead of chisq bc some cells have 0
-pSexClustFisherSt <- fisher.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust),
-                                 simulate.p.value = T)
+#chisq test
+pSexClustChisqSt <- chisq.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust))
+                                
   
 
 
@@ -919,7 +922,7 @@ StMatrixDataFemale[,3] <-round(StMatrixDataFemale[,3],2)
 StMatrixPlotFemale <- ggplot(StMatrixDataFemale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataFemale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
   ggtitle("Percentage of Female Targets in Each Cluster")+
@@ -941,7 +944,7 @@ StMatrixDataMale[,3] <-round(StMatrixDataMale[,3],2)
 StMatrixPlotMale <- ggplot(StMatrixDataMale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataMale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
   ggtitle("Percentage of Male Targets in Each Cluster")+
@@ -967,7 +970,7 @@ StMatrixDataPartners[,3] <-round(StMatrixDataPartners[,3],2)
 StMatrixPlotPartners<- ggplot(StMatrixDataPartners, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataPartners$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
   scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
@@ -1071,9 +1074,9 @@ clustSexStM3 <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt3[stDa
 
 ##are men and women are choosing clusters at diff rates? 
 #have to separate based on ideal male v female partners bc independence assumption
-chisqSexStIdealF <- chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt3[stDataK$partnerSex == 0]))
+chisqSexStIdealF3 <- chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt3[stDataK$partnerSex == 0]))
 
-chisqSexStIdealM<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt3[stDataK$partnerSex == 1]))
+chisqSexStIdealM3<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt3[stDataK$partnerSex == 1]))
 
 
 ##chisq -- male partner cluster x female partner cluster
@@ -1126,9 +1129,9 @@ StMatrixDataFemale3[,3] <-round(StMatrixDataFemale3[,3],2)
 StMatrixPlotFemale3 <- ggplot(StMatrixDataFemale3, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataFemale3$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Kind and Smart","Wealthy")) +
   ggtitle("Percentage of Female Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -1150,9 +1153,9 @@ StMatrixDataMale3[,3] <-round(StMatrixDataMale3[,3],2)
 StMatrixPlotMale3 <- ggplot(StMatrixDataMale3, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataMale3$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Kind and Smart","Wealthy")) +
   ggtitle("Percentage of Male Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -1176,9 +1179,9 @@ StMatrixDataPartners3[,3] <-round(StMatrixDataPartners3[,3],2)
 StMatrixPlotPartners3<- ggplot(StMatrixDataPartners3, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataPartners3$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
-  scale_x_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
-  scale_y_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
+  scale_x_discrete(labels = c("Attractive & Healthy","Kind and Smart","Wealthy")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Kind and Smart","Wealthy")) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
 
 
@@ -1232,7 +1235,7 @@ plot3St3 <- ggplot(data=plotting3St3, aes(x=trait3St3, y=meanTrait3St3)) +
 
 
 #combine clusters into one graph
-PRpanelPlotSt3<-ggarrange(plot1St3,plot2St3,plot3St3,labels=c("Kind & Wealthy","Well-Rounded","Attractive & Healthy"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
+PRpanelPlotSt3<-ggarrange(plot1St3,plot2St3,plot3St3,labels=c("Attractive & Healthy","Kind and Smart","Wealthy"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
 
 
 
@@ -1630,13 +1633,13 @@ LtMatrixDataBiFemale[,3] <-round(LtMatrixDataBiFemale[,3],2)
 LtMatrixPlotBiFemale <- ggplot(LtMatrixDataBiFemale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = LtMatrixDataBiFemale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Smart & Kind","Attractive & Healthy","Kind", "Smart")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy")) +
   ggtitle("Percentage of Female Targets in Each Cluster") +
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
-#ggsave("LtMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+#ggsave("LtMatrixPlotBiFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 ##ideal male partners
 
@@ -1653,9 +1656,9 @@ LtMatrixDataBiMale[,3] <-round(LtMatrixDataBiMale[,3],2)
 LtMatrixPlotBiMale <- ggplot(LtMatrixDataBiMale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = LtMatrixDataBiMale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Smart & Kind","Attractive & Healthy","Kind", "Smart")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy")) +
   ggtitle("Percentage of Male Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -1678,9 +1681,9 @@ LtMatrixDataBiPartners[,3] <-round(LtMatrixDataBiPartners[,3],2)
 LtMatrixPlotBiPartners<- ggplot(LtMatrixDataBiPartners, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = LtMatrixDataBiPartners$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
-  scale_x_discrete(labels = c("Smart & Kind","Attractive & Healthy","Kind", "Smart")) +
-  scale_y_discrete(labels = c("Smart & Kind","Attractive & Healthy","Kind", "Smart")) +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
+  scale_x_discrete(labels = c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy")) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
 
 
@@ -1711,7 +1714,7 @@ trait1LtBi <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness",
 plotting1LtBi <- data.frame(meanTrait1LtBi, trait1LtBi)
 plot1LtBi <- ggplot(data=plotting1LtBi, aes(x=trait1LtBi, y=meanTrait1LtBi)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-.9,.9) +
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-1,1) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 2 
@@ -1720,7 +1723,7 @@ trait2LtBi <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness",
 plotting2LtBi <- data.frame(meanTrait2LtBi, trait2LtBi)
 plot2LtBi <- ggplot(data=plotting2LtBi, aes(x=trait2LtBi, y=meanTrait2LtBi)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-.9,.9) +
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1,1) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 3 
@@ -1729,7 +1732,7 @@ trait3LtBi <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness",
 plotting3LtBi <- data.frame(meanTrait3LtBi, trait3LtBi)
 plot3LtBi <- ggplot(data=plotting3LtBi, aes(x=trait3LtBi, y=meanTrait3LtBi)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-.9,0.9) +
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1,1) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 4
@@ -1738,17 +1741,18 @@ trait4LtBi <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness",
 plotting4LtBi <- data.frame(meanTrait4LtBi, trait4LtBi)
 plot4LtBi <- ggplot(data=plotting4LtBi, aes(x=trait4LtBi, y=meanTrait4LtBi)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "yellow")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-0.9,0.9) +
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1,1) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 
 
 #combine clusters into one graph
-PRpanelPlotLtBi<-ggarrange(plot1LtBi,plot2LtBi,plot3LtBi, plot4Lt,labels=c("Smart & Kind","Attractive & Healthy","Kind", "Smart"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
+PRpanelPlotLtBi<-ggarrange(plot1LtBi,plot2LtBi,plot3LtBi, plot4Lt,
+                           labels=c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
 
 
 
-##ST Prefs (STOPPED UPDATING AT THIS POINT)
+##ST Prefs 
 
 #remove NAs from dataframe 
 
@@ -1791,6 +1795,7 @@ screePlotStBi<-qplot(1:7,kfitWssStBi)
 wssDiffsSt<-diff(kfitWssSt)
 
 ##Add classification to the original dataframe
+#4 clusters described below is supplement. Data better fits 3 clusters. 
 
 kFitStBi<-kmeans(stDataBiK[,9:13],4)
 stDataBiK$kFitStBi <- kFitStBi$cluster
@@ -1816,10 +1821,11 @@ clustSexStBiM <- table(stDataBiK$partnerSex[stDataBiK$sex == 1], stDataBiK$kFitS
 
 ##are men and women are choosing clusters at diff rates? 
 #have to separate based on ideal male v female partners bc independence assumption
-fisherSexStIdealF <- fisher.test(table(stDataBiK$sex[stDataBiK$partnerSex == 0],stDataBiK$kFitStBi[stDataBiK$partnerSex == 0]))
-#needed fisher bc warning with chi square
+chisqSexStIdealF <- chisq.test(table(stDataBiK$sex[stDataBiK$partnerSex == 0],stDataBiK$kFitStBi[stDataBiK$partnerSex == 0]))
 
-chisqSexStIdealM<-chisq.test(table(stDataBiK$sex[stDataBiK$partnerSex == 1],stDataBiK$kFitStBi[stDataBiK$partnerSex == 1])) 
+
+#fisher test bc one cell has only 3 partners
+fisherSexStIdealM<-fisher.test(table(stDataBiK$sex[stDataBiK$partnerSex == 1],stDataBiK$kFitStBi[stDataBiK$partnerSex == 1])) 
 
 
 
@@ -1873,9 +1879,9 @@ StMatrixDataBiFemale[,3] <-round(StMatrixDataBiFemale[,3],2)
 StMatrixPlotBiFemale <- ggplot(StMatrixDataBiFemale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataBiFemale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Wealthy","Wealthy, Kind, and Smart","Kind and Smart", "Attractive and Healthy")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy")) +
   ggtitle("Percentage of Female Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -1895,10 +1901,10 @@ StMatrixDataBiMale[,3] <-round(StMatrixDataBiMale[,3],2)
 #plot matrix
 StMatrixPlotBiMale <- ggplot(StMatrixDataBiMale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
-  geom_text(label = StMatrixDataMale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  geom_text(label = StMatrixDataBiMale$clusterFrequency)+
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Wealthy","Wealthy, Kind, and Smart","Kind and Smart", "Attractive and Healthy")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy")) +
   ggtitle("Percentage of Male Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -1907,6 +1913,8 @@ StMatrixPlotBiMale <- ggplot(StMatrixDataBiMale, aes(x= sex, y = cluster, fill =
 
 
 stMatrixPanel4Bi <- ggarrange(StMatrixPlotBiFemale, StMatrixPlotBiMale, nrow=2, ncol=1)
+
+
 
 ##male compared to female partners
 
@@ -1923,9 +1931,9 @@ StMatrixDataBiPartners[,3] <-round(StMatrixDataBiPartners[,3],2)
 StMatrixPlotBiPartners<- ggplot(StMatrixDataBiPartners, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataBiPartners$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
-  scale_x_discrete(labels = c("Wealthy","Wealthy, Kind, and Smart","Kind and Smart", "Attractive and Healthy")) +
-  scale_y_discrete(labels = c("Wealthy","Wealthy, Kind, and Smart","Kind and Smart", "Attractive and Healthy")) +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
+  scale_x_discrete(labels = c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy")) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
 
 
@@ -1987,7 +1995,7 @@ plot4StBi <- ggplot(data=plotting4StBi, aes(x=trait4StBi, y=meanTrait4StBi)) +
 
 #combine clusters into one graph
 PRpanelPlotStBi<-ggarrange(plot1StBi,plot2StBi,plot3StBi, plot4StBi,
-                         labels=c("Wealthy","Wealthy, Kind, and Smart","Kind and Smart", "Attractive and Healthy"), 
+                         labels=c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy"), 
                          nrow=1, ncol=4,font.label = list(size = 13, color = "black")) 
 
 
@@ -1997,7 +2005,7 @@ PRpanelPlotStBi<-ggarrange(plot1StBi,plot2StBi,plot3StBi, plot4StBi,
 
 
 
-###supplemental stuff
+###Bi only: supplemental stuff
 
 #st prefs cluster analysis with 3 clusters
 
@@ -2084,9 +2092,9 @@ StMatrixDataBiFemale3[,3] <-round(StMatrixDataBiFemale3[,3],2)
 StMatrixPlotBiFemale3 <- ggplot(StMatrixDataBiFemale3, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataBiFemale3$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
+  scale_y_discrete(labels = c("Smart & Kind","Wealthy","Attractive & Healthy")) +
   ggtitle("Percentage of Female Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -2109,9 +2117,9 @@ StMatrixDataBiMale3[,3] <-round(StMatrixDataBiMale3[,3],2)
 StMatrixPlotBiMale3 <- ggplot(StMatrixDataBiMale3, aes(x= sex, y = cluster, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataBiMale3$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
+  scale_y_discrete(labels = c("Smart & Kind","Wealthy","Attractive & Healthy")) +
   ggtitle("Percentage of Male Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -2136,9 +2144,9 @@ StMatrixDataBiPartners3[,3] <-round(StMatrixDataBiPartners3[,3],2)
 StMatrixPlotBiPartners3<- ggplot(StMatrixDataBiPartners3, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataBiPartners3$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "darkgreen") +
-  scale_x_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
-  scale_y_discrete(labels = c('Kind & Wealthy','Well-Rounded','Attractive & Healthy')) +
+  scale_fill_gradient(low = "white", high = "springgreen4") +
+  scale_x_discrete(labels = c("Smart & Kind","Wealthy","Attractive & Healthy")) +
+  scale_y_discrete(labels = c("Smart & Kind","Wealthy","Attractive & Healthy")) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
 
 
@@ -2192,7 +2200,7 @@ plot3StBi3 <- ggplot(data=plotting3StBi3, aes(x=trait3StBi3, y=meanTrait3StBi3))
 
 
 #combine clusters into one graph
-PRpanelPlotStBi3<-ggarrange(plot1StBi3,plot2StBi3,plot3StBi3,labels=c("Wealthy & Smart","Kind & Smart","Attractive & Healthy"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
+PRpanelPlotStBi3<-ggarrange(plot1StBi3,plot2StBi3,plot3StBi3,labels=c("Smart & Kind","Wealthy","Attractive & Healthy"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
 
 
 
