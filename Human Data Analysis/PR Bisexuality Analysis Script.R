@@ -10,12 +10,11 @@ library(reshape2)
 library(tidyr)
 library(ggpubr) #for panel plot
 library(ggpattern)
-library(ggridges) #for ridgeline plots
 
 
 ### set seed ###
+#for cluster analyses
 set.seed(11182022)
-
 
 
 ### load data ###
@@ -56,14 +55,6 @@ data$f_Lt_AgeLik <- data$f_lt_age - data$ageLik
 #female ideal ST
 data$f_St_AgeLik <- data$f_st_age - data$ageLik
 
-##add avg of other pref ratings to age 
-  #so that when prefs + age are standardized, age is centered around 0
-#hashtagged out bc we currently aren't standardizing
-
-#data$m_Lt_AgeLik <- mean(unlist(data[,178:187]),na.rm=T) + data$m_Lt_AgeLik #(adding Lt pref avgs only)
-#data$f_Lt_AgeLik  <- mean(unlist(data[,178:187]),na.rm=T) + data$f_Lt_AgeLik
-#data$m_St_AgeLik <- mean(unlist(data[,188:197]),na.rm = T) + data$m_St_AgeLik #(adding st pref avg only)
-#data$f_St_AgeLik <- mean(unlist(data[,188:197]),na.rm = T) + data$f_St_AgeLik
 
 
 ###Omnibus Analyses
@@ -112,73 +103,10 @@ ltOmnibus <- lmer(value ~ partnerSex +  trait*sex + (1|PIN),
 stOmnibus <- lmer(value ~ partnerSex +  trait*sex + (1|PIN), 
                   data = stData) 
 
-#make dataframe with every combo of trait, sex, partner sex and use predict function to predict pref values for each combo
-predictDataLt <- expand.grid( unique(ltData$sex), unique(ltData$partnerSex), unique(ltData$trait))
-predictDataLt <- predictDataLt %>%
-  rename(
-    sex = Var1,
-    partnerSex = Var2,
-    trait = Var3
-  )
-
-predictDataSt <- expand.grid(unique(stData$sex), unique(stData$partnerSex), unique(stData$trait))
-predictDataSt <- predictDataSt %>%
-  rename(
-    sex = Var1,
-    partnerSex = Var2,
-    trait = Var3
-  )
-
-
-##LT predict 
-
-#use predict function
-predictDataLt$predictedValues <- predict(ltOmnibus, newdata = predictDataLt, re.form = NA) 
-
-
-#create new group variable  (0 = male participant/male target, 1 = male/female, 2 = female/male, 3 = female/female)
-predictDataLt$group <- ifelse(predictDataLt$sex == 1 & predictDataLt$partnerSex == 1, 0, 
-                       ifelse(predictDataLt$sex == 1 & predictDataLt$partnerSex == 0, 1, 
-                              ifelse(predictDataLt$sex == 0 & predictDataLt$partnerSex == 1, 2,
-                                     ifelse(predictDataLt$sex == 0 & predictDataLt$partnerSex == 0, 3, NA))))
-
-predictDataLt$group <- as.factor(predictDataLt$group)
-
-predictPlotLt <- ggplot(data = predictDataLt, aes(x=trait, y=predictedValues, fill=group))+  
-  geom_bar(stat = "identity", position=position_dodge())+ 
-  scale_fill_manual(values = c("0" = "darkblue", "1" = "yellow", "2" ="lightblue", "3" = "lightyellow"), 
-                    labels = c("male & male target", "male & female target", "female & male target", "female & female target")) +
-  labs(y= "Predicted Trait Values", x = "Trait")
 
 
 
-#ggsave("predictPlotLt.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-
-##St predict
-#use predict function
-predictDataSt$predictedValues <- predict(stOmnibus, newdata = predictDataSt, re.form = NA) 
-
-
-#create new group variable  (0 = male participant/male target, 1 = male/female, 2 = female/male, 3 = female/female)
-predictDataSt$group <- ifelse(predictDataSt$sex == 1 & predictDataSt$partnerSex == 1, 0, 
-                              ifelse(predictDataSt$sex == 1 & predictDataSt$partnerSex == 0, 1, 
-                                     ifelse(predictDataSt$sex == 0 & predictDataSt$partnerSex == 1, 2,
-                                            ifelse(predictDataSt$sex == 0 & predictDataSt$partnerSex == 0, 3, NA))))
-
-predictDataSt$group <- as.factor(predictDataSt$group)
-
-
-predictPlotSt <- ggplot(data = predictDataSt, aes(x=trait, y=predictedValues, fill=group))+  
-  geom_bar(stat = "identity", position=position_dodge())+ 
-  scale_fill_manual(values = c("0" = "darkblue", "1" = "yellow", "2" ="lightblue", "3" = "lightyellow"), 
-                    labels = c("male & male target", "male & female target", "female & male target", "female & female target")) +
-  labs(y= "Predicted Trait Values", x = "Trait")
-#ggsave("predictPlotSt.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-
-
-###LT prefs (using nested anova to look for interaction effects)
+###LT prefs
 
 #tidy format for analyses
 ltDataTidy <- ltData %>%
@@ -227,6 +155,8 @@ ltAgeInt <- lmer(AgeLik ~ sex*partnerSex + (1|PIN),
 
 ltAgeMain <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
                  data = ltDataTidy) #sig main effect of sex and partner sex
+
+
 
 ### ST prefs main effects ###
 
@@ -282,109 +212,8 @@ stAgeMain <- lmer(AgeLik ~ sex+partnerSex + (1|PIN),
 
 
 
-### violin plots (LT and ST)
-  #pref rating on y axis
-  #own sex on x axis (male v female)
-  #plot 2 violins for each own sex (partner sex -- male or female)
 
-##LT prefs violin plot
-
-ltDataTidy$partnerSex  <- as.factor(ltDataTidy$partnerSex)
-
-#health
-
-
-ltHealthPlot <- ggplot(ltDataTidy, aes(x=sex, y=health, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Long Term Health Preferences by Sex",x="Participant Sex", y = "LT Health Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#intelligence
-ltIntelPlot <- ggplot(ltDataTidy, aes(x=sex, y=intell, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Long Term Intelligence Preferences by Sex",x="Participant Sex", y = "LT Intelligence Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#kindness
-ltKindPlot <- ggplot(ltDataTidy, aes(x=sex, y=kind, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Long Term Kindness Preferences by Sex",x="Participant Sex", y = "LT Kindness Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#physical attractiveness
-ltPhysattPlot <- ggplot(ltDataTidy, aes(x=sex, y=physatt, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Long Term Physical Attractiveness Preferences by Sex",x="Participant Sex", y = "LT Physical Attractiveness Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#resources
-ltResourcesPlot <- ggplot(ltDataTidy, aes(x=sex, y=resources, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Long Term Resources Preferences by Sex",x="Participant Sex", y = "LT Resources Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#age
-ltAgePlot <- ggplot(ltDataTidy, aes(x=sex, y=AgeLik, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Long Term Resources Preferences by Sex",x="Participant Sex", y = "LT Age Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-##ST Prefs violin plot
-
-stDataTidy$partnerSex  <- as.factor(stDataTidy$partnerSex)
-
-#health
-stHealthPlot <- ggplot(stDataTidy, aes(x=sex, y=health, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Short Term Health Preferences by Sex",x="Participant Sex", y = "ST Health Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#intelligence
-stIntelPlot <- ggplot(stDataTidy, aes(x=sex, y=intell, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Short Term Intelligence Preferences by Sex",x="Participant Sex", y = "ST Intelligence Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#kindness
-stKindPlot <- ggplot(stDataTidy, aes(x=sex, y=kind, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Short Term Kindness Preferences by Sex",x="Participant Sex", y = "ST Kindness Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#physical attractiveness
-stPhysattPlot <- ggplot(stDataTidy, aes(x=sex, y=physatt, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Short Term Physical Attractiveness Preferences by Sex",x="Participant Sex", y = "ST Physical Attractiveness Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#resources
-stResourcesPlot <- ggplot(stDataTidy, aes(x=sex, y=resources, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Short Term Resources Preferences by Sex",x="Participant Sex", y = "ST Resources Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-#age
-stAgePlot <- ggplot(stDataTidy, aes(x=sex, y=AgeLik, fill = partnerSex)) +
-  geom_violin() + 
-  scale_x_discrete(limits=c("0", "1")) +
-  labs(title="Plot Long Term Resources Preferences by Sex",x="Participant Sex", y = "LT Age Preference") +
-  scale_fill_discrete(name = "Partner Sex")
-
-
-
-###Ridgeline Plots
-#traits on Y axis; values on X axis with different colors for each group (male/male, male/female, female/male, female/female)
+###Density Plots
 
 ###lt prefs
 
@@ -395,9 +224,6 @@ ltData$group <- ifelse(ltData$sex == 1 & ltData$partnerSex == 1, 0,
                                          ifelse(ltData$sex == 0 & ltData$partnerSex == 0, 3, NA))))
 ltData$group <- as.factor(ltData$group)
 
-#separate dataframe by men and women and then male vs female partners
-ltDataMalePartner <- subset(ltData, ltData$partnerSex == 1)
-ltDataFemalePartner <- subset(ltData, ltData$partnerSex == 0)
 
 ##overall plot faceted by partner sex
 
@@ -421,59 +247,30 @@ labellerFacet <- function(variable, value){
 ltMirrorPlot <- ggplot(ltData, aes(x = value, fill = group)) +
   #top
   geom_density(aes(y = after_stat(density)),
-               data = ltData[ltData$partnerSex == 0,], alpha = 0.6) + #female targets
+               data = ltData[ltData$partnerSex == 0,], alpha = 0.8) + #female targets
   #bottom
   geom_density(aes(y = -after_stat(density)),
-               data = ltData[ltData$partnerSex == 1,], alpha = 0.6) + #male targets
+               data = ltData[ltData$partnerSex == 1,], alpha = 0.8) + #male targets
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
-  scale_fill_manual(values = c("1" = "blue", "3" = "orange", "0" = "blue", "2" ="orange"), 
-                    labels = c("Male Participant", "Female Participant"),
-                    breaks = c("1", "3")) +
+  scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
+                    labels = c("Male Participant/Female Target", "Female Participant/Female Target",
+                               "Male Participant/Male Target",  "Female Participant/Male Target"),
+                    breaks = c("1", "3", "0", "2")) +
   labs(x = "Preference Value", y = "Density", fill = "Participant Sex/Target Sex") +
   theme_grey(base_size = 20) +
   theme(
     axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
     axis.title.y = element_text(hjust = 0.5)) +
   ggtitle("Preferences for Ideal Partners") +
-  geom_hline(yintercept = 0, color = "black", linetype = "solid", size = .5)  # Add a black vertical line at x = 0
+  geom_text(aes(x = .75, y = Inf, label = "Female \n Partners"),
+            hjust = 0, vjust = 2.5, color = "black", size = 6) +
+  geom_text(aes(x = .75, y = -Inf, label = "Male \n Partners"),
+            hjust = 0, vjust = -2.5, color = "black", size = 6) 
 
 
-
-#faceted ridgeline plot
-
-ltRidgeplot <- ggplot(ltData, aes(x = value, y = trait, fill = group)) +
-  geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("0" = "darkblue", "1" = "orangered", "2" ="lightblue", "3" = "orange"), 
-                    labels = c("Male Participant/Male Target", "Male Participant/Female Target", "Female Participant/Male Target", "Female Participant/Female Target")) +
-  labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
-  scale_y_discrete(labels = c("Age Difference", "Health", "Intelligence", "Kindness", "Attractiveness", "Resources"))+
-  theme_ridges()+
-  theme(
-    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
-    axis.title.y = element_text(hjust = 0.5)) +
-  ggtitle("Preferences for Ideal Partners") +
-  facet_wrap(~partnerSex, ncol = 1, labeller=labellerFacet)
-
-#ggsave("ridgelineLt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+#ggsave("densityLt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
-##box plot faceted by trait
-
-ltBoxplot <- ggplot(ltData, aes(x=sex, y=value, fill = partnerSex)) +
-  geom_boxplot(width = .7) + 
-  scale_x_discrete(limits=c("0", "1"), labels = c("Female", "Male")) +
-  labs(x="Participant Sex", y = "Trait") +
-  scale_fill_discrete(name = "Partner Sex", labels = c("Female", "Male")) +
-  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet) +
-  theme(
-    text = element_text(size = 14),  # Adjust the text size as needed
-    axis.title = element_text(size = 16),  # Adjust the axis title size
-    axis.text = element_text(size = 12),   # Adjust the axis text size
-    legend.title = element_text(size = 14),  # Adjust the legend title size
-    legend.text = element_text(size = 12)    # Adjust the legend text size
-  )
-
-#ggsave("boxPlotLt.jpeg", plot=last_plot(), width=250, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 ##st prefs
 
@@ -486,9 +283,6 @@ stData$group <- ifelse(stData$sex == 1 & stData$partnerSex == 1, 0,
 
 stData$group <- as.factor(stData$group)
 
-#separate dataframe by men and women and then male vs female partners
-stDataMalePartner <- subset(stData, stData$partnerSex == 1)
-stDataFemalePartner <- subset(stData, stData$partnerSex == 0)
 
 
 
@@ -497,12 +291,12 @@ stDataFemalePartner <- subset(stData, stData$partnerSex == 0)
 stMirrorPlot <- ggplot(stData, aes(x = value, fill = group)) +
   #top
   geom_density(aes(y = after_stat(density)),
-               data = stData[stData$partnerSex == 0,], alpha = 0.6) + #female targets
+               data = stData[stData$partnerSex == 0,], alpha = 0.8) + #female targets
   #bottom
   geom_density(aes(y = -after_stat(density)),
-               data = stData[stData$partnerSex == 1,], alpha = 0.6) + #male targets
+               data = stData[stData$partnerSex == 1,], alpha = 0.8) + #male targets
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
-  scale_fill_manual(values = c("1" = "orangered", "3" = "orange", "0" = "darkblue", "2" ="lightblue"), 
+  scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
                     labels = c("Male Participant/Female Target", "Female Participant/Female Target",
                                "Male Participant/Male Target",  "Female Participant/Male Target"),
                     breaks = c("1", "3", "0", "2")) +
@@ -511,48 +305,13 @@ stMirrorPlot <- ggplot(stData, aes(x = value, fill = group)) +
   theme(
     axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
     axis.title.y = element_text(hjust = 0.5)) +
-  ggtitle("Preferences for Ideal Partners") 
-
-
-
-
-
-#overall plot
-
-stRidgeplot <- ggplot(stData, aes(x = value, y = trait, fill = group)) +
-  geom_density_ridges(scale = 1, alpha = 0.6) +
-  scale_fill_manual(values = c("0" = "darkblue", "1" = "orangered", "2" = "lightblue", "3" = "orange"), 
-                    labels = c("Male Participant/Male Target", "Male Participant/Female Target", "Female Participant/Male Target", "Female Participant/Female Target")) +
-  labs(x = "Preference Value", y = "Trait", fill = "Participant Sex/Target Sex") +
-  scale_y_discrete(labels = c("Age Difference", "Health", "Intelligence", "Kindness", "Attractiveness", "Resources"))+
-  theme_ridges()+
-  theme(
-    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
-    axis.title.y = element_text(hjust = 0.5)) +
   ggtitle("Preferences for Ideal Partners") +
-  facet_wrap(~partnerSex, ncol = 1, labeller=labellerFacet)
+  geom_text(aes(x = .85, y = Inf, label = "Female \n Partners"),
+            hjust = 0, vjust = 2.5, color = "black", size = 6) +
+  geom_text(aes(x = .85, y = -Inf, label = "Male \n Partners"),
+            hjust = 0, vjust = -2.5, color = "black", size = 6) 
 
-#ggsave("ridgelineSt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-
-#boxplot faceted by trait
-
-stBoxplot <- ggplot(stData, aes(x=sex, y=value, fill = partnerSex)) +
-  geom_boxplot(width = .7) + 
-  scale_x_discrete(limits=c("0", "1"), labels = c("Female", "Male")) +
-  labs(x="Participant Sex", y = "Trait") +
-  scale_fill_discrete(name = "Partner Sex", labels = c("Female", "Male")) +
-  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet) +
-  theme(
-    text = element_text(size = 14),  # Adjust the text size as needed
-    axis.title = element_text(size = 16),  # Adjust the axis title size
-    axis.text = element_text(size = 12),   # Adjust the axis text size
-    legend.title = element_text(size = 14),  # Adjust the legend title size
-    legend.text = element_text(size = 12)    # Adjust the legend text size
-  )
-
-#ggsave("boxPlotSt.jpeg", plot=last_plot(), width=250, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
+#ggsave("densitySt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -610,17 +369,6 @@ ltDataK$kFitLt <- kFitLt$cluster
 ##Create vectors of preference means for each cluster 
 clustCentersLt<-kFitLt$centers
 
-##Look at breakdown by cluster, sex, and partner sex (divider is the last listed thing)
-clustSexLt<-table(ltDataK$sex, ltDataK$kFitLt, ltDataK$partnerSex)/rowSums(table(ltDataK$sex, ltDataK$kFitLt, ltDataK$partnerSex))
-
-#cluster breakdown of women
-clustSexLtF <- table(ltDataK$partnerSex[ltDataK$sex == 0], ltDataK$kFitLt[ltDataK$sex == 0])/
-  rowSums(table(ltDataK$partnerSex[ltDataK$sex == 0], ltDataK$kFitLt[ltDataK$sex == 0]))
-
-#cluster breakdown of men
-clustSexLtM <- table(ltDataK$partnerSex[ltDataK$sex == 1], ltDataK$kFitLt[ltDataK$sex == 1])/
-  rowSums(table(ltDataK$partnerSex[ltDataK$sex == 1], ltDataK$kFitLt[ltDataK$sex == 1]))
-
 
 #are men and women are choosing clusters at diff rates? 
   #have to separate based on ideal male v female partners bc independence assumption
@@ -659,6 +407,9 @@ names(chisqDataLt) <- c("PIN", "maleClust", "femaleClust")
 #run chisq,excluding NAs
 pSexClustChisqLt <- chisq.test(table(chisqDataLt$maleClust, chisqDataLt$femaleClust)) #sig
 
+
+
+
 ###Matrix Tables
 
 ##ideal female partners
@@ -677,7 +428,7 @@ LtMatrixPlotFemale <- ggplot(LtMatrixDataFemale, aes(x= sex, y = cluster, fill =
   geom_text(label = LtMatrixDataFemale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
+  scale_y_discrete(labels = c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart")) +
   ggtitle("A") +
   labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency (%)")
 
@@ -699,7 +450,7 @@ LtMatrixPlotMale <- ggplot(LtMatrixDataMale, aes(x= sex, y = cluster, fill = clu
   geom_text(label = LtMatrixDataMale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
+  scale_y_discrete(labels = c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart")) +
   ggtitle("B")+
   labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency (%)")
 
@@ -725,8 +476,8 @@ LtMatrixPlotPartners<- ggplot(LtMatrixDataPartners, aes(x= femaleClust, y = male
   geom_tile(color = "white") +
   geom_text(label = LtMatrixDataPartners$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
-  scale_y_discrete(labels = c('Wealthy & Kind','Kind & Smart','Attractive & Healthy', 'Smart')) +
+  scale_x_discrete(labels = c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart")) +
+  scale_y_discrete(labels = c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart")) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
 
 #ggsave("LtMatrixPlotPartners.jpeg", plot=last_plot(), width=250, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
@@ -736,18 +487,8 @@ LtMatrixPlotPartners<- ggplot(LtMatrixDataPartners, aes(x= femaleClust, y = male
 
 
 
-### Plotting ###
+### Plotting the clusters ###
 
-
-##plot bar graph with each trait mean for each 4 clusters (# clusters depends on scree)
-meanTraitLt <- c(clustCentersLt[1,], clustCentersLt[2,], clustCentersLt[3,], clustCentersLt[4,])
-mateTypeLt <-c(rep("1", 5), rep("2", 5), rep("3", 5), rep("4", 5))
-traitLt <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources"), 4))  
-plottingLt <- data.frame(meanTraitLt, mateTypeLt, traitLt)
-kFitPlotLt <- ggplot(data=plottingLt, aes(x=mateTypeLt, y=meanTraitLt, fill=traitLt)) +
-  geom_bar(stat="identity", color="black", position=position_dodge())+
-  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
-  scale_fill_discrete(name = "Trait")
 
 #Multipanel figure
 
@@ -793,7 +534,7 @@ plot4Lt <- ggplot(data=plotting4Lt, aes(x=trait4Lt, y=meanTrait4Lt)) +
 #combine clusters into one graph
 PRpanelPlotLt<-ggarrange(plot1Lt,plot2Lt,plot3Lt, plot4Lt,labels=c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
 
-#ggsave("PRpanelPlotLt.jpeg", plot=last_plot(), width=300, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+#ggsave("PRpanelPlotLt.jpeg", plot=last_plot(), width=300, height=200, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -840,215 +581,6 @@ screePlotSt<-qplot(1:7,kfitWssSt)
 ##compute differences in within ss across k for k-means clustering
 wssDiffsSt<-diff(kfitWssSt)
 
-##Add classification to the original dataframe
-
-kFitSt<-kmeans(stDataK[,9:13],4)
-stDataK$kFitSt <- kFitSt$cluster
-
-
-##Create vectors of preference means for each cluster 
-clustCentersSt<-kFitSt$centers
-
-##Look at breakdown by cluster, sex, and partner sex #0 = women, #1 = men
-clustSexSt<-table(stDataK$sex,stDataK$kFitSt, stDataK$partnerSex)/rowSums(table(stDataK$sex, stDataK$kFitSt, stDataK$partnerSex))
-
-#cluster choice for female participants
-clustSexStF <- table(stDataK$partnerSex[stDataK$sex == 0], stDataK$kFitSt[stDataK$sex == 0])/
-  rowSums(table(stDataK$partnerSex[stDataK$sex == 0], stDataK$kFitSt[stDataK$sex == 0]))
-
-#cluster choice for male participants
-clustSexStM <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt[stDataK$sex == 1])/
-  rowSums(table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt[stDataK$sex == 1]))
-
-
-###Chisq Analyses
-
-##are men and women are choosing clusters at diff rates? 
-#have to separate based on ideal male v female partners bc independence assumption
-chisqSexStIdealF <- chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0]))
-
-
-chisqSexStIdealM<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt[stDataK$partnerSex == 1])) #no
-
-
-##chisq -- male partner cluster x female partner cluster
-
-#create separate DF with pin + cluster + partner sex
-columns <- c(1, 3, 14)
-chisqDataSt <- stDataK[,columns]
-
-#create 2 new blank columns: male cluster and female cluster
-chisqDataSt$MaleClust <- NA
-chisqDataSt$FemaleClust <- NA
-
-#add cluster to column corresponding to correct partner sex
-
-for(i in 1:nrow(chisqDataSt)){
-  if(chisqDataSt$partnerSex[i] == 1){
-    chisqDataSt$MaleClust[i] <- chisqDataSt$kFitSt[i]
-  } else {
-    chisqDataSt$FemaleClust[i] <- chisqDataSt$kFitSt[i]
-  }
-  
-}
-
-#make df wide so each ID is only one row
-chisqDataSt <- pivot_wider(chisqDataSt, id_cols = PIN, names_from = partnerSex, values_from = c("kFitSt", "MaleClust", "FemaleClust"))
-#subset so only relevant columns are kept
-chisqDataSt <- subset(chisqDataSt, select = c(PIN, MaleClust_1, FemaleClust_0))
-#rename columns
-names(chisqDataSt) <- c("PIN", "maleClust", "femaleClust")
-
-#chisq test
-pSexClustChisqSt <- chisq.test(table(chisqDataSt$maleClust, chisqDataSt$femaleClust))
-                                
-  
-
-
-
-###Matrix Tables
-
-##ideal female partners
-
-#create matrix dataframe
-StMatrixDataFemale <- data.frame((table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0])/rowSums(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt[stDataK$partnerSex == 0])))*100)
-#relabel column names
-colnames(StMatrixDataFemale) <- c("sex", "cluster", "clusterFrequency")
-#round all numbers to 2 decimal places
-StMatrixDataFemale[,3] <-round(StMatrixDataFemale[,3],2) 
-
-
-#plot matrix
-StMatrixPlotFemale <- ggplot(StMatrixDataFemale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
-  geom_tile(color = "white") +
-  geom_text(label = StMatrixDataFemale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
-  ggtitle("Percentage of Female Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
-
-#ggsave("StMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-##ideal male partners
-
-#create matrix dataframe
-StMatrixDataMale <- data.frame((table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt[stDataK$partnerSex == 1])/rowSums(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt[stDataK$partnerSex == 1])))*100)
-#relabel column names
-colnames(StMatrixDataMale) <- c("sex", "cluster", "clusterFrequency")
-#round all numbers to 2 decimal places
-StMatrixDataMale[,3] <-round(StMatrixDataMale[,3],2) 
-
-
-#plot matrix
-StMatrixPlotMale <- ggplot(StMatrixDataMale, aes(x= sex, y = cluster, fill = clusterFrequency)) +
-  geom_tile(color = "white") +
-  geom_text(label = StMatrixDataMale$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
-  ggtitle("Percentage of Male Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
-
-
-# PANEL PLOT
-
-
-stMatrixPanel4 <- ggarrange(StMatrixPlotFemale, StMatrixPlotMale, nrow=2, ncol=1)
-
-##male compared to female partners
-
-#create matrix dataframe
-StMatrixDataPartners <- data.frame((table(chisqDataSt$maleClust, chisqDataSt$femaleClust))/sum(table(chisqDataSt$maleClust, chisqDataSt$femaleClust))*100)
-#relabel column names
-colnames(StMatrixDataPartners) <- c("maleClust", "femaleClust", "clusterFrequency")
-#round all numbers to 2 decimal places
-StMatrixDataPartners[,3] <-round(StMatrixDataPartners[,3],2) 
-
-
-#plot matrix
-StMatrixPlotPartners<- ggplot(StMatrixDataPartners, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
-  geom_tile(color = "white") +
-  geom_text(label = StMatrixDataPartners$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
-  scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
-  labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
-
-
-
-
-### Plotting ###
-
-##plot bar graph with each trait mean for each 3 clusters (# clusters depends on scree)
-meanTraitSt <- c(clustCentersSt[1,], clustCentersSt[2,], clustCentersSt[3,], clustCentersSt[4,])
-mateTypeSt <-c(rep("1", 5), rep("2", 5), rep("3", 5), rep("4", 5))
-traitSt <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources"), 4))  
-plottingSt <- data.frame(meanTraitSt, mateTypeSt, traitSt)
-kFitPlotSt <- ggplot(data=plottingSt, aes(x=mateTypeSt, y=meanTraitSt, fill=traitSt)) +
-  geom_bar(stat="identity", color="black", position=position_dodge())+
-  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
-  scale_fill_discrete(name = "Trait")
-
-
-#Multipanel figure
-
-
-#cluster 1 (title will change based on clusters)
-meanTrait1St <- clustCentersSt[1,]
-trait1St <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting1St <- data.frame(meanTrait1St, trait1St)
-plot1St <- ggplot(data=plotting1St, aes(x=trait1St, y=meanTrait1St)) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-1.6,1.6) +
-  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
-
-#cluster 2 
-meanTrait2St <- clustCentersSt[2,]
-trait2St <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting2St <- data.frame(meanTrait2St, trait2St)
-plot2St <- ggplot(data=plotting2St, aes(x=trait2St, y=meanTrait2St)) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
-  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
-
-#cluster 3 
-meanTrait3St <- clustCentersSt[3,]
-trait3St <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting3St <- data.frame(meanTrait3St, trait3St)
-plot3St <- ggplot(data=plotting3St, aes(x=trait3St, y=meanTrait3St)) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
-  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
-
-#cluster 4
-meanTrait4St <- clustCentersSt[4,]
-trait4St <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting4St <- data.frame(meanTrait4St, trait4St)
-plot4St <- ggplot(data=plotting4St, aes(x=trait4St, y=meanTrait4St)) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "yellow")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
-  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
-
-
-
-#combine clusters into one graph
-PRpanelPlotSt<-ggarrange(plot1St,plot2St,plot3St, plot4St,
-                         labels=c("Attractive and Healthy","Smart and Attractive","Wealthy and Kind", "Wealthy, Healthy, and Kind"), 
-                         nrow=1, ncol=4,font.label = list(size = 13, color = "black")) 
-
-
-
-
-
-
-
-
-###supplemental stuff
-
-#st prefs cluster analysis with 3 clusters
-
-
 ##Add classification (3) to the original dataframe
 
 kFitSt3<-kmeans(stDataK[,9:13],3)
@@ -1058,17 +590,6 @@ stDataK$kFitSt3 <- kFitSt3$cluster
 ##Create vectors of preference means for each cluster 
 clustCentersSt3<-kFitSt3$centers
 
-##Look at breakdown by cluster, sex, and partner sex #0 = women, #1 = men
-clustSexSt3<-table(stDataK$sex,stDataK$kFitSt3, stDataK$partnerSex)/rowSums(table(stDataK$sex, stDataK$kFitSt3, stDataK$partnerSex))
-
-#cluster choice for female participants
-clustSexStF3 <- table(stDataK$partnerSex[stDataK$sex == 0], stDataK$kFitSt3[stDataK$sex == 0])/
-  rowSums(table(stDataK$partnerSex[stDataK$sex == 0], stDataK$kFitSt3[stDataK$sex == 0]))
-
-#cluster choice for male participants
-clustSexStM3 <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt3[stDataK$sex == 1])/
-  rowSums(table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt3[stDataK$sex == 1]))
-
 
 ###Chisq Analyses
 
@@ -1076,13 +597,13 @@ clustSexStM3 <- table(stDataK$partnerSex[stDataK$sex == 1], stDataK$kFitSt3[stDa
 #have to separate based on ideal male v female partners bc independence assumption
 chisqSexStIdealF3 <- chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt3[stDataK$partnerSex == 0]))
 
-chisqSexStIdealM3<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt3[stDataK$partnerSex == 1]))
+chisqSexStIdealM3 <-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt3[stDataK$partnerSex == 1]))
 
 
 ##chisq -- male partner cluster x female partner cluster
 
 #create separate DF with pin + cluster + partner sex
-columns <- c(1, 3, 15) 
+columns <- c(1, 3, 14) 
 chisqDataSt3 <- stDataK[,columns]
 
 #create 2 new blank columns: male cluster and female cluster
@@ -1131,7 +652,7 @@ StMatrixPlotFemale3 <- ggplot(StMatrixDataFemale3, aes(x= sex, y = cluster, fill
   geom_text(label = StMatrixDataFemale3$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Kind and Smart","Wealthy")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Smart and Kind","Wealthy")) +
   ggtitle("Percentage of Female Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -1155,13 +676,14 @@ StMatrixPlotMale3 <- ggplot(StMatrixDataMale3, aes(x= sex, y = cluster, fill = c
   geom_text(label = StMatrixDataMale3$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Kind and Smart","Wealthy")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Smart and Kind","Wealthy")) +
   ggtitle("Percentage of Male Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
 
 #panel plot of both of these graphs
-stMatrixPanel3 <- ggarrange(StMatrixPlotFemale3, StMatrixPlotMale3, nrow=2, ncol=1)
+stMatrixPanel3 <- ggarrange(StMatrixPlotFemale3, StMatrixPlotMale3, nrow=1, ncol=2)
+#ggsave("StMatrixPlotPanel3.jpeg", plot=last_plot(), width=300, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -1180,9 +702,11 @@ StMatrixPlotPartners3<- ggplot(StMatrixDataPartners3, aes(x= femaleClust, y = ma
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataPartners3$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c("Attractive & Healthy","Kind and Smart","Wealthy")) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Kind and Smart","Wealthy")) +
+  scale_x_discrete(labels = c("Attractive & Healthy","Smart and Kind","Wealthy")) +
+  scale_y_discrete(labels = c("Attractive & Healthy","Smart and Kind","Wealthy")) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
+
+#ggsave("StMatrixPlotPartners.jpeg", plot=last_plot(), width=250, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -1190,16 +714,6 @@ StMatrixPlotPartners3<- ggplot(StMatrixDataPartners3, aes(x= femaleClust, y = ma
 
 
 ### Plotting ###
-
-##plot bar graph with each trait mean for each 3 clusters (# clusters depends on scree)
-meanTraitSt <- c(clustCentersSt[1,], clustCentersSt[2,], clustCentersSt[3,], clustCentersSt[4,])
-mateTypeSt <-c(rep("1", 5), rep("2", 5), rep("3", 5), rep("4", 5))
-traitSt <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources"), 4))  
-plottingSt <- data.frame(meanTraitSt, mateTypeSt, traitSt)
-kFitPlotSt <- ggplot(data=plottingSt, aes(x=mateTypeSt, y=meanTraitSt, fill=traitSt)) +
-  geom_bar(stat="identity", color="black", position=position_dodge())+
-  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
-  scale_fill_discrete(name = "Trait")
 
 
 #Multipanel figure
@@ -1211,7 +725,7 @@ trait1St3 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", 
 plotting1St3 <- data.frame(meanTrait1St3, trait1St3)
 plot1St3 <- ggplot(data=plotting1St3, aes(x=trait1St3, y=meanTrait1St3)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-1.6,1.6) +
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-.7,.7) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 2 
@@ -1220,7 +734,7 @@ trait2St3 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", 
 plotting2St3 <- data.frame(meanTrait2St3, trait2St3)
 plot2St3 <- ggplot(data=plotting2St3, aes(x=trait2St3, y=meanTrait2St3)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-.7,.7) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 3 
@@ -1229,17 +743,210 @@ trait3St3 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", 
 plotting3St3 <- data.frame(meanTrait3St3, trait3St3)
 plot3St3 <- ggplot(data=plotting3St3, aes(x=trait3St3, y=meanTrait3St3)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-.7,.7) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 
 
 #combine clusters into one graph
-PRpanelPlotSt3<-ggarrange(plot1St3,plot2St3,plot3St3,labels=c("Attractive & Healthy","Kind and Smart","Wealthy"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
+PRpanelPlotSt3<-ggarrange(plot1St3,plot2St3,plot3St3,labels=c("Attractive & Healthy","Smart and Kind","Wealthy"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
+
+#ggsave("PRpanelPlotSt3.jpeg", plot=last_plot(), width=300, height=200, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+
+
+
+
+
+###supplemental stuff
+
+#st prefs cluster analysis with 4 clusters
+
+##Add classification to the original dataframe
+
+kFitSt4<-kmeans(stDataK[,9:13],4)
+stDataK$kFitSt4 <- kFitSt4$cluster
+
+
+##Create vectors of preference means for each cluster 
+clustCentersSt4<-kFitSt4$centers
+
+
+###Chisq Analyses
+
+##are men and women are choosing clusters at diff rates? 
+#have to separate based on ideal male v female partners bc independence assumption
+chisqSexStIdealF4 <- chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt4[stDataK$partnerSex == 0]))
+chisqSexStIdealM4<-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt4[stDataK$partnerSex == 1])) 
+
+
+##chisq -- male partner cluster x female partner cluster
+
+#create separate DF with pin + cluster + partner sex
+columns <- c(1, 3, 15)
+chisqDataSt4 <- stDataK[,columns]
+
+#create 2 new blank columns: male cluster and female cluster
+chisqDataSt4$MaleClust <- NA
+chisqDataSt4$FemaleClust <- NA
+
+#add cluster to column corresponding to correct partner sex
+
+for(i in 1:nrow(chisqDataSt4)){
+  if(chisqDataSt4$partnerSex[i] == 1){
+    chisqDataSt4$MaleClust[i] <- chisqDataSt4$kFitSt4[i]
+  } else {
+    chisqDataSt4$FemaleClust[i] <- chisqDataSt4$kFitSt4[i]
+  }
+  
+}
+
+#make df wide so each ID is only one row
+chisqDataSt4 <- pivot_wider(chisqDataSt4, id_cols = PIN, names_from = partnerSex, values_from = c("kFitSt4", "MaleClust", "FemaleClust"))
+#subset so only relevant columns are kept
+chisqDataSt4 <- subset(chisqDataSt4, select = c(PIN, MaleClust_1, FemaleClust_0))
+#rename columns
+names(chisqDataSt4) <- c("PIN", "maleClust", "femaleClust")
+
+#fisher test (some cell have 3 or less, so can't do chisq)
+pSexClustFisherSt4 <- fisher.test(table(chisqDataSt4$maleClust, chisqDataSt4$femaleClust), simulate.p.value = T)
+
+
+
+
+
+###Matrix Tables
+
+##ideal female partners
+
+#create matrix dataframe
+StMatrixDataFemale4 <- data.frame((table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt4[stDataK$partnerSex == 0])/
+                                     rowSums(table(stDataK$sex[stDataK$partnerSex == 0],stDataK$kFitSt4[stDataK$partnerSex == 0])))*100)
+#relabel column names
+colnames(StMatrixDataFemale4) <- c("sex", "cluster", "clusterFrequency")
+#round all numbers to 2 decimal places
+StMatrixDataFemale4[,3] <-round(StMatrixDataFemale4[,3],2) 
+
+
+#plot matrix
+StMatrixPlotFemale4 <- ggplot(StMatrixDataFemale4, aes(x= sex, y = cluster, fill = clusterFrequency)) +
+  geom_tile(color = "white") +
+  geom_text(label = StMatrixDataFemale4$clusterFrequency)+
+  scale_fill_gradient(low = "white", high = "springgreen4") +
+  scale_x_discrete(labels = c('Female','Male')) +
+  scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
+  ggtitle("Percentage of Female Targets in Each Cluster")+
+  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+
+#ggsave("StMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+##ideal male partners
+
+#create matrix dataframe
+StMatrixDataMale4 <- data.frame((table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt4[stDataK$partnerSex == 1])/
+                                   rowSums(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt4[stDataK$partnerSex == 1])))*100)
+#relabel column names
+colnames(StMatrixDataMale4) <- c("sex", "cluster", "clusterFrequency")
+#round all numbers to 2 decimal places
+StMatrixDataMale4[,3] <-round(StMatrixDataMale4[,3],2) 
+
+
+#plot matrix
+StMatrixPlotMale4 <- ggplot(StMatrixDataMale4, aes(x= sex, y = cluster, fill = clusterFrequency)) +
+  geom_tile(color = "white") +
+  geom_text(label = StMatrixDataMale4$clusterFrequency)+
+  scale_fill_gradient(low = "white", high = "springgreen4") +
+  scale_x_discrete(labels = c('Female','Male')) +
+  scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
+  ggtitle("Percentage of Male Targets in Each Cluster")+
+  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+
+
+# PANEL PLOT
+
+
+stMatrixPanel4 <- ggarrange(StMatrixPlotFemale4, StMatrixPlotMale4, nrow=2, ncol=1)
+
+##male compared to female partners
+
+#create matrix dataframe
+StMatrixDataPartners4 <- data.frame((table(chisqDataSt4$maleClust, chisqDataSt4$femaleClust))/
+                                      sum(table(chisqDataSt4$maleClust, chisqDataSt4$femaleClust))*100)
+#relabel column names
+colnames(StMatrixDataPartners4) <- c("maleClust", "femaleClust", "clusterFrequency")
+#round all numbers to 2 decimal places
+StMatrixDataPartners4[,3] <-round(StMatrixDataPartners4[,3],2) 
+
+
+#plot matrix
+StMatrixPlotPartners4<- ggplot(StMatrixDataPartners4, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
+  geom_tile(color = "white") +
+  geom_text(label = StMatrixDataPartners4$clusterFrequency)+
+  scale_fill_gradient(low = "white", high = "springgreen4") +
+  scale_x_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
+  scale_y_discrete(labels = c('Attractive and Healthy','Smart and Attractive','Wealthy and Kind', 'Wealthy, Healthy, \n and Kind')) +
+  labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
+
+
+
+
+### Plotting ###
+
+#Multipanel figure
+
+
+#cluster 1 (title will change based on clusters)
+meanTrait1St4 <- clustCentersSt4[1,]
+trait1St4 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting1St4 <- data.frame(meanTrait1St4, trait1St4)
+plot1St4 <- ggplot(data=plotting1St4, aes(x=trait1St4, y=meanTrait1St4)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-1.5,1.5) +
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+#cluster 2 
+meanTrait2St4 <- clustCentersSt4[2,]
+trait2St4 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting2St4 <- data.frame(meanTrait2St4, trait2St4)
+plot2St4 <- ggplot(data=plotting2St4, aes(x=trait2St4, y=meanTrait2St4)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.5,1.5) +
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+#cluster 3 
+meanTrait3St4 <- clustCentersSt4[3,]
+trait3St4 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting3St4 <- data.frame(meanTrait3St4, trait3St4)
+plot3St4 <- ggplot(data=plotting3St4, aes(x=trait3St4, y=meanTrait3St4)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.5,1.5) +
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+#cluster 4
+meanTrait4St4 <- clustCentersSt4[4,]
+trait4St4 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
+plotting4St4 <- data.frame(meanTrait4St4, trait4St4)
+plot4St4 <- ggplot(data=plotting4St4, aes(x=trait4St4, y=meanTrait4St4)) +
+  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "yellow")+ 
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.5,1.5) +
+  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
+
+
+
+#combine clusters into one graph
+PRpanelPlotSt4<-ggarrange(plot1St4,plot2St4,plot3St4, plot4St4,
+                         labels=c("Wealthy","Smart and Kind","Not good?", "Attractive and Healthy"), 
+                         nrow=1, ncol=4,font.label = list(size = 13, color = "black")) 
+
+
+#ggsave("PRpanelPlotSt4.jpeg", plot=last_plot(), width=300, height=200, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+
 
 
 
 ###Supplemental Materials 2
+
 ##Analyses excluding people who still id-ed as heterosexual & hetero-romantic
 
 
@@ -1292,71 +999,6 @@ ltOmnibusBi <- lmer(value ~ partnerSex +  trait*sex + (1|PIN),
 
 stOmnibusBi <- lmer(value ~ partnerSex +  trait*sex + (1|PIN), 
                   data = stDataBi) 
-
-#make dataframe with every combo of trait, sex, partner sex and use predict function to predict pref values for each combo
-predictDataLtBi <- expand.grid( unique(ltDataBi$sex), unique(ltDataBi$partnerSex), unique(ltDataBi$trait))
-predictDataLtBi <- predictDataLtBi %>%
-  rename(
-    sex = Var1,
-    partnerSex = Var2,
-    trait = Var3
-  )
-
-predictDataStBi <- expand.grid(unique(stDataBi$sex), unique(stDataBi$partnerSex), unique(stDataBi$trait))
-predictDataStBi <- predictDataStBi %>%
-  rename(
-    sex = Var1,
-    partnerSex = Var2,
-    trait = Var3
-  )
-
-
-##LT predict 
-
-#use predict function
-predictDataLtBi$predictedValues <- predict(ltOmnibusBi, newdata = predictDataLtBi, re.form = NA) 
-
-
-#create new group variable  (0 = male participant/male target, 1 = male/female, 2 = female/male, 3 = female/female)
-predictDataLtBi$group <- ifelse(predictDataLtBi$sex == 1 & predictDataLtBi$partnerSex == 1, 0, 
-                              ifelse(predictDataLtBi$sex == 1 & predictDataLtBi$partnerSex == 0, 1, 
-                                     ifelse(predictDataLtBi$sex == 0 & predictDataLtBi$partnerSex == 1, 2,
-                                            ifelse(predictDataLtBi$sex == 0 & predictDataLtBi$partnerSex == 0, 3, NA))))
-
-predictDataLtBi$group <- as.factor(predictDataLtBi$group)
-
-predictPlotLtBi <- ggplot(data = predictDataLtBi, aes(x=trait, y=predictedValues, fill=group))+  
-  geom_bar(stat = "identity", position=position_dodge())+ 
-  scale_fill_manual(values = c("0" = "darkblue", "1" = "yellow", "2" ="lightblue", "3" = "lightyellow"), 
-                    labels = c("male & male target", "male & female target", "female & male target", "female & female target")) +
-  labs(y= "Predicted Trait Values", x = "Trait")
-
-
-
-#ggsave("predictPlotLtBi.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-
-##St predict
-#use predict function
-predictDataStBi$predictedValues <- predict(stOmnibusBi, newdata = predictDataStBi, re.form = NA) 
-
-
-#create new group variable  (0 = male participant/male target, 1 = male/female, 2 = female/male, 3 = female/female)
-predictDataStBi$group <- ifelse(predictDataStBi$sex == 1 & predictDataStBi$partnerSex == 1, 0, 
-                              ifelse(predictDataStBi$sex == 1 & predictDataStBi$partnerSex == 0, 1, 
-                                     ifelse(predictDataStBi$sex == 0 & predictDataStBi$partnerSex == 1, 2,
-                                            ifelse(predictDataStBi$sex == 0 & predictDataStBi$partnerSex == 0, 3, NA))))
-
-predictDataStBi$group <- as.factor(predictDataStBi$group)
-
-
-predictPlotStBi <- ggplot(data = predictDataStBi, aes(x=trait, y=predictedValues, fill=group))+  
-  geom_bar(stat = "identity", position=position_dodge())+ 
-  scale_fill_manual(values = c("0" = "darkblue", "1" = "yellow", "2" ="lightblue", "3" = "lightyellow"), 
-                    labels = c("male & male target", "male & female target", "female & male target", "female & female target")) +
-  labs(y= "Predicted Trait Values", x = "Trait")
-#ggsave("predictPlotStBi.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
 
 
 ###LT prefs (using nested anova to look for interaction effects)
@@ -1420,10 +1062,8 @@ stDataBiTidy <- stDataBi %>%
 stKindIntBi <- lmer(scale(kind) ~ sex*partnerSex + (1|PIN), 
                   data = stDataBiTidy) #sig interaction (same)
 
-#plot of interaction to visualize
-#library(interactions)
-#cat_plot(stKindIntBi, pred = partnerSex, modx = sex, geom = "line", point.shape = TRUE)
-#cat_plot(stKindIntBi, pred = sex, modx = partnerSex, geom = "line", point.shape = TRUE)
+stKindMainBi <- lmer(scale(kind) ~ sex + partnerSex + (1|PIN), 
+                     data = stDataBiTidy)
 
 
 #physical attractiveness
@@ -1469,44 +1109,92 @@ stAgeMainBi <- lmer(AgeLik ~ sex+partnerSex + (1|PIN),
 ###Visualizing data
 
 ##Long-Term Prefs
-#box plot faceted by trait
 
-ltBoxplotBi <- ggplot(ltDataBi, aes(x=sex, y=value, fill = partnerSex)) +
-  geom_boxplot(width = .7) + 
-  scale_x_discrete(limits=c("0", "1"), labels = c("Female", "Male")) +
-  labs(x="Participant Sex", y = "Trait") +
-  scale_fill_discrete(name = "Partner Sex", labels = c("Female", "Male")) +
-  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet) +
+#create new group variable  (0 = male participant/male target, 1 = male/female, 2 = female/male, 3 = female/female)
+ltDataBi$group <- ifelse(ltDataBi$sex == 1 & ltDataBi$partnerSex == 1, 0, 
+                         ifelse(ltDataBi$sex == 1 & ltDataBi$partnerSex == 0, 1, 
+                                ifelse(ltDataBi$sex == 0 & ltDataBi$partnerSex == 1, 2,
+                                       ifelse(ltDataBi$sex == 0 & ltDataBi$partnerSex == 0, 3, NA))))
+
+
+ltDataBi$group <- as.factor(ltDataBi$group)
+
+
+##faceted density plot (mirrored)
+
+ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
+  #top
+  geom_density(aes(y = after_stat(density)),
+               data = ltDataBi[ltDataBi$partnerSex == 0,], alpha = 0.8) + #female targets
+  #bottom
+  geom_density(aes(y = -after_stat(density)),
+               data = ltDataBi[ltDataBi$partnerSex == 1,], alpha = 0.8) + #male targets
+  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
+  scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
+                    labels = c("Male Participant/Female Target", "Female Participant/Female Target",
+                               "Male Participant/Male Target",  "Female Participant/Male Target"),
+                    breaks = c("1", "3", "0", "2")) +
+  labs(x = "Preference Value", y = "Density", fill = "Participant Sex/Target Sex") +
+  theme_grey(base_size = 20) +
   theme(
-    text = element_text(size = 14),  # Adjust the text size as needed
-    axis.title = element_text(size = 16),  # Adjust the axis title size
-    axis.text = element_text(size = 12),   # Adjust the axis text size
-    legend.title = element_text(size = 14),  # Adjust the legend title size
-    legend.text = element_text(size = 12)    # Adjust the legend text size
-  )
+    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
+    axis.title.y = element_text(hjust = 0.5)) +
+  ggtitle("Preferences for Ideal Partners") +
+  geom_text(aes(x = 1, y = Inf, label = "Female \n Partners"),
+            hjust = 0, vjust = 1.5, color = "black", size = 6) +
+  geom_text(aes(x = 1, y = -Inf, label = "Male \n Partners"),
+            hjust = 0, vjust = -1.5, color = "black", size = 6)
+  
 
-#ggsave("boxPlotLtBi.jpeg", plot=last_plot(), width=250, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+#ggsave("densityLtBi.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
-##Short-term prefs
 
-#boxplot faceted by trait
 
-stBoxplotBi <- ggplot(stDataBi, aes(x=sex, y=value, fill = partnerSex)) +
-  geom_boxplot(width = .7) + 
-  scale_x_discrete(limits=c("0", "1"), labels = c("Female", "Male")) +
-  labs(x="Participant Sex", y = "Trait") +
-  scale_fill_discrete(name = "Partner Sex", labels = c("Female", "Male")) +
-  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet) +
+
+##short term prefs
+
+#create new group variable  (0 = male participant/male target, 1 = male/female, 2 = female/male, 3 = female/female)
+stDataBi$group <- ifelse(stDataBi$sex == 1 & stDataBi$partnerSex == 1, 0, 
+                       ifelse(stDataBi$sex == 1 & stDataBi$partnerSex == 0, 1, 
+                              ifelse(stDataBi$sex == 0 & stDataBi$partnerSex == 1, 2,
+                                     ifelse(stDataBi$sex == 0 & stDataBi$partnerSex == 0, 3, NA))))
+
+
+stDataBi$group <- as.factor(stDataBi$group)
+
+
+
+
+##faceted density plot (mirrored)
+
+stMirrorPlotBi <- ggplot(stDataBi, aes(x = value, fill = group)) +
+  #top
+  geom_density(aes(y = after_stat(density)),
+               data = stDataBi[stDataBi$partnerSex == 0,], alpha = 0.8) + #female targets
+  #bottom
+  geom_density(aes(y = -after_stat(density)),
+               data = stDataBi[stDataBi$partnerSex == 1,], alpha = 0.8) + #male targets
+  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
+  scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
+                    labels = c("Male Participant/Female Target", "Female Participant/Female Target",
+                               "Male Participant/Male Target",  "Female Participant/Male Target"),
+                    breaks = c("1", "3", "0", "2")) +
+  labs(x = "Preference Value", y = "Density", fill = "Participant Sex/Target Sex") +
+  theme_grey(base_size = 20) +
   theme(
-    text = element_text(size = 14),  # Adjust the text size as needed
-    axis.title = element_text(size = 16),  # Adjust the axis title size
-    axis.text = element_text(size = 12),   # Adjust the axis text size
-    legend.title = element_text(size = 14),  # Adjust the legend title size
-    legend.text = element_text(size = 12)    # Adjust the legend text size
-  )
+    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
+    axis.title.y = element_text(hjust = 0.5)) +
+  ggtitle("Preferences for Ideal Partners") +
+  geom_text(aes(x = 1.2, y = Inf, label = "Female \n Partners"),
+            hjust = 0, vjust = 1.25, color = "black", size = 6) +
+  geom_text(aes(x = 1.2, y = -Inf, label = "Male \n Partners"),
+            hjust = 0, vjust = -1.25, color = "black", size = 6)
 
-#ggsave("boxPlotStBi.jpeg", plot=last_plot(), width=250, height=250, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+#ggsave("densityStBi.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+
+
 
 
 
@@ -1562,18 +1250,6 @@ ltDataBiK$kFitLtBi <- kFitLtBi$cluster
 
 ##Create vectors of preference means for each cluster 
 clustCentersLtBi<-kFitLtBi$centers
-
-##Look at breakdown by cluster, sex, and partner sex (divider is the last listed thing)
-clustSexLtBi<-table(ltDataBiK$sex, ltDataBiK$kFitLtBi, ltDataBiK$partnerSex)/
-  rowSums(table(ltDataBiK$sex, ltDataBiK$kFitLtBi, ltDataBiK$partnerSex))
-
-#cluster breakdown of women
-clustSexLtBiF <- table(ltDataBiK$partnerSex[ltDataBiK$sex == 0], ltDataBiK$kFitLtBi[ltDataBiK$sex == 0])/
-  rowSums(table(ltDataBiK$partnerSex[ltDataBiK$sex == 0], ltDataBiK$kFitLtBi[ltDataBiK$sex == 0]))
-
-#cluster breakdown of men
-clustSexLtBiM <- table(ltDataBiK$partnerSex[ltDataBiK$sex == 1], ltDataBiK$kFitLtBi[ltDataBiK$sex == 1])/
-  rowSums(table(ltDataBiK$partnerSex[ltDataBiK$sex == 1], ltDataBiK$kFitLtBi[ltDataBiK$sex == 1]))
 
 
 #are men and women are choosing clusters at diff rates? 
@@ -1635,7 +1311,7 @@ LtMatrixPlotBiFemale <- ggplot(LtMatrixDataBiFemale, aes(x= sex, y = cluster, fi
   geom_text(label = LtMatrixDataBiFemale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy")) +
+  scale_y_discrete(labels = c("Kind & Smart","Smart & Healthy","Attractive & Healthy", "Smart")) +
   ggtitle("Percentage of Female Targets in Each Cluster") +
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -1658,13 +1334,17 @@ LtMatrixPlotBiMale <- ggplot(LtMatrixDataBiMale, aes(x= sex, y = cluster, fill =
   geom_text(label = LtMatrixDataBiMale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy")) +
+  scale_y_discrete(labels = c("Kind & Smart","Smart & Healthy","Attractive & Healthy", "Smart")) +
   ggtitle("Percentage of Male Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
 
 #panel plot of both of these graphs
-ltMatrixPanelBi <- ggarrange(LtMatrixPlotBiFemale, LtMatrixPlotBiMale, nrow=2, ncol=1)
+ltMatrixPanelBi <- ggarrange(LtMatrixPlotBiFemale, LtMatrixPlotBiMale, nrow=1, ncol=2)
+#ggsave("LtMatrixPlotPanelBi.jpeg", plot=last_plot(), width=300, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+
+
 
 ##male compared to female partners
 
@@ -1682,10 +1362,11 @@ LtMatrixPlotBiPartners<- ggplot(LtMatrixDataBiPartners, aes(x= femaleClust, y = 
   geom_tile(color = "white") +
   geom_text(label = LtMatrixDataBiPartners$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy")) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy")) +
+  scale_x_discrete(labels = c("Kind & Smart","Smart & Healthy","Attractive & Healthy", "Smart")) +
+  scale_y_discrete(labels = c("Kind & Smart","Smart & Healthy","Attractive & Healthy", "Smart")) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
 
+#ggsave("LtMatrixPlotBiPartners.jpeg", plot=last_plot(), width=200, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -1694,16 +1375,6 @@ LtMatrixPlotBiPartners<- ggplot(LtMatrixDataBiPartners, aes(x= femaleClust, y = 
 
 ### Plotting ###
 
-
-##plot bar graph with each trait mean for each 4 clusters (# clusters depends on scree)
-meanTraitLtBi <- c(clustCentersLtBi[1,], clustCentersLtBi[2,], clustCentersLtBi[3,], clustCentersLtBi[4,])
-mateTypeLtBi <-c(rep("1", 5), rep("2", 5), rep("3", 5), rep("4", 5))
-traitLtBi <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources"), 4))  
-plottingLtBi <- data.frame(meanTraitLtBi, mateTypeLtBi, traitLtBi)
-kFitPlotLtBi <- ggplot(data=plottingLtBi, aes(x=mateTypeLtBi, y=meanTraitLtBi, fill=traitLtBi)) +
-  geom_bar(stat="identity", color="black", position=position_dodge())+
-  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
-  scale_fill_discrete(name = "Trait")
 
 #Multipanel figure
 
@@ -1748,7 +1419,7 @@ plot4LtBi <- ggplot(data=plotting4LtBi, aes(x=trait4LtBi, y=meanTrait4LtBi)) +
 
 #combine clusters into one graph
 PRpanelPlotLtBi<-ggarrange(plot1LtBi,plot2LtBi,plot3LtBi, plot4Lt,
-                           labels=c("Attractive & Healthy","Smart & Kind","Wealthy & Healthy", "Smart & Wealthy"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
+                           labels=c("Kind & Smart","Smart & Healthy","Attractive & Healthy", "Smart"), nrow=1, ncol=4,font.label = list(size = 14, color = "black"))
 
 
 
@@ -1795,37 +1466,21 @@ screePlotStBi<-qplot(1:7,kfitWssStBi)
 wssDiffsSt<-diff(kfitWssSt)
 
 ##Add classification to the original dataframe
-#4 clusters described below is supplement. Data better fits 3 clusters. 
-
-kFitStBi<-kmeans(stDataBiK[,9:13],4)
+kFitStBi<-kmeans(stDataBiK[,9:13],3)
 stDataBiK$kFitStBi <- kFitStBi$cluster
 
 
 ##Create vectors of preference means for each cluster 
 clustCentersStBi<-kFitStBi$centers
 
-##Look at breakdown by cluster, sex, and partner sex #0 = women, #1 = men
-clustSexStBi<-table(stDataBiK$sex,stDataBiK$kFitStBi, stDataBiK$partnerSex)/
-  rowSums(table(stDataBiK$sex, stDataBiK$kFitStBi, stDataBiK$partnerSex))
-
-#cluster choice for female participants
-clustSexStBiF <- table(stDataBiK$partnerSex[stDataBiK$sex == 0], stDataBiK$kFitStBi[stDataBiK$sex == 0])/
-  rowSums(table(stDataBiK$partnerSex[stDataBiK$sex == 0], stDataBiK$kFitStBi[stDataBiK$sex == 0]))
-
-#cluster choice for male participants
-clustSexStBiM <- table(stDataBiK$partnerSex[stDataBiK$sex == 1], stDataBiK$kFitStBi[stDataBiK$sex == 1])/
-  rowSums(table(stDataBiK$partnerSex[stDataBiK$sex == 1], stDataBiK$kFitStBi[stDataBiK$sex == 1]))
-
 
 ###Chisq Analyses
 
 ##are men and women are choosing clusters at diff rates? 
 #have to separate based on ideal male v female partners bc independence assumption
-chisqSexStIdealF <- chisq.test(table(stDataBiK$sex[stDataBiK$partnerSex == 0],stDataBiK$kFitStBi[stDataBiK$partnerSex == 0]))
+chisqSexStBiIdealF <- chisq.test(table(stDataBiK$sex[stDataBiK$partnerSex == 0],stDataBiK$kFitStBi[stDataBiK$partnerSex == 0]))
 
-
-#fisher test bc one cell has only 3 partners
-fisherSexStIdealM<-fisher.test(table(stDataBiK$sex[stDataBiK$partnerSex == 1],stDataBiK$kFitStBi[stDataBiK$partnerSex == 1])) 
+chisqSexStBiIdealM<-chisq.test(table(stDataBiK$sex[stDataBiK$partnerSex == 1],stDataBiK$kFitStBi[stDataBiK$partnerSex == 1])) 
 
 
 
@@ -1857,9 +1512,8 @@ chisqDataStBi <- subset(chisqDataStBi, select = c(PIN, MaleClust_1, FemaleClust_
 #rename columns
 names(chisqDataStBi) <- c("PIN", "maleClust", "femaleClust")
 
-#run fisher instead of chisq bc some cells have 0
-pSexClustFisherStBi <- fisher.test(table(chisqDataStBi$maleClust, chisqDataStBi$femaleClust),
-                                 simulate.p.value = T)
+#run chisq
+pSexClustChisqStBi <- chisq.test(table(chisqDataStBi$maleClust, chisqDataStBi$femaleClust))
 
 
 ###Matrix Tables
@@ -1881,7 +1535,7 @@ StMatrixPlotBiFemale <- ggplot(StMatrixDataBiFemale, aes(x= sex, y = cluster, fi
   geom_text(label = StMatrixDataBiFemale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy")) +
+  scale_y_discrete(labels = c("Wealthy","Attractive & Healthy","Smart & Kind")) +
   ggtitle("Percentage of Female Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -1904,7 +1558,7 @@ StMatrixPlotBiMale <- ggplot(StMatrixDataBiMale, aes(x= sex, y = cluster, fill =
   geom_text(label = StMatrixDataBiMale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy")) +
+  scale_y_discrete(labels = c("Wealthy","Attractive & Healthy","Smart & Kind")) +
   ggtitle("Percentage of Male Targets in Each Cluster")+
   labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
 
@@ -1912,7 +1566,8 @@ StMatrixPlotBiMale <- ggplot(StMatrixDataBiMale, aes(x= sex, y = cluster, fill =
 # PANEL PLOT
 
 
-stMatrixPanel4Bi <- ggarrange(StMatrixPlotBiFemale, StMatrixPlotBiMale, nrow=2, ncol=1)
+stMatrixPanelBi <- ggarrange(StMatrixPlotBiFemale, StMatrixPlotBiMale, nrow=1, ncol=2)
+#ggsave("StMatrixPlotPanelBi.jpeg", plot=last_plot(), width=300, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -1932,24 +1587,14 @@ StMatrixPlotBiPartners<- ggplot(StMatrixDataBiPartners, aes(x= femaleClust, y = 
   geom_tile(color = "white") +
   geom_text(label = StMatrixDataBiPartners$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy")) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy")) +
+  scale_x_discrete(labels = c("Wealthy","Attractive & Healthy","Smart & Kind")) +
+  scale_y_discrete(labels = c("Wealthy","Attractive & Healthy","Smart & Kind")) +
   labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
 
 
 
 
 ### Plotting ###
-
-##plot bar graph with each trait mean for each 3 clusters (# clusters depends on scree)
-meanTraitStBi <- c(clustCentersStBi[1,], clustCentersStBi[2,], clustCentersStBi[3,], clustCentersStBi[4,])
-mateTypeStBi <-c(rep("1", 5), rep("2", 5), rep("3", 5), rep("4", 5))
-traitStBi <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources"), 4))  
-plottingStBi <- data.frame(meanTraitStBi, mateTypeStBi, traitStBi)
-kFitPlotStBi <- ggplot(data=plottingStBi, aes(x=mateTypeStBi, y=meanTraitStBi, fill=traitStBi)) +
-  geom_bar(stat="identity", color="black", position=position_dodge())+
-  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
-  scale_fill_discrete(name = "Trait")
 
 
 #Multipanel figure
@@ -1961,7 +1606,7 @@ trait1StBi <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness",
 plotting1StBi <- data.frame(meanTrait1StBi, trait1StBi)
 plot1StBi <- ggplot(data=plotting1StBi, aes(x=trait1StBi, y=meanTrait1StBi)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-1.6,1.6) +
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-.7,.7) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 2 
@@ -1970,7 +1615,7 @@ trait2StBi <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness",
 plotting2StBi <- data.frame(meanTrait2StBi, trait2StBi)
 plot2StBi <- ggplot(data=plotting2StBi, aes(x=trait2StBi, y=meanTrait2StBi)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
+  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-.7,.7) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 #cluster 3 
@@ -1979,229 +1624,13 @@ trait3StBi <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness",
 plotting3StBi <- data.frame(meanTrait3StBi, trait3StBi)
 plot3StBi <- ggplot(data=plotting3StBi, aes(x=trait3StBi, y=meanTrait3StBi)) +
   geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
-  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
-
-#cluster 4
-meanTrait4StBi <- clustCentersStBi[4,]
-trait4StBi <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting4StBi <- data.frame(meanTrait4StBi, trait4StBi)
-plot4StBi <- ggplot(data=plotting4StBi, aes(x=trait4StBi, y=meanTrait4StBi)) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "yellow")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-1.6,1.6) +
-  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
-
-
-
-#combine clusters into one graph
-PRpanelPlotStBi<-ggarrange(plot1StBi,plot2StBi,plot3StBi, plot4StBi,
-                         labels=c("Attractive & Healthy","Bad at everything?","Kind & Smart", "Wealthy"), 
-                         nrow=1, ncol=4,font.label = list(size = 13, color = "black")) 
-
-
-
-
-
-
-
-
-###Bi only: supplemental stuff
-
-#st prefs cluster analysis with 3 clusters
-
-
-##Add classification (3) to the original dataframe
-
-kFitStBi3<-kmeans(stDataBiK[,9:13],3)
-stDataBiK$kFitStBi3 <- kFitStBi3$cluster
-
-
-##Create vectors of preference means for each cluster 
-clustCentersStBi3<-kFitStBi3$centers
-
-##Look at breakdown by cluster, sex, and partner sex #0 = women, #1 = men
-clustSexStBi3<-table(stDataBiK$sex,stDataBiK$kFitStBi3, stDataBiK$partnerSex)/
-  rowSums(table(stDataBiK$sex, stDataBiK$kFitStBi3, stDataBiK$partnerSex))
-
-#cluster choice for female participants
-clustSexStBiF3 <- table(stDataBiK$partnerSex[stDataBiK$sex == 0], stDataBiK$kFitStBi3[stDataBiK$sex == 0])/
-  rowSums(table(stDataBiK$partnerSex[stDataBiK$sex == 0], stDataBiK$kFitStBi3[stDataBiK$sex == 0]))
-
-#cluster choice for male participants
-clustSexStBiM3 <- table(stDataBiK$partnerSex[stDataBiK$sex == 1], stDataBiK$kFitStBi3[stDataBiK$sex == 1])/
-  rowSums(table(stDataBiK$partnerSex[stDataBiK$sex == 1], stDataBiK$kFitStBi3[stDataBiK$sex == 1]))
-
-
-###Chisq Analyses
-
-##are men and women are choosing clusters at diff rates? 
-#have to separate based on ideal male v female partners bc independence assumption
-chisqSexStBiIdealF <- chisq.test(table(stDataBiK$sex[stDataBiK$partnerSex == 0],stDataBiK$kFitStBi3[stDataBiK$partnerSex == 0]))
-
-chisqSexStBiIdealM<-chisq.test(table(stDataBiK$sex[stDataBiK$partnerSex == 1],stDataBiK$kFitStBi3[stDataBiK$partnerSex == 1]))
-
-
-##chisq -- male partner cluster x female partner cluster
-
-#create separate DF with pin + cluster + partner sex
-columns <- c(1, 3, 15) 
-chisqDataStBi3 <- stDataBiK[,columns]
-
-#create 2 new blank columns: male cluster and female cluster
-chisqDataStBi3$MaleClust <- NA
-chisqDataStBi3$FemaleClust <- NA
-
-#add cluster to column corresponding to correct partner sex
-
-for(i in 1:nrow(chisqDataStBi3)){
-  if(chisqDataStBi3$partnerSex[i] == 1){
-    chisqDataStBi3$MaleClust[i] <- chisqDataStBi3$kFitStBi3[i]
-  } else {
-    chisqDataStBi3$FemaleClust[i] <- chisqDataStBi3$kFitStBi3[i]
-  }
-  
-}
-
-#make df wide so each ID is only one row
-chisqDataStBi3 <- pivot_wider(chisqDataStBi3, id_cols = PIN, names_from = partnerSex, values_from = c("kFitStBi3", "MaleClust", "FemaleClust"))
-#subset so only relevant columns are kept
-chisqDataStBi3 <- subset(chisqDataStBi3, select = c(PIN, MaleClust_1, FemaleClust_0))
-#rename columns
-names(chisqDataStBi3) <- c("PIN", "maleClust", "femaleClust")
-
-#chisq test, male vs female partners
-pSexClustChisqStBi3 <- chisq.test(table(chisqDataStBi3$maleClust, chisqDataStBi3$femaleClust))
-
-
-
-
-###Matrix Tables
-
-##ideal female partners
-
-#create matrix dataframe
-StMatrixDataBiFemale3 <- data.frame((table(stDataBiK$sex[stDataBiK$partnerSex == 0],stDataBiK$kFitStBi3[stDataBiK$partnerSex == 0])/
-                                       rowSums(table(stDataBiK$sex[stDataBiK$partnerSex == 0],stDataBiK$kFitStBi3[stDataBiK$partnerSex == 0])))*100)
-#relabel column names
-colnames(StMatrixDataBiFemale3) <- c("sex", "cluster", "clusterFrequency")
-#round all numbers to 2 decimal places
-StMatrixDataBiFemale3[,3] <-round(StMatrixDataBiFemale3[,3],2) 
-
-
-#plot matrix
-StMatrixPlotBiFemale3 <- ggplot(StMatrixDataBiFemale3, aes(x= sex, y = cluster, fill = clusterFrequency)) +
-  geom_tile(color = "white") +
-  geom_text(label = StMatrixDataBiFemale3$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Smart & Kind","Wealthy","Attractive & Healthy")) +
-  ggtitle("Percentage of Female Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
-
-#ggsave("StMatrixPlotBiFemale3.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-
-
-##ideal male partners
-
-#create matrix dataframe
-StMatrixDataBiMale3 <- data.frame((table(stDataBiK$sex[stDataBiK$partnerSex == 1],stDataBiK$kFitStBi3[stDataBiK$partnerSex == 1])/
-                                     rowSums(table(stDataBiK$sex[stDataBiK$partnerSex == 1],stDataBiK$kFitStBi3[stDataBiK$partnerSex == 1])))*100)
-#relabel column names
-colnames(StMatrixDataBiMale3) <- c("sex", "cluster", "clusterFrequency")
-#round all numbers to 2 decimal places
-StMatrixDataBiMale3[,3] <-round(StMatrixDataBiMale3[,3],2) 
-
-
-#plot matrix
-StMatrixPlotBiMale3 <- ggplot(StMatrixDataBiMale3, aes(x= sex, y = cluster, fill = clusterFrequency)) +
-  geom_tile(color = "white") +
-  geom_text(label = StMatrixDataBiMale3$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Smart & Kind","Wealthy","Attractive & Healthy")) +
-  ggtitle("Percentage of Male Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
-
-
-#panel plot of both of these graphs
-stMatrixPanelBi3 <- ggarrange(StMatrixPlotBiFemale3, StMatrixPlotBiMale3, nrow=2, ncol=1)
-
-
-
-##male compared to female partners
-
-#create matrix dataframe
-StMatrixDataBiPartners3 <- data.frame((table(chisqDataStBi3$maleClust, chisqDataStBi3$femaleClust))/
-                                        sum(table(chisqDataStBi3$maleClust, chisqDataStBi3$femaleClust))*100)
-#relabel column names
-colnames(StMatrixDataBiPartners3) <- c("maleClust", "femaleClust", "clusterFrequency")
-#round all numbers to 2 decimal places
-StMatrixDataBiPartners3[,3] <-round(StMatrixDataBiPartners3[,3],2) 
-
-
-#plot matrix
-StMatrixPlotBiPartners3<- ggplot(StMatrixDataBiPartners3, aes(x= femaleClust, y = maleClust, fill = clusterFrequency)) +
-  geom_tile(color = "white") +
-  geom_text(label = StMatrixDataBiPartners3$clusterFrequency)+
-  scale_fill_gradient(low = "white", high = "springgreen4") +
-  scale_x_discrete(labels = c("Smart & Kind","Wealthy","Attractive & Healthy")) +
-  scale_y_discrete(labels = c("Smart & Kind","Wealthy","Attractive & Healthy")) +
-  labs(x = "Ideal Female Partner Cluster", y = "Ideal Male Partner Cluster", fill = "Cluster Frequency")
-
-
-
-
-
-
-### Plotting ###
-
-##plot bar graph with each trait mean for each 3 clusters (# clusters depends on scree)
-meanTraitStBi3 <- c(clustCentersStBi3[1,], clustCentersStBi3[2,], clustCentersStBi3[3,])
-mateTypeStBi3 <-c(rep("1", 5), rep("2", 5), rep("3", 5))
-traitStBi3 <- c(rep(c("health", "intelligence", "kindness", "physical attractiveness", "resources"), 3))  
-plottingStBi3 <- data.frame(meanTraitStBi3, mateTypeStBi3, traitStBi3)
-kFitPlotStBi3 <- ggplot(data=plottingStBi3, aes(x=mateTypeStBi3, y=meanTraitStBi3, fill=traitStBi3)) +
-  geom_bar(stat="identity", color="black", position=position_dodge())+
-  theme_minimal(base_size = 15) + xlab("Type of Mate") + ylab("Desired Trait Level") +
-  scale_fill_discrete(name = "Trait")
-
-
-#Multipanel figure
-
-
-#cluster 1 (title will change based on clusters)
-meanTrait1StBi3 <- clustCentersStBi3[1,]
-trait1StBi3 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting1StBi3 <- data.frame(meanTrait1StBi3, trait1StBi3)
-plot1StBi3 <- ggplot(data=plotting1StBi3, aes(x=trait1StBi3, y=meanTrait1StBi3)) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "red")+
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level")  +ylim(-.7,.7) +
-  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
-
-#cluster 2 
-meanTrait2StBi3 <- clustCentersStBi3[2,]
-trait2StBi3 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting2StBi3 <- data.frame(meanTrait2StBi3, trait2StBi3)
-plot2StBi3 <- ggplot(data=plotting2StBi3, aes(x=trait2StBi3, y=meanTrait2StBi3)) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "forestgreen")+ 
-  theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-.7,.7) +
-  theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
-
-#cluster 3 
-meanTrait3StBi3 <- clustCentersStBi3[3,]
-trait3StBi3 <- c("Health", "Intelligence", "Kindness", "Physical Attractiveness", "Resources")
-plotting3StBi3 <- data.frame(meanTrait3StBi3, trait3StBi3)
-plot3StBi3 <- ggplot(data=plotting3StBi3, aes(x=trait3StBi3, y=meanTrait3StBi3)) +
-  geom_bar(stat="identity", color="black", position=position_dodge(), fill = "purple")+ 
   theme_minimal(base_size = 14) + xlab("Trait") + ylab("Relative Desired Trait Level") +ylim(-.7,.7) +
   theme(plot.title = element_text(size = 14), axis.text.x = element_text(angle = 90))
 
 
-
 #combine clusters into one graph
-PRpanelPlotStBi3<-ggarrange(plot1StBi3,plot2StBi3,plot3StBi3,labels=c("Smart & Kind","Wealthy","Attractive & Healthy"), nrow=1, ncol=3,font.label = list(size = 14, color = "black"))
+PRpanelPlotStBi<-ggarrange(plot1StBi,plot2StBi,plot3StBi,
+                         labels=c("Wealthy","Attractive & Healthy","Smart & Kind"), 
+                         nrow=1, ncol=3,font.label = list(size = 13, color = "black")) 
 
-
-
-
+#ggsave("PRpanelPlotStBi.jpeg", plot=last_plot(), width=300, height=200, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
