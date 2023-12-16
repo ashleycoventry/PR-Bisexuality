@@ -430,7 +430,7 @@ LtMatrixPlotFemale <- ggplot(LtMatrixDataFemale, aes(x= sex, y = cluster, fill =
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart")) +
   ggtitle("A") +
-  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency (%)")
+  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency")
 
 #ggsave("LtMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -452,12 +452,12 @@ LtMatrixPlotMale <- ggplot(LtMatrixDataMale, aes(x= sex, y = cluster, fill = clu
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart")) +
   ggtitle("B")+
-  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency (%)")
+  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency")
 
 
 #panel plot of both of these graphs
 ltMatrixPanel <- ggarrange(LtMatrixPlotFemale, LtMatrixPlotMale, nrow=1, ncol=2)
-#ggsave("LtMatrixPlotPanel.jpeg", plot=last_plot(), width=300, height=200, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+#ggsave("LtMatrixPlotPanel.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -653,8 +653,8 @@ StMatrixPlotFemale3 <- ggplot(StMatrixDataFemale3, aes(x= sex, y = cluster, fill
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c("Attractive & Healthy","Smart and Kind","Wealthy")) +
-  ggtitle("Percentage of Female Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+  ggtitle("A")+
+  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency")
 
 #ggsave("StMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -677,8 +677,8 @@ StMatrixPlotMale3 <- ggplot(StMatrixDataMale3, aes(x= sex, y = cluster, fill = c
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c("Attractive & Healthy","Smart and Kind","Wealthy")) +
-  ggtitle("Percentage of Male Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+  ggtitle("B")+
+  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency")
 
 
 #panel plot of both of these graphs
@@ -1312,8 +1312,8 @@ LtMatrixPlotBiFemale <- ggplot(LtMatrixDataBiFemale, aes(x= sex, y = cluster, fi
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c("Kind & Smart","Smart & Healthy","Attractive & Healthy", "Smart")) +
-  ggtitle("Percentage of Female Targets in Each Cluster") +
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+  ggtitle("A") +
+  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency")
 
 #ggsave("LtMatrixPlotBiFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -1335,8 +1335,8 @@ LtMatrixPlotBiMale <- ggplot(LtMatrixDataBiMale, aes(x= sex, y = cluster, fill =
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c("Kind & Smart","Smart & Healthy","Attractive & Healthy", "Smart")) +
-  ggtitle("Percentage of Male Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+  ggtitle("B")+
+  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency")
 
 
 #panel plot of both of these graphs
@@ -1536,8 +1536,8 @@ StMatrixPlotBiFemale <- ggplot(StMatrixDataBiFemale, aes(x= sex, y = cluster, fi
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c("Wealthy","Attractive & Healthy","Smart & Kind")) +
-  ggtitle("Percentage of Female Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+  ggtitle("A")+
+  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency")
 
 #ggsave("StMatrixPlotBiFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -1559,8 +1559,8 @@ StMatrixPlotBiMale <- ggplot(StMatrixDataBiMale, aes(x= sex, y = cluster, fill =
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
   scale_y_discrete(labels = c("Wealthy","Attractive & Healthy","Smart & Kind")) +
-  ggtitle("Percentage of Male Targets in Each Cluster")+
-  labs(x = "Participant Sex", y = "Cluster", fill = "Cluster Frequency")
+  ggtitle("B")+
+  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency")
 
 
 # PANEL PLOT
