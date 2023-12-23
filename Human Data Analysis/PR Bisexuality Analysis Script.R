@@ -428,9 +428,11 @@ LtMatrixPlotFemale <- ggplot(LtMatrixDataFemale, aes(x= sex, y = cluster, fill =
   geom_text(label = LtMatrixDataFemale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart")) +
+  scale_y_discrete(labels = c("Kind \n& Smart","Wealthy \n& Kind","Attractive \n& Healthy", "Smart")) +
   ggtitle("A") +
-  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster \nFrequency") +
+  theme(legend.position = "none")  # Remove legend for this plot
+
 
 #ggsave("LtMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -450,14 +452,16 @@ LtMatrixPlotMale <- ggplot(LtMatrixDataMale, aes(x= sex, y = cluster, fill = clu
   geom_text(label = LtMatrixDataMale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Kind & Smart","Wealthy & Kind","Attractive & Healthy", "Smart")) +
+  scale_y_discrete(labels = c("Kind \n& Smart","Wealthy \n& Kind","Attractive \n& Healthy", "Smart")) +
   ggtitle("B")+
-  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster \nFrequency") +
+  theme(legend.position = "none")  # Remove legend for this plot
 
 
 #panel plot of both of these graphs
-ltMatrixPanel <- ggarrange(LtMatrixPlotFemale, LtMatrixPlotMale, nrow=1, ncol=2)
-#ggsave("LtMatrixPlotPanel.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+ltMatrixPanel <- ggarrange(LtMatrixPlotFemale, LtMatrixPlotMale, nrow=1, ncol=2, 
+                           common.legend = TRUE, legend = "right")
+#ggsave("LtMatrixPlotPanel.jpeg", plot=last_plot(), width=200, height=110, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -652,9 +656,10 @@ StMatrixPlotFemale3 <- ggplot(StMatrixDataFemale3, aes(x= sex, y = cluster, fill
   geom_text(label = StMatrixDataFemale3$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Smart and Kind","Wealthy")) +
+  scale_y_discrete(labels = c("Attractive \n& Healthy","Smart \n& Kind","Wealthy")) +
   ggtitle("A")+
-  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster \nFrequency")+
+  theme(legend.position = "none")
 
 #ggsave("StMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -676,14 +681,16 @@ StMatrixPlotMale3 <- ggplot(StMatrixDataMale3, aes(x= sex, y = cluster, fill = c
   geom_text(label = StMatrixDataMale3$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Attractive & Healthy","Smart and Kind","Wealthy")) +
+  scale_y_discrete(labels = c("Attractive \n& Healthy","Smart \n& Kind","Wealthy")) +
   ggtitle("B")+
-  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Clustern \nFrequency") +
+  theme(legend.position = "none")
 
 
 #panel plot of both of these graphs
-stMatrixPanel3 <- ggarrange(StMatrixPlotFemale3, StMatrixPlotMale3, nrow=1, ncol=2)
-#ggsave("StMatrixPlotPanel3.jpeg", plot=last_plot(), width=300, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+stMatrixPanel3 <- ggarrange(StMatrixPlotFemale3, StMatrixPlotMale3, nrow=1, ncol=2,
+                            common.legend = TRUE, legend = "right")
+#ggsave("StMatrixPlotPanel3.jpeg", plot=last_plot(), width=200, height=110, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -834,9 +841,10 @@ StMatrixPlotFemale4 <- ggplot(StMatrixDataFemale4, aes(x= sex, y = cluster, fill
   geom_text(label = StMatrixDataFemale4$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Wealthy","Smart and Kind","Below Average", "Attractive and Healthy")) +
+  scale_y_discrete(labels = c("Wealthy","Smart \n&Kind","Below Average", "Attractive \n&Healthy")) +
   ggtitle("A")+
-  labs(x = "Participant Sex", y = "Percentage of Female Targets in Each Cluster", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Percentage of Female Targets in Each Cluster", fill = "Cluster \nFrequency")+
+  theme(legend.position = "none")
 
 #ggsave("StMatrixPlotFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -857,17 +865,19 @@ StMatrixPlotMale4 <- ggplot(StMatrixDataMale4, aes(x= sex, y = cluster, fill = c
   geom_text(label = StMatrixDataMale4$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Wealthy","Smart and Kind","Below Average", "Attractive and Healthy")) +
+  scale_y_discrete(labels = c("Wealthy","Smart \n&Kind","Below Average", "Attractive \n&Healthy")) +
   ggtitle("B")+
-  labs(x = "Participant Sex", y = "Percentage of Male Targets in Each Cluster", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Percentage of Male Targets in Each Cluster", fill = "Cluster \nFrequency")+
+  theme(legend.position = "none")
 
 
 # PANEL PLOT
 
 
-stMatrixPanel4 <- ggarrange(StMatrixPlotFemale4, StMatrixPlotMale4, nrow=1, ncol=2)
+stMatrixPanel4 <- ggarrange(StMatrixPlotFemale4, StMatrixPlotMale4, nrow=1, ncol=2, 
+                            common.legend = TRUE, legend = "right")
 
-#ggsave("StMatrixPlotPanel4.jpeg", plot=last_plot(), width=300, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+#ggsave("StMatrixPlotPanel4.jpeg", plot=last_plot(), width=200, height=110, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 ##male compared to female partners
@@ -1315,9 +1325,10 @@ LtMatrixPlotBiFemale <- ggplot(LtMatrixDataBiFemale, aes(x= sex, y = cluster, fi
   geom_text(label = LtMatrixDataBiFemale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Kind & Smart","Smart & Healthy","Attractive & Healthy", "Smart")) +
+  scale_y_discrete(labels = c("Kind \n& Smart","Smart \n& Healthy","Attractive \n& Healthy", "Smart")) +
   ggtitle("A") +
-  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster \nFrequency")+
+  theme(legend.position = "none")
 
 #ggsave("LtMatrixPlotBiFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -1338,14 +1349,16 @@ LtMatrixPlotBiMale <- ggplot(LtMatrixDataBiMale, aes(x= sex, y = cluster, fill =
   geom_text(label = LtMatrixDataBiMale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Kind & Smart","Smart & Healthy","Attractive & Healthy", "Smart")) +
+  scale_y_discrete(labels = c("Kind \n& Smart","Smart \n& Healthy","Attractive \n& Healthy", "Smart")) +
   ggtitle("B")+
-  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster \nFrequency") +
+  theme(legend.position = "none")
 
 
 #panel plot of both of these graphs
-ltMatrixPanelBi <- ggarrange(LtMatrixPlotBiFemale, LtMatrixPlotBiMale, nrow=1, ncol=2)
-#ggsave("LtMatrixPlotPanelBi.jpeg", plot=last_plot(), width=300, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+ltMatrixPanelBi <- ggarrange(LtMatrixPlotBiFemale, LtMatrixPlotBiMale, nrow=1, ncol=2, 
+                             common.legend = TRUE, legend = "right")
+#ggsave("LtMatrixPlotPanelBi.jpeg", plot=last_plot(), width=200, height=110, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 
@@ -1539,9 +1552,10 @@ StMatrixPlotBiFemale <- ggplot(StMatrixDataBiFemale, aes(x= sex, y = cluster, fi
   geom_text(label = StMatrixDataBiFemale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Wealthy","Attractive & Healthy","Smart & Kind")) +
+  scale_y_discrete(labels = c("Wealthy","Attractive \n& Healthy","Smart \n& Kind")) +
   ggtitle("A")+
-  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Cluster of Female Targets", fill = "Cluster \nFrequency") +
+  theme(legend.position = "none")
 
 #ggsave("StMatrixPlotBiFemale.jpeg", plot=last_plot(), width=225, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
@@ -1562,15 +1576,17 @@ StMatrixPlotBiMale <- ggplot(StMatrixDataBiMale, aes(x= sex, y = cluster, fill =
   geom_text(label = StMatrixDataBiMale$clusterFrequency)+
   scale_fill_gradient(low = "white", high = "springgreen4") +
   scale_x_discrete(labels = c('Female','Male')) +
-  scale_y_discrete(labels = c("Wealthy","Attractive & Healthy","Smart & Kind")) +
+  scale_y_discrete(labels = c("Wealthy","Attractive \n& Healthy","Smart \n& Kind")) +
   ggtitle("B")+
-  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster Frequency")
+  labs(x = "Participant Sex", y = "Cluster of Male Targets", fill = "Cluster \nFrequency")+
+  theme(legend.position = "none")
 
 
 # PANEL PLOT
 
 
-stMatrixPanelBi <- ggarrange(StMatrixPlotBiFemale, StMatrixPlotBiMale, nrow=1, ncol=2)
+stMatrixPanelBi <- ggarrange(StMatrixPlotBiFemale, StMatrixPlotBiMale, nrow=1, ncol=2,
+                             common.legend = TRUE, legend = "right")
 #ggsave("StMatrixPlotPanelBi.jpeg", plot=last_plot(), width=300, height=150, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
