@@ -1,5 +1,5 @@
-#####Project Rainbow Analysis Script -- Bisexual Preferences#####
-####### Ashley Coventry, Katy Walter, Ben Gelbart, Tamsin German, & Dan Conroy-Beam #######
+#####De-Confounding Sex and Sex of Partner in Mate Preference Research#####
+################Analysis Script##############
 
 ###load packages###
 library(lmerTest)
