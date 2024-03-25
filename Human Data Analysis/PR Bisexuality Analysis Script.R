@@ -18,7 +18,7 @@ set.seed(11182022)
 
 
 ### load data ###
-data<-read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
+data<-read.csv("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
     #only bisexual people remain after processing
 
 #exclude intersex participants
@@ -375,6 +375,9 @@ clustCentersLt<-kFitLt$centers
 chisqSexLtIdealF<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 0],ltDataK$kFitLt[ltDataK$partnerSex == 0])) #yes 
 chisqSexLtIdealM<-chisq.test(table(ltDataK$sex[ltDataK$partnerSex == 1],ltDataK$kFitLt[ltDataK$partnerSex == 1])) #yes
 
+chisqSexLtIdealFW <- cohenW( x = chisqSexLtIdealF$observed, p = chisqSexLtIdealF$expected) #effect size
+chisqSexLtIdealMW <- cohenW( x = chisqSexLtIdealM$observed, p = chisqSexLtIdealM$expected) #effect size
+
 
 ##chisq -- male partner cluster x female partner cluster
 
@@ -406,6 +409,7 @@ names(chisqDataLt) <- c("PIN", "maleClust", "femaleClust")
 
 #run chisq,excluding NAs
 pSexClustChisqLt <- chisq.test(table(chisqDataLt$maleClust, chisqDataLt$femaleClust)) #sig
+chisqSexLtIdealLTW <- cohenW( x = pSexClustChisqLt$observed, p = pSexClustChisqLt$expected) #effect size
 
 
 
@@ -603,6 +607,8 @@ chisqSexStIdealF3 <- chisq.test(table(stDataK$sex[stDataK$partnerSex == 0],stDat
 
 chisqSexStIdealM3 <-chisq.test(table(stDataK$sex[stDataK$partnerSex == 1],stDataK$kFitSt3[stDataK$partnerSex == 1]))
 
+chisqSexStIdealF3W <- cohenW( x = chisqSexStIdealF3$observed, p = chisqSexStIdealF3$expected) #effect size
+
 
 ##chisq -- male partner cluster x female partner cluster
 
@@ -635,7 +641,7 @@ names(chisqDataSt3) <- c("PIN", "maleClust", "femaleClust")
 #chisq test, male vs female partners
 pSexClustChisqSt3 <- chisq.test(table(chisqDataSt3$maleClust, chisqDataSt3$femaleClust))
 
-
+pSexClustChisqSt3W <- cohenW( x = pSexClustChisqSt3$observed, p = pSexClustChisqSt3$expected) #effect size
 
 
 ###Matrix Tables
