@@ -23,6 +23,9 @@ data<-read.csv("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nos
 
 #exclude intersex participants
 data <-  data[data$sex!=2,]
+#exclude people who did not report their sex
+data <- data[!is.na(data[,5]), ]
+
 
 ###converting preferred age to preferred age difference
   #130 = m_lt_age, 142 = f_lt_age, 154 = f_st_age, 166 = m_st_age
@@ -1652,3 +1655,27 @@ PRpanelPlotStBi<-ggarrange(plot1StBi,plot2StBi,plot3StBi,
                          nrow=1, ncol=3,font.label = list(size = 13, color = "black")) 
 
 #ggsave("PRpanelPlotStBi.jpeg", plot=last_plot(), width=300, height=200, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+
+
+
+
+########Generating descriptives of trait pref values
+healthDescriptives <- summary(ltDataTidy$health)
+healthSD <- sd(ltDataTidy$health, na.rm = TRUE)
+
+intellDescriptives <- summary(ltDataTidy$intell)
+intellSD <- sd(ltDataTidy$intell, na.rm = TRUE)
+
+kindDescriptives <- summary(ltDataTidy$kind)
+kindSD <- sd(ltDataTidy$kind, na.rm = TRUE)
+
+physattDescriptives <- summary(ltDataTidy$physatt)
+physattSD <- sd(ltDataTidy$physatt, na.rm = TRUE)
+
+resourcesDescriptives <- summary(ltDataTidy$resources)
+resourcesSD <- sd(ltDataTidy$resources, na.rm = TRUE)
+
+
+
+
