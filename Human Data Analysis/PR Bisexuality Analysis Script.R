@@ -106,9 +106,6 @@ ltOmnibus <- lmer(value ~ partnerSex +  trait*sex + (1|PIN),
 stOmnibus <- lmer(value ~ partnerSex +  trait*sex + (1|PIN), 
                   data = stData) 
 
-ltOmnibus2 <- lmer(scale(value) ~ partnerSex +  trait*sex + (1|PIN), 
-                  data = ltData) 
-
 
 ###LT prefs
 
