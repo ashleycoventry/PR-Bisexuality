@@ -30,8 +30,16 @@ data$sexuality <- ifelse(data$pref_check_1 == 1 & data$pref_check_2 == 1, 0,
                          #so in data$sexuality, 0 = bisexual, 1 = heterosexual, 2 = other
 
 
+#exclude intersex participants
+data <-  data[data$sex!=2,] #none in sample
+
+#exclude people who did not report their sex
+data <- data[!is.na(data[,5]), ] #none in sample
+
+
 #change preference rating variables to numeric
 data[,29:50]<-as.numeric(unlist(data[,29:50]))
+
 
 ### compute mate preference variables ###
 
@@ -54,6 +62,34 @@ colnames(comps)<-compnames
 
 #Cbind composite ratings into data
 data<-cbind(data,comps)
+
+
+###converting preferred age to preferred age difference
+#130 = m_lt_age, 142 = f_lt_age, 154 = f_st_age, 166 = m_st_age
+
+##converting participant age to same scale as ideal
+data$ageLik <- ifelse(data$age >= 75, 10, 
+                      ifelse(data$age >= 69, 9,
+                             ifelse(data$age >= 63, 8,
+                                    ifelse(data$age >= 57, 7,
+                                           ifelse(data$age >= 51, 6, 
+                                                  ifelse(data$age >= 45, 5, 
+                                                         ifelse(data$age >= 39, 4, 
+                                                                ifelse(data$age >= 33, 3, 
+                                                                       ifelse(data$age >= 27, 2, 
+                                                                              ifelse(data$age >= 21, 1, 0))))))))))
+
+
+
+##converting ideal partner age to ideal partner age difference
+
+#male ideal LT
+data$m_lt_age <- as.numeric(data$m_lt_age)
+data$m_Lt_AgeLik <- data$m_lt_age - data$ageLik
+
+#female ideal LT
+data$f_lt_age <- as.numeric(data$f_lt_age)
+data$f_Lt_AgeLik <- data$f_lt_age - data$ageLik
 
 
 ###Save Data###
