@@ -29,6 +29,9 @@ data$sexuality <- ifelse(data$pref_check_1 == 1 & data$pref_check_2 == 1, 0,
                                        2)))
                          #so in data$sexuality, 0 = bisexual, 1 = heterosexual, 2 = other
 
+#exclude non-bi and non-het participants 
+data <-  data[data$sexuality!=2,] #none in sample
+
 
 #exclude intersex participants
 data <-  data[data$sex!=2,] #none in sample
