@@ -60,10 +60,7 @@ data<-cbind(data,comps)
 
 #Determine the date and time
 date<-format(Sys.time(),format="%Y%m%d %H%M%S")
-
-
 format<-".csv"
-date<-format(Sys.time(),format="%m%d%Y %H%M%S")
 file<-file.path(paste0("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/PR-Bisexuality.nosync/Human Data/Processed Data/","/BisexualityStudy2_DataPROCESSED ",date,format))
 
 write.csv(data,file=file,row.names=F)
