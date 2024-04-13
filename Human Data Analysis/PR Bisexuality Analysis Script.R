@@ -117,42 +117,31 @@ ltDataTidy <- ltData %>%
 #standardizing outcome variable (traits)
 
 #health 
-ltHealthInt <- lmer(scale(health)  ~ sex*partnerSex + (1|PIN),
-                     data = ltDataTidy)#not sig
 
 ltHealthMain <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN),
                      data = ltDataTidy) #not sig
 #kindness 
-ltKindInt <- lmer(scale(kind)  ~ sex*partnerSex + (1|PIN),
-                   data = ltDataTidy) #no interaction
 
 ltKindMain <- lmer(scale(kind)  ~ sex+partnerSex + (1|PIN),
                   data = ltDataTidy) #sig main of sex and psex
 
 #physical attractiveness
-ltPhysattInt <- lmer(scale(physatt)  ~ sex*partnerSex + (1|PIN),
-                      data = ltDataTidy) #not sig
 
 ltPhysattMain <- lmer(scale(physatt)  ~ sex+partnerSex + (1|PIN),
                      data = ltDataTidy) #sig main effect of sex
 
 #intell
-ltIntellInt <- lmer(scale(intell)  ~ sex*partnerSex + (1|PIN),
-                     data = ltDataTidy) #not sig
 
 ltIntellMain <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
                     data = ltDataTidy) #sig effect of psex
 
 #resources
-ltResourceInt <- lmer(scale(resources)  ~ sex*partnerSex + (1|PIN),
-                       data = ltDataTidy) #not sig
 
 ltResourceMain <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                       data = ltDataTidy)  #sig main effect of psex, not sex
 
 #ideal age (NOT STANDARDIZED)
-ltAgeInt <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
-                  data = ltDataTidy) #not sig 
+
 
 ltAgeMain <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
                  data = ltDataTidy) #sig main effect of sex and partner sex
@@ -167,23 +156,20 @@ stDataTidy <- stData %>%
               values_from = value)
 
 #kindness
-stKindInt <- lmer(scale(kind) ~ sex*partnerSex + (1|PIN), 
-                   data = stDataTidy) 
+
 
 stKindMain <- lmer(scale(kind) ~ sex+partnerSex + (1|PIN), 
                   data = stDataTidy) 
 
 #physical attractiveness
-stPhysattInt <- lmer(scale(physatt) ~ sex*partnerSex + (1|PIN), 
-                   data = stDataTidy) 
+
 
 stPhysattMain <- lmer(scale(physatt) ~ sex+partnerSex + (1|PIN), 
                       data = stDataTidy) #only sig main effect of partner sex
 
 
 #health
-stHealthInt <- lmer(scale(health)  ~ sex*partnerSex + (1|PIN),
-                     data = stDataTidy)
+
 
 stHealthMain <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN),
                      data = stDataTidy) #sig main effect of partner sex
@@ -191,22 +177,18 @@ stHealthMain <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN),
 
 #intelligence
 
-stIntellInt <- lmer(scale(intell)  ~ sex*partnerSex + (1|PIN),
-                     data = stDataTidy)  
 
 stIntellMain <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
                     data = stDataTidy) #sig main effect of partner sex
 
 #resources
-stResourceInt <- lmer(scale(resources)  ~ sex*partnerSex + (1|PIN),
-                       data = stDataTidy) 
+
 
 stResourceMain <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                       data = stDataTidy) #sig effect of partner sex
 
 #age (NOT STANDARDIZED)
-stAgeInt <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
-                  data = stDataTidy) 
+
 
 stAgeMain <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
                   data = stDataTidy) #sig main effect of sex and partner sex
