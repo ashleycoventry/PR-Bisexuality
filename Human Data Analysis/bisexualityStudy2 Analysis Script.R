@@ -33,75 +33,74 @@ ltData$sexuality <- as.factor(ltData$sexuality)
 ltData$partnerSex  <- as.factor(ltData$partnerSex)
 
 
-#mixed effects models
-omnibus <- lmer(value ~ partnerSex + trait*sex + (1|PIN), 
-                  data = ltData)
+###mixed effects models
 
-omnibus2 <- lmer(value ~ partnerSex + trait*sex*sexuality + (1|PIN), 
-                 data = ltData) 
+##only bisexual participants (replicating study 1 analyses)
+ltDataBi <- ltData[ltData$sexuality == 0, ]
+
+omnibusBi <- lmer(value ~ partnerSex + trait*sex + (1|PIN), 
+                  data = ltDataBi)
+
+
+##only using people's opposite sex ratings (so het people + bi opp sex)
+ltDataCombo <- ltData[ltData$sex != ltData$partnerSex, ] #this makes it so we only keep rows where participnt sex is different than partner sex
+
+omnibusCombo <- lmer(value ~ trait*sex + sexuality + (1|PIN), 
+                 data = ltDataCombo) #started with 3 way interaction of trait, sex, sexuality, and then reduced from there
 
 
 
-###LT prefs
+###Trait by sex interactions 
 
-#tidy format for analyses
-ltDataTidy <- ltData %>%
+##tidy format for analyses
+
+#Bi-only data
+ltDataBiTidy <- ltDataBi %>%
   pivot_wider(names_from = trait, 
               values_from = value)
 
-
+ltDataComboTidy <- ltDataCombo %>%
+  pivot_wider(names_from = trait, 
+              values_from = value)
 
 #health 
 
-ltHealthMain <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN), 
-                     data = ltDataTidy) #not sig
+ltHealthBi <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN), 
+                     data = ltDataBiTidy) #not sig
 
-ltHealthMain2 <- lmer(scale(health) ~ sex + partnerSex + sex*sexuality + (1|PIN),
-                      data = ltDataTidy)
+
 #kindness 
 
-ltKindMain <- lmer(scale(kind)  ~ sex+partnerSex + (1|PIN),
-                   data = ltDataTidy) #sig main of sex, but not of psex (different than study1)
-
-ltKindMain2 <- lmer(scale(kind)  ~ sex+partnerSex + sex*sexuality + (1|PIN),
-                   data = ltDataTidy)
-
+ltKindBi <- lmer(scale(kind)  ~ sex+partnerSex + (1|PIN),
+                   data = ltDataBiTidy) #no sig main effects (different than study1)
 
 
 #physical attractiveness
 
-ltPhysattMain <- lmer(scale(physatt)  ~ sex+partnerSex + (1|PIN),
-                      data = ltDataTidy) #sig main effect of sex
+ltPhysattBi <- lmer(scale(physatt)  ~ sex+partnerSex + (1|PIN),
+                      data = ltDataBiTidy) #sig main effect of sex
 
 
-ltPhysattMain2 <- lmer(scale(physatt)  ~ sex+partnerSex + sex*sexuality+ (1|PIN),
-                      data = ltDataTidy)
 
 #intell
 
-ltIntellMain <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
-                     data = ltDataTidy) #sig effect of sex, not psex (opposite of study 1)
+ltIntellBi <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
+                     data = ltDataBiTidy) #no sig effects (diff to study 1)
 
-ltIntellMain2 <- lmer(scale(intell)  ~ sex+partnerSex + sex*sexuality + (1|PIN),
-                      data = ltDataTidy)
 
 
 #resources
 
-ltResourceMain <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
-                       data = ltDataTidy)  #sig main effect of psex AND sex (sex not in study1)
+ltResourceBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
+                       data = ltDataBiTidy)  #sig main effect of psex (same as study 1)
 
-ltResourceMain2 <- lmer(scale(resources)  ~ sex+partnerSex +sex*sexuality + (1|PIN),
-                       data = ltDataTidy)
+
+
 
 #ideal age (NOT STANDARDIZED)
 
-ltAgeMain <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
-                  data = ltDataTidy) #sig main effect of sex and partner sex
-
-
-ltAgeMain2 <- lmer(AgeLik ~ sex+partnerSex + sex*sexuality + (1|PIN), 
-                   data = ltDataTidy)
+ltAgeBi <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
+                  data = ltDataBiTidy) #sig main effect of sex and partner sex
 
 
 
