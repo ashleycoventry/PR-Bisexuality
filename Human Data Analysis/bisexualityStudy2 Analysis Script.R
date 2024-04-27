@@ -68,11 +68,16 @@ ltDataComboTidy <- ltDataCombo %>%
 ltHealthBi <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN), 
                      data = ltDataBiTidy) #not sig
 
+ltHealthCombo <- lm(scale(health) ~ sex, data = ltDataComboTidy)
+
 
 #kindness 
 
 ltKindBi <- lmer(scale(kind)  ~ sex+partnerSex + (1|PIN),
                    data = ltDataBiTidy) #no sig main effects (different than study1)
+
+ltKindCombo <- lm(scale(kind)  ~ sex,
+                 data = ltDataComboTidy)
 
 
 #physical attractiveness
@@ -80,13 +85,16 @@ ltKindBi <- lmer(scale(kind)  ~ sex+partnerSex + (1|PIN),
 ltPhysattBi <- lmer(scale(physatt)  ~ sex+partnerSex + (1|PIN),
                       data = ltDataBiTidy) #sig main effect of sex
 
-
+ltPhysattCombo <- lm(scale(physatt)  ~ sex,
+                    data = ltDataComboTidy) 
 
 #intell
 
 ltIntellBi <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
                      data = ltDataBiTidy) #no sig effects (diff to study 1)
 
+ltIntellCombo <- lm(scale(intell)  ~ sex,
+                   data = ltDataComboTidy)
 
 
 #resources
@@ -94,7 +102,8 @@ ltIntellBi <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
 ltResourceBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                        data = ltDataBiTidy)  #sig main effect of psex (same as study 1)
 
-
+ltResourceCombo <- lm(scale(resources)  ~ sex,
+                     data = ltDataComboTidy)
 
 
 #ideal age (NOT STANDARDIZED)
@@ -102,7 +111,8 @@ ltResourceBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
 ltAgeBi <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
                   data = ltDataBiTidy) #sig main effect of sex and partner sex
 
-
+ltAgeCombo <- lm(AgeLik ~ sex, 
+                data = ltDataComboTidy)
 
 
 ##plotting
@@ -123,7 +133,55 @@ labellerFacet <- function(variable, value){
   return(facetNames[value])
 }
 
-##facted mirror density plot
+###facted mirror density plot
+
+##Bi participants only (replication of study 1)
+
+
+
+#create new group variable  (0 = male participant/male target, 1 = male/female, 2 = female/male, 3 = female/female)
+ltDataBi$group <- ifelse(ltDataBi$sex == 1 & ltDataBi$partnerSex == 1, 0, 
+                       ifelse(ltDataBi$sex == 1 & ltDataBi$partnerSex == 0, 1, 
+                              ifelse(ltDataBi$sex == 0 & ltDataBi$partnerSex == 1, 2,
+                                     ifelse(ltDataBi$sex == 0 & ltDataBi$partnerSex == 0, 3, NA))))
+ltDataBi$group <- as.factor(ltDataBi$group)
+
+
+
+
+ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
+  #top
+  geom_density(aes(y = after_stat(density)),
+               data = ltDataBi[ltDataBi$partnerSex == 0,], alpha = 0.8) + #female targets
+  #bottom
+  geom_density(aes(y = -after_stat(density)),
+               data = ltDataBi[ltDataBi$partnerSex == 1,], alpha = 0.8) + #male targets
+  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
+  scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
+                    labels = c("Male Participant/Female Target", "Female Participant/Female Target",
+                               "Male Participant/Male Target",  "Female Participant/Male Target"),
+                    breaks = c("1", "3", "0", "2")) +
+  labs(x = "Preference Value", y = "Density", fill = "Participant Sex/Target Sex") +
+  theme_grey(base_size = 20) +
+  theme(
+    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
+    axis.title.y = element_text(hjust = 0.5)) +
+  ggtitle("Preferences for Ideal Partners (Bisexual Participants Only)") +
+  geom_text(aes(x = 1.3, y = Inf, label = "Female \n Partners"),
+            hjust = 0, vjust = 2.5, color = "black", size = 6) +
+  geom_text(aes(x = 1.3, y = -Inf, label = "Male \n Partners"),
+            hjust = 0, vjust = -2.5, color = "black", size = 6) 
+
+
+
+#ggsave("densityLtBi.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
+
+
+
+
+
+
+
 #faceted by group: 
   #bi male participant/male target = 0
   #bi male participant/female target = 1
@@ -133,60 +191,7 @@ labellerFacet <- function(variable, value){
   #het female participant/male target = 5
 
 
-#create group variable
-#(0 = male participant/male target, 1 = male/female, 2 = female/male, 3 = female/female)
-ltData$group <- ifelse(ltData$sexuality == 0 & ltData$sex == 1 & ltData$partnerSex == 1, 0, 
-                       ifelse(ltData$sexuality == 0 & ltData$sex == 1 & ltData$partnerSex == 0, 1, 
-                              ifelse(ltData$sexuality == 0 & ltData$sex == 0 & ltData$partnerSex == 1, 2,
-                                     ifelse(ltData$sexuality == 0 & ltData$sex == 0 & ltData$partnerSex == 0, 3, 
-                                            ifelse(ltData$sexuality == 1 & ltData$sex == 1, 4,
-                                                   ifelse(ltData$sexuality == 1 & ltData$sex == 0, 5, NA))))))
 
-
-ltData$group <- as.factor(ltData$group)
-
-
-#make plot
-
-ltMirrorPlot <- ggplot(ltData, aes(x = value, fill = group)) +
-  #top
-  geom_density(aes(y = after_stat(density)),
-               data = ltData[ltData$group %in% c("1", "3", "4"),], alpha = 0.6) + #female targets
-  #bottom
-  geom_density(aes(y = -after_stat(density)),
-               data = ltData[ltData$group %in% c("0", "2", "5"),], alpha = 0.6) + #male targets
-  facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
-  scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "4" = "forestgreen", "0" = "lightblue", "2" ="orange", "5" = "#9ACD32"), 
-                    labels = c("Bi Male Participant/Female Target", "Bi Female Participant/Female Target","Het Male Participant/Female Target", 
-                               "Bi Male Participant/Male Target",  "Bi Female Participant/Male Target", "Het Female Participant/Male Target"),
-                      breaks = c("1", "3", "4", "0", "2", "5")) +
-  labs(x = "Preference Value", y = "Density", fill = "Participant Sex/Target Sex") +
-  theme_grey(base_size = 20) +
-  theme(
-    axis.title.x = element_text(hjust = 0.5),  # Center x-axis label
-    axis.title.y = element_text(hjust = 0.5)) +
-  ggtitle("Preferences for Ideal Partners")+
-  geom_hline(yintercept = 0, color = "black", linetype = "solid")+
-  geom_text(aes(x = .75, y = Inf, label = "Female \n Partners"),
-            hjust = 0, vjust = 2.5, color = "black", size = 5) +
-  geom_text(aes(x = .75, y = -Inf, label = "Male \n Partners"),
-            hjust = 0, vjust = -.5, color = "black", size = 5) 
-
-
-
-#ggsave("densityLt.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-
-#plotting trait levels for each trait faceted by sexuality (0 = bisexual, 1 = heterosexual)
-sexualityTraitPlot <- ggplot(data = ltData, aes(x = trait, y = value, fill = sex)) +
-  stat_summary(fun = "mean", geom = "bar", position = position_dodge(), color = "black") +
-  facet_wrap(~sexuality, labeller = as_labeller(c("0" = "Bisexual Participants", "1" = "Heterosexual Participants")))+
-  xlab("Trait") +
-  ylab("Trait Value")+
-  scale_x_discrete(labels = c("Age", "Health", "Intelligence", "Kindness", "Phys. Att.", "Resources"))+
-  labs(fill = "Sex") +
-  scale_fill_manual(values = c("0" = "maroon", "1" = "blue"), 
-                    labels = c("Female", "Male"))
 
 
 ########Generating descriptives of trait pref values
