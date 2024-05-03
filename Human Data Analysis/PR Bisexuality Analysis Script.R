@@ -18,7 +18,7 @@ set.seed(11182022)
 
 
 ### load data ###
-data<-read.csv("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
+data<-read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
     #only bisexual people remain after processing
 
 #exclude intersex participants
