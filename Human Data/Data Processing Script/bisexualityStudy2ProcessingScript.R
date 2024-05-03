@@ -1,5 +1,4 @@
 #####Bisexuality Study 2 Processing Script#####
-####### Ashley Coventry, Selina Mixner, Katy Walter, Ben Gelbart, Tamsin German, & Dan Conroy-Beam ########
 ##NOTE: same processing script as General Project Rainbow, just with non-bisexuals excluded
 
 

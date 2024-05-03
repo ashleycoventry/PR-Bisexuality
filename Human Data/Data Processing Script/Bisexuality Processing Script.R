@@ -1,5 +1,4 @@
 #####Project Rainbow Processing Script -- Bisexual Preferences#####
-####### Ashley Coventry, Selina Mixner, Katy Walter, Ben Gelbart, Tamsin German, & Dan Conroy-Beam ########
       ##NOTE: same processing script as General Project Rainbow, just with non-bisexuals excluded
 ### load packages ###
 library(car)
