@@ -195,20 +195,20 @@ ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
 
 
 ########Generating descriptives of trait pref values
-healthDescriptives <- summary(ltDataTidy$health)
-healthSD <- sd(ltDataTidy$health, na.rm = TRUE)
+healthDescriptives <- summary(ltDataComboTidy$health)
+healthSD <- sd(ltDataComboTidy$health, na.rm = TRUE)
 
-intellDescriptives <- summary(ltDataTidy$intell)
-intellSD <- sd(ltDataTidy$intell, na.rm = TRUE)
+intellDescriptives <- summary(ltDataComboTidy$intell)
+intellSD <- sd(ltDataComboTidy$intell, na.rm = TRUE)
 
-kindDescriptives <- summary(ltDataTidy$kind)
-kindSD <- sd(ltDataTidy$kind, na.rm = TRUE)
+kindDescriptives <- summary(ltDataComboTidy$kind)
+kindSD <- sd(ltDataComboTidy$kind, na.rm = TRUE)
 
-physattDescriptives <- summary(ltDataTidy$physatt)
-physattSD <- sd(ltDataTidy$physatt, na.rm = TRUE)
+physattDescriptives <- summary(ltDataComboTidy$physatt)
+physattSD <- sd(ltDataComboTidy$physatt, na.rm = TRUE)
 
-resourcesDescriptives <- summary(ltDataTidy$resources)
-resourcesSD <- sd(ltDataTidy$resources, na.rm = TRUE)
+resourcesDescriptives <- summary(ltDataComboTidy$resources)
+resourcesSD <- sd(ltDataComboTidy$resources, na.rm = TRUE)
 
 
 
