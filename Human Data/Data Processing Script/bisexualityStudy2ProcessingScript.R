@@ -25,8 +25,8 @@ data$PIN<-paste0(sample(1:nrow(data)))
 data$sexuality <- ifelse(data$pref_check_1 == 1 & data$pref_check_2 == 1, 0, #people lt attracted to men and women are bi
                          ifelse(data$pref_check_1[data$sex == 0] == 1 & data$pref_check_2[data$sex == 0] == 2, 1, #women w/ lt attract only to men are het
                                 ifelse(data$pref_check_1[data$sex == 1] == 1 & data$pref_check_2[data$sex == 1] == 2, 2, #men w/ lt attraction only to men are gay
-                                       ifelse(data$pref_check_1[data$sex == 0] == 2 & data$pref_check_2[data$sex == 0] == 1, 2, #women w/ lt attract only to men are gay
-                                              ifelse(data$pref_check_1[data$sex == 1] == 2 & data$pref_check_2[data$sex == 1] == 1, 2, #men w/ lt attraction only to women are het
+                                       ifelse(data$pref_check_1[data$sex == 0] == 2 & data$pref_check_2[data$sex == 0] == 1, 2, #women w/ lt attract only to women are gay
+                                              ifelse(data$pref_check_1[data$sex == 1] == 2 & data$pref_check_2[data$sex == 1] == 1, 1, #men w/ lt attraction only to women are het
                                                 2))))) #everyone else is other
                          #so in data$sexuality, 0 = bisexual, 1 = heterosexual, 2 = other
 

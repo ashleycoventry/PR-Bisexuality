@@ -48,7 +48,7 @@ ltDataCombo <- ltData[ltData$sex != ltData$partnerSex, ] #this makes it so we on
 
 omnibusCombo <- lmer(value ~ trait*sex*sexuality + (1|PIN), 
                      data = ltDataCombo) 
-omnibusCombo <- lmer(value ~ trait*sex + sexuality + (1|PIN), 
+omnibusCombo2 <- lmer(value ~ trait*sex + sexuality + (1|PIN), 
                  data = ltDataCombo) #started with 3 way interaction of trait, sex, sexuality, and then reduced from there
 
 
@@ -206,7 +206,16 @@ ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
 
 
 
-
+#plotting trait levels for each trait faceted by sexuality (0 = bisexual, 1 = heterosexual)
+sexualityTraitPlot <- ggplot(data = ltData, aes(x = trait, y = value, fill = sex)) +
+  stat_summary(fun = "mean", geom = "bar", position = position_dodge(), color = "black") +
+  facet_wrap(~sexuality, labeller = as_labeller(c("0" = "Bisexual Participants", "1" = "Heterosexual Participants")))+
+  xlab("Trait") +
+  ylab("Trait Value")+
+  scale_x_discrete(labels = c("Age", "Health", "Intell.", "Kind.", "Phys. Att.", "Resources"))+
+  labs(fill = "Participant Sex") +
+  scale_fill_manual(values = c("0" = "maroon", "1" = "blue"), 
+                    labels = c("Female", "Male"))
 
 ########Generating descriptives of trait pref values
 healthDescriptives <- summary(ltDataComboTidy$health)
