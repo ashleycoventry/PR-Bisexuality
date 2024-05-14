@@ -22,14 +22,16 @@ data$PIN<-paste0(sample(1:nrow(data)))
 #pref_check_3 = st attraction to men, pref_check_4 = st attraction to women
 #sex_orient_best = 4 is heterosexual, rom_orient_best = 3 is hetero-romantic
 
-data$sexuality <- ifelse(data$pref_check_1 == 1 & data$pref_check_2 == 1, 0,
-                         ifelse(data$pref_check_1 == 1 & data$pref_check_2 == 2, 1, 
-                                ifelse(data$pref_check_1 == 2 & data$pref_check_2 ==1, 1, 
-                                       2)))
+data$sexuality <- ifelse(data$pref_check_1 == 1 & data$pref_check_2 == 1, 0, #people lt attracted to men and women are bi
+                         ifelse(data$pref_check_1[data$sex == 0] == 1 & data$pref_check_2[data$sex == 0] == 2, 1, #women w/ lt attract only to men are het
+                                ifelse(data$pref_check_1[data$sex == 1] == 1 & data$pref_check_2[data$sex == 1] == 2, 2, #men w/ lt attraction only to men are gay
+                                       ifelse(data$pref_check_1[data$sex == 0] == 2 & data$pref_check_2[data$sex == 0] == 1, 2, #women w/ lt attract only to men are gay
+                                              ifelse(data$pref_check_1[data$sex == 1] == 2 & data$pref_check_2[data$sex == 1] == 1, 2, #men w/ lt attraction only to women are het
+                                                2))))) #everyone else is other
                          #so in data$sexuality, 0 = bisexual, 1 = heterosexual, 2 = other
 
-#exclude non-bi and non-het participants 
-data <-  data[data$sexuality!=2,] #none in sample
+#exclude non-bi or non-het participants 
+data <-  data[data$sexuality!=2,] 
 
 
 #exclude intersex participants
