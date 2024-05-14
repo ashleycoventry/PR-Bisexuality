@@ -45,6 +45,9 @@ omnibusBi <- lmer(value ~ partnerSex + trait*sex + (1|PIN),
 ##only using people's opposite sex ratings (so het people + bi opp sex)
 ltDataCombo <- ltData[ltData$sex != ltData$partnerSex, ] #this makes it so we only keep rows where participnt sex is different than partner sex
 
+
+omnibusCombo <- lmer(value ~ trait*sex*sexuality + (1|PIN), 
+                     data = ltDataCombo) 
 omnibusCombo <- lmer(value ~ trait*sex + sexuality + (1|PIN), 
                  data = ltDataCombo) #started with 3 way interaction of trait, sex, sexuality, and then reduced from there
 
@@ -68,7 +71,8 @@ ltDataComboTidy <- ltDataCombo %>%
 ltHealthBi <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN), 
                      data = ltDataBiTidy) #not sig
 
-ltHealthCombo <- lm(scale(health) ~ sex, data = ltDataComboTidy)
+ltHealthComboIntercation <- lm(scale(health) ~ sex*sexuality, data = ltDataComboTidy)
+ltHealthComboMain <- lm(scale(health) ~ sex+sexuality, data = ltDataComboTidy)
 
 
 #kindness 
@@ -76,45 +80,55 @@ ltHealthCombo <- lm(scale(health) ~ sex, data = ltDataComboTidy)
 ltKindBi <- lmer(scale(kind)  ~ sex+partnerSex + (1|PIN),
                    data = ltDataBiTidy) #no sig main effects (different than study1)
 
-ltKindCombo <- lm(scale(kind)  ~ sex,
+ltKindComboInteraction <- lm(scale(kind)  ~ sex*sexuality,
                  data = ltDataComboTidy)
 
+ltKindComboMain <- lm(scale(kind)  ~ sex+sexuality,
+                             data = ltDataComboTidy)
 
 #physical attractiveness
 
 ltPhysattBi <- lmer(scale(physatt)  ~ sex+partnerSex + (1|PIN),
                       data = ltDataBiTidy) #sig main effect of sex
 
-ltPhysattCombo <- lm(scale(physatt)  ~ sex,
+ltPhysattComboInteraction <- lm(scale(physatt)  ~ sex*sexuality,
                     data = ltDataComboTidy) 
+
+ltPhysattComboMain <- lm(scale(physatt)  ~ sex + sexuality,
+                     data = ltDataComboTidy) 
 
 #intell
 
 ltIntellBi <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
                      data = ltDataBiTidy) #no sig effects (diff to study 1)
 
-ltIntellCombo <- lm(scale(intell)  ~ sex,
+ltIntellComboInteraction <- lm(scale(intell)  ~ sex*sexuality,
                    data = ltDataComboTidy)
 
 
+ltIntellComboMain <- lm(scale(intell)  ~ sex+sexuality,
+                               data = ltDataComboTidy)
 #resources
 
 ltResourceBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                        data = ltDataBiTidy)  #sig main effect of psex (same as study 1)
 
-ltResourceCombo <- lm(scale(resources)  ~ sex,
+ltResourceComboInteraction <- lm(scale(resources)  ~ sex*sexuality,
                      data = ltDataComboTidy)
 
+ltResourceComboMain <- lm(scale(resources)  ~ sex+sexuality,
+                                 data = ltDataComboTidy)
 
 #ideal age (NOT STANDARDIZED)
 
 ltAgeBi <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
                   data = ltDataBiTidy) #sig main effect of sex and partner sex
 
-ltAgeCombo <- lm(AgeLik ~ sex, 
+ltAgeComboInteraction <- lm(AgeLik ~ sex*sexuality, 
                 data = ltDataComboTidy)
 
-
+ltAgeComboMain <- lm(AgeLik ~ sex+sexuality, 
+                            data = ltDataComboTidy)
 ##plotting
 
 #overall plot faceted by partner sex
