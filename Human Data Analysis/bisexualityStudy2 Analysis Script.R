@@ -49,10 +49,7 @@ ltDataCombo <- ltData[ltData$sex != ltData$partnerSex, ] #this makes it so we on
 omnibusCombo <- lmer(value ~ trait*sex*sexuality + (1|PIN), 
                      data = ltDataCombo) 
 
-omnibusCombo2 <- lmer(value ~ trait*sex + trait*sexuality + sex*sexuality + (1|PIN), 
-                     data = ltDataCombo) 
-
-omnibusCombo3 <- lmer(value ~ trait*sex + trait*sexuality + (1|PIN), 
+omnibusCombo2 <- lmer(value ~ trait*sex + trait*sexuality + (1|PIN), 
                  data = ltDataCombo) #started with 3 way interaction of trait, sex, sexuality, and then reduced from there
 
 
