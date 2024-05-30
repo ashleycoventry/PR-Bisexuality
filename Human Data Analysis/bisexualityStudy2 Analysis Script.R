@@ -49,9 +49,6 @@ ltDataCombo <- ltData[ltData$sex != ltData$partnerSex, ] #this makes it so we on
 omnibusCombo <- lmer(value ~ trait*sex*sexuality + (1|PIN), 
                      data = ltDataCombo) 
 
-omnibusCombo2 <- lmer(value ~ trait*sex + trait*sexuality + (1|PIN), 
-                 data = ltDataCombo) #started with 3 way interaction of trait, sex, sexuality, and then reduced from there
-
 
 
 ###Trait by sex interactions 
@@ -181,20 +178,6 @@ ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
 
 
 #ggsave("densityLtBi.jpeg", plot=last_plot(), width=400, height=450, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
-
-
-
-
-
-
-
-#faceted by group: 
-  #bi male participant/male target = 0
-  #bi male participant/female target = 1
-  #bi female participant/male target = 2
-  #bi female participant/female target = 3
-  #het male participant/female target = 4
-  #het female participant/male target = 5
 
 
 
