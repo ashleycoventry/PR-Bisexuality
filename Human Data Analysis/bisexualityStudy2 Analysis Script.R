@@ -6,6 +6,7 @@ library(lmerTest)
 library(reshape2) #to reshape data
 library(tidyverse) #for %>% among other things
 library(ggplot2)
+library(sjPlot) #for interaction plots
 
 ### set seed ###
 set.seed(040524)
@@ -69,7 +70,11 @@ ltDataComboTidy <- ltDataCombo %>%
 ltHealthBi <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN), 
                      data = ltDataBiTidy) #not sig
 
-ltHealthCombo <- lm(scale(health) ~ sex+sexuality, data = ltDataComboTidy)
+ltHealthCombo <- lm(scale(health) ~ sex*sexuality, data = ltDataComboTidy)
+
+
+healthIntPlot <- plot_model(ltHealthCombo, type = "pred", terms = c("sexuality", "sex"))
+
 
 
 #kindness 
@@ -78,15 +83,22 @@ ltKindBi <- lmer(scale(kind)  ~ sex+partnerSex + (1|PIN),
                    data = ltDataBiTidy) #no sig main effects (different than study1)
 
 
-ltKindCombo <- lm(scale(kind)  ~ sex+sexuality,
+ltKindCombo <- lm(scale(kind)  ~ sex*sexuality,
                   data = ltDataComboTidy)
+
+#plotting that interaction
+
+kindIntPlot <- plot_model(ltKindCombo, type = "pred", terms = c("sexuality", "sex"))
+
+
+
 
 #physical attractiveness
 
 ltPhysattBi <- lmer(scale(physatt)  ~ sex+partnerSex + (1|PIN),
                       data = ltDataBiTidy) #sig main effect of sex
 
-ltPhysattCombo <- lm(scale(physatt)  ~ sex + sexuality,
+ltPhysattCombo <- lm(scale(physatt)  ~ sex*sexuality,
                      data = ltDataComboTidy) 
 
 
@@ -96,15 +108,30 @@ ltIntellBi <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
                      data = ltDataBiTidy) #no sig effects (diff to study 1)
 
 
-ltIntellCombo <- lm(scale(intell)  ~ sex+sexuality,
+ltIntellCombo <- lm(scale(intell)  ~ sex*sexuality,
                     data = ltDataComboTidy)
+
+
+
 #resources
 
 ltResourceBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                        data = ltDataBiTidy)  #sig main effect of psex (same as study 1)
 
-ltResourceCombo <- lm(scale(resources)  ~ sex+sexuality,
+ltResourceCombo <- lm(scale(resources)  ~ sex*sexuality,
                       data = ltDataComboTidy)
+
+
+resourceIntPlot <- plot_model(ltResourceCombo, type = "pred", terms = c("sexuality", "sex"))
+
+
+#bisexual preferences for resources in opposite sex partners only
+oppSexData <- ltDataBiTidy %>%
+  filter(ltDataBiTidy[[2]] != ltDataBiTidy[[4]])
+
+ltResourceOppSex <- lm(scale(resources)  ~ sex,
+                       data = oppSexData) 
+
 
 
 #ideal age (NOT STANDARDIZED)
@@ -113,7 +140,7 @@ ltAgeBi <- lmer(AgeLik ~ sex+partnerSex + (1|PIN),
                   data = ltDataBiTidy) #sig main effect of sex and partner sex
 
 
-ltAgeCombo <- lm(AgeLik ~ sex+sexuality, 
+ltAgeCombo <- lm(AgeLik ~ sex*sexuality, 
                  data = ltDataComboTidy)
 
 
@@ -191,7 +218,6 @@ sexualityTraitPlot <- ggplot(data = ltData, aes(x = trait, y = value, fill = sex
   labs(fill = "Participant Sex") +
   scale_fill_manual(values = c("0" = "maroon", "1" = "blue"), 
                     labels = c("Female", "Male"))
-
 
 
 ########Generating descriptives of trait pref values
