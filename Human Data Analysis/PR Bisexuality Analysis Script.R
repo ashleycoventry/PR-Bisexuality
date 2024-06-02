@@ -140,6 +140,14 @@ ltIntellMain <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
 ltResourceMain <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                       data = ltDataTidy)  #sig main effect of psex, not sex
 
+#bisexual preferences for resources in opposite sex partners only
+oppSexData <- ltDataTidy %>%
+  filter(ltDataTidy[[2]] != ltDataTidy[[3]])
+
+ltResourceOppSex <- lm(scale(resources)  ~ sex,
+                       data = oppSexData) 
+
+
 #ideal age (NOT STANDARDIZED)
 
 
