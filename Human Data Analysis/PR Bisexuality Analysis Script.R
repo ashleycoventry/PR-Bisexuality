@@ -1663,7 +1663,3 @@ physattSD <- sd(ltDataTidy$physatt, na.rm = TRUE)
 
 resourcesDescriptives <- summary(ltDataTidy$resources)
 resourcesSD <- sd(ltDataTidy$resources, na.rm = TRUE)
-
-
-
-
