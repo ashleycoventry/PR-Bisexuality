@@ -73,9 +73,6 @@ ltHealthBi <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN),
 ltHealthCombo <- lm(scale(health) ~ sex*sexuality, data = ltDataComboTidy)
 
 
-healthIntPlot <- plot_model(ltHealthCombo, type = "pred", terms = c("sexuality", "sex"))
-
-
 
 #kindness 
 
@@ -120,9 +117,6 @@ ltResourceBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
 
 ltResourceCombo <- lm(scale(resources)  ~ sex*sexuality,
                       data = ltDataComboTidy)
-
-
-resourceIntPlot <- plot_model(ltResourceCombo, type = "pred", terms = c("sexuality", "sex"))
 
 
 #bisexual preferences for resources in opposite sex partners only
