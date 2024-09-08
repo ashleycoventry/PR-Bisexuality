@@ -140,6 +140,42 @@ ltAgeCombo <- lm(AgeLik ~ sex*sexuality,
                  data = ltDataComboTidy)
 
 
+##sensitivity analysis
+
+#set seed
+set.seed(999)
+
+#duplicate dataframe used in original lmer
+sensitivityData <- ltDataBi
+
+#need to get one effect size (b) for the three way interaction of sex, trait, target sex
+#so need to make trait numeric instead of character
+#AgeLik = 1, health = 2, intell = 3, kind = 4, physatt = 5, resources = 6
+sensitivityData$traitNumeric <- as.numeric(factor(sensitivityData$trait))
+sensitivityData$sexNumeric <- as.numeric(sensitivityData$sex) - 1
+sensitivityData$partnerSexNumeric <- as.numeric(sensitivityData$partnerSex) - 1
+#do lmer w data for sensitivity analysis
+lmerSensitivity <- lmer(value ~ partnerSexNumeric*traitNumeric*sexNumeric + (1|PIN), 
+                        data = sensitivityData)
+
+#make effect size range to test
+effectSizes <- seq(from = 0.01, to = 1, by = .01)
+
+#initialize empty data frames to store results
+sensitivityResults <- data.frame(effect = numeric(0), power = numeric(0))
+
+#set number of simulations to run
+nSim = 10
+
+for(i in 1:length(effectSizes)) {
+  #specify what the effect size is
+  fixef(lmerSensitivity)["partnerSexNumeric:traitNumeric:sexNumeric"] <-  effectSizes[i]
+  #run power analysis
+  power <- powerSim(lmerSensitivity, nsim = nSim, test = simr::fixed("partnerSexNumeric:traitNumeric:sexNumeric"))
+  tempInteraction <- expand_grid(effect = effectSizes[i], power = sum(power$pval < .05) / nSim)
+  sensitivityResults <- bind_rows(sensitivityResults, tempInteraction)
+}
+
 
 ###Integrative sample analyses
 #pooling bisexual study 1 and 2 samples 
