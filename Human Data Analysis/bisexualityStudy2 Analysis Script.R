@@ -159,7 +159,7 @@ lmerSensitivity <- lmer(complete.cases(value) ~ partnerSexNumeric*traitNumeric*s
                         data = sensitivityData)
 
 #make effect size range to test
-effectSizes <- seq(from = 0.001, to = .01, by = .001)
+effectSizes <- seq(from = 0.001, to = .01, by = .0005)
 
 #initialize empty data frames to store results
 sensitivityResults <- data.frame(effect = numeric(0), power = numeric(0))
