@@ -13,7 +13,7 @@ set.seed(040524)
 
 
 #load data
-data<-read.csv(file.choose())
+data<-read.csv("Human Data/Processed Data/BisexualityStudy2_DataPROCESSED 20240514 161447.csv")
 
 
 
@@ -155,17 +155,17 @@ sensitivityData$traitNumeric <- as.numeric(factor(sensitivityData$trait))
 sensitivityData$sexNumeric <- as.numeric(sensitivityData$sex) - 1
 sensitivityData$partnerSexNumeric <- as.numeric(sensitivityData$partnerSex) - 1
 #do lmer w data for sensitivity analysis
-lmerSensitivity <- lmer(value ~ partnerSexNumeric*traitNumeric*sexNumeric + (1|PIN), 
+lmerSensitivity <- lmer(complete.cases(value) ~ partnerSexNumeric*traitNumeric*sexNumeric + (1|PIN), 
                         data = sensitivityData)
 
 #make effect size range to test
-effectSizes <- seq(from = 0.01, to = 1, by = .01)
+effectSizes <- seq(from = 0.001, to = .01, by = .001)
 
 #initialize empty data frames to store results
 sensitivityResults <- data.frame(effect = numeric(0), power = numeric(0))
 
 #set number of simulations to run
-nSim = 10
+nSim = 100
 
 for(i in 1:length(effectSizes)) {
   #specify what the effect size is
@@ -182,7 +182,7 @@ for(i in 1:length(effectSizes)) {
 #will replicate bisexual analyses w pooled sample
 
 ##load in study 1 data
-studyOneData <- read.csv(file.choose())
+studyOneData <- read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
 
 ##processing not added to processing script
 #exclude intersex participants
@@ -383,4 +383,36 @@ resourcesDescriptives <- summary(ltDataComboTidy$resources)
 resourcesSD <- sd(ltDataComboTidy$resources, na.rm = TRUE)
 
 
+###supplemental materials
 
+###exploring a potential main effect of relationship status
+
+#create dataframe with rel status variable
+
+#longform data
+
+#LT 
+ltDataRelStat <- data[,c(51, 5, 2, 52, 53:62, 64:65)]
+ltDataRelStat <- melt(ltDataRelStat, id.vars=c("PIN", "sex", "rel_status", "sexuality"))
+ltDataRelStat <- ltDataRelStat %>% 
+  separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
+ltDataRelStat$partnerSex <- ifelse(ltDataRelStat$partnerSex == "m", 1, 0)
+ltDataRelStat <- ltDataRelStat[,c(1:5, 7:8)]
+ltDataRelStat$sex  <- as.factor(ltDataRelStat$sex)
+ltDataRelStat$sexuality <- as.factor(ltDataRelStat$sexuality)
+ltDataRelStat$partnerSex  <- as.factor(ltDataRelStat$partnerSex)
+ltDataRelStat$rel_status  <- as.factor(ltDataRelStat$rel_status)
+
+#make sure there are no NAs in sex or partner sex columns
+colNum<- c(2,5)
+nacheckLtRelStat <- apply(ltDataRelStat[,colNum], 1, function(x) sum(is.na(x))>0)
+ltDataRelStat<- ltDataRelStat[!nacheckLtRelStat,]
+
+
+###mixed effects models
+
+##only bisexual participants (replicating study 1 analyses)
+ltDataRelStatBi <- ltDataRelStat[ltDataRelStat$sexuality == 0, ]
+
+omnibusBiRelStat <- lmer(value ~ partnerSex + trait*sex + rel_status + (1|PIN), 
+                  data = ltDataRelStatBi)
