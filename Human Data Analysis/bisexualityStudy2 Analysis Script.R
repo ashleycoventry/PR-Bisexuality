@@ -170,7 +170,7 @@ effectSizes <- seq(from = 0.1, to = 1, by = .01)
 sensitivityResults <- data.frame(effect = numeric(0), power = numeric(0))
 
 #set number of simulations to run
-nSim = 1000
+nSim = 100
 
 for(i in 1:length(effectSizes)) {
   #specify what the effect size is
@@ -193,7 +193,9 @@ sensitivityComboData$sexNumeric <- as.numeric(sensitivityComboData$sex) -1
 sensitivityComboData$sexualityNumeric <- as.numeric(sensitivityComboData$sexuality) -1
 
 #do lmer w data for sensitivity analysis
-lmerComboSensitivity <- lmer(value ~ sexNumeric*traitNumeric*sexualityNumeric + (1|PIN), 
+#needed to remove the random effects term bc not fitting otherwise (singularity issues)
+#without random effects term, need to use lm instead of lmer function
+lmerComboSensitivity <- lm(value ~ sexNumeric*traitNumeric*sexualityNumeric, 
                         data = sensitivityComboData[complete.cases(sensitivityComboData[,6:9]),])
 
 
@@ -207,8 +209,8 @@ sensitivityResultsCombo <- data.frame(effect = numeric(0), power = numeric(0))
 nSim = 100
 
 for(i in 1:length(effectSizesCombo)) {
-  #specify what the effect size is
-  fixef(lmerComboSensitivity)["sexNumeric:traitNumeric:sexualityNumeric"] <-  effectSizesCombo[i]
+  #specify what the effect size is (coef instead of fixef bc lm and not lmer)
+  coef(lmerComboSensitivity)["sexNumeric:traitNumeric:sexualityNumeric"] <-  effectSizesCombo[i]
   #run power analysis
   powerCombo <- powerSim(lmerComboSensitivity, nsim = nSim, test = simr::fixed("sexNumeric:traitNumeric:sexualityNumeric"))
   tempInteractionCombo <- expand_grid(effect = effectSizes[i], power = sum(powerCombo$pval < .05) / nSim)
