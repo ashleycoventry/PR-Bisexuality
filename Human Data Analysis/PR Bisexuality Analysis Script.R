@@ -352,6 +352,45 @@ for(i in 1:length(effectSizes)) {
   sensitivityResults <- bind_rows(sensitivityResults, tempPartnerSex)
 }
 
+
+
+#for 3 way interaction of sex*partnerSex*trait
+
+
+#need to get one effect size (b) for the three way interaction of sex, trait, target sex
+#so need to make trait numeric instead of character
+#AgeLik = 1, health = 2, intell = 3, kind = 4, physatt = 5, resources = 6
+powerData$traitNumeric <- as.numeric(factor(powerData$trait))
+powerData$sexNumeric <- as.numeric(powerData$sex) - 1
+powerData$partnerSexNumeric <- as.numeric(powerData$partnerSex) - 1
+#do lmer w data for sensitivity analysis
+columns <- c(5, 7, 8, 9)
+lmerSensitivityInt <- lmer(value ~ partnerSexNumeric*traitNumeric*sexNumeric + (1|PIN), 
+                        data = powerData[complete.cases(powerData[,columns]),])
+
+#make effect size range to test
+effectSizesInt <- seq(from = 0.1, to = 1, by = .01)
+
+#initialize empty data frames to store results
+sensitivityResultsInt <- data.frame(effect = numeric(0), power = numeric(0))
+
+#set number of simulations to run
+nSimInt = 100
+
+for(i in 1:length(effectSizesInt)) {
+  #specify what the effect size is
+  fixef(lmerSensitivityInt)["partnerSexNumeric:traitNumeric:sexNumeric"] <-  effectSizesInt[i]
+  #run power analysis
+  powerInt <- powerSim(lmerSensitivityInt, nsim = nSimInt, test = simr::fixed("partnerSexNumeric:traitNumeric:sexNumeric"))
+  tempInteractionInt <- expand_grid(effect = effectSizesInt[i], power = sum(powerInt$pval < .05) / nSimInt)
+  sensitivityResultsInt <- bind_rows(sensitivityResultsInt, tempInteractionInt)
+}
+
+
+
+
+
+
 ###Supplemental Materials
 
 ##Analyses excluding people who still id-ed as heterosexual & hetero-romantic
@@ -604,8 +643,32 @@ stMirrorPlotBi <- ggplot(stDataBi, aes(x = value, fill = group)) +
 
 
 
+##exploring a potential main effect of relationship status
+
+#create dataframe with rel status variable
+#longform data
+
+#LT 
+ltDataRelStat <- data[,c(167, 5, 2, 178:187, 227, 229)]
+ltDataRelStat <- melt(ltDataRelStat, id.vars=c("PIN", "sex", "rel_status"))
+ltDataRelStat <- ltDataRelStat %>% 
+  separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
+ltDataRelStat$partnerSex <- ifelse(ltDataRelStat$partnerSex == "m", 1, 0)
+ltDataRelStat <- ltDataRelStat[,c(1:4, 6:7)]
+ltDataRelStat$sex  <- as.factor(ltDataRelStat$sex)
+ltDataRelStat$partnerSex  <- as.factor(ltDataRelStat$partnerSex)
+ltDataRelStat$rel_status  <- as.factor(ltDataRelStat$rel_status)
+
+#make sure there are no NAs in sex or partner sex columns
+colNum<- c(2,4)
+nacheckLtRelStat <- apply(ltDataRelStat[,colNum], 1, function(x) sum(is.na(x))>0)
+ltDataRelStat<- ltDataRelStat[!nacheckLtRelStat,]
 
 
+#omnibus
+
+ltOmnibusRelStat <- lmer(value ~ partnerSex +  trait*sex + rel_status + (1|PIN), 
+                  data = ltDataRelStat) 
 
 
 
