@@ -7,6 +7,7 @@ library(reshape2) #to reshape data
 library(tidyverse) #for %>% among other things
 library(ggplot2)
 library(sjPlot) #for interaction plots
+library(simr) # for sensitivity analysis
 
 ### set seed ###
 set.seed(040524)
@@ -140,13 +141,17 @@ ltAgeCombo <- lm(AgeLik ~ sex*sexuality,
                  data = ltDataComboTidy)
 
 
-##sensitivity analysis
+##sensitivity analyses
 
 #set seed
 set.seed(999)
 
+
+#for 3 way interaction of sex*partnerSex*trait
+
 #duplicate dataframe used in original lmer
 sensitivityData <- ltDataBi
+
 
 #need to get one effect size (b) for the three way interaction of sex, trait, target sex
 #so need to make trait numeric instead of character
@@ -155,17 +160,17 @@ sensitivityData$traitNumeric <- as.numeric(factor(sensitivityData$trait))
 sensitivityData$sexNumeric <- as.numeric(sensitivityData$sex) - 1
 sensitivityData$partnerSexNumeric <- as.numeric(sensitivityData$partnerSex) - 1
 #do lmer w data for sensitivity analysis
-lmerSensitivity <- lmer(complete.cases(value) ~ partnerSexNumeric*traitNumeric*sexNumeric + (1|PIN), 
-                        data = sensitivityData)
+lmerSensitivity <- lmer(value ~ partnerSexNumeric*traitNumeric*sexNumeric + (1|PIN), 
+                        data = sensitivityData[complete.cases(sensitivityData[,6:9]),])
 
 #make effect size range to test
-effectSizes <- seq(from = 0.001, to = .01, by = .0005)
+effectSizes <- seq(from = 0.1, to = 1, by = .01)
 
 #initialize empty data frames to store results
 sensitivityResults <- data.frame(effect = numeric(0), power = numeric(0))
 
 #set number of simulations to run
-nSim = 100
+nSim = 1000
 
 for(i in 1:length(effectSizes)) {
   #specify what the effect size is
@@ -175,6 +180,45 @@ for(i in 1:length(effectSizes)) {
   tempInteraction <- expand_grid(effect = effectSizes[i], power = sum(power$pval < .05) / nSim)
   sensitivityResults <- bind_rows(sensitivityResults, tempInteraction)
 }
+
+#for 3 way interaction of sex*sexuality*trait
+
+sensitivityComboData <- ltDataCombo
+
+#need to get one effect size (b) for the three way interaction of sex, trait, sexuality
+#so need to make trait numeric instead of character
+#AgeLik = 1, health = 2, intell = 3, kind = 4, physatt = 5, resources = 6
+sensitivityComboData$traitNumeric <- as.numeric(factor(sensitivityComboData$trait))
+sensitivityComboData$sexNumeric <- as.numeric(sensitivityComboData$sex) -1
+sensitivityComboData$sexualityNumeric <- as.numeric(sensitivityComboData$sexuality) -1
+
+#do lmer w data for sensitivity analysis
+lmerComboSensitivity <- lmer(value ~ sexNumeric*traitNumeric*sexualityNumeric + (1|PIN), 
+                        data = sensitivityComboData[complete.cases(sensitivityComboData[,6:9]),])
+
+
+#make effect size range to test
+effectSizesCombo <- seq(from = 0.1, to = 1, by = .01)
+
+#initialize empty data frames to store results
+sensitivityResultsCombo <- data.frame(effect = numeric(0), power = numeric(0))
+
+#set number of simulations to run
+nSim = 100
+
+for(i in 1:length(effectSizesCombo)) {
+  #specify what the effect size is
+  fixef(lmerComboSensitivity)["sexNumeric:traitNumeric:sexualityNumeric"] <-  effectSizesCombo[i]
+  #run power analysis
+  powerCombo <- powerSim(lmerComboSensitivity, nsim = nSim, test = simr::fixed("sexNumeric:traitNumeric:sexualityNumeric"))
+  tempInteractionCombo <- expand_grid(effect = effectSizes[i], power = sum(powerCombo$pval < .05) / nSim)
+  sensitivityResultsCombo <- bind_rows(sensitivityResultsCombo, tempInteractionCombo)
+}
+
+
+
+
+
 
 
 ###Integrative sample analyses
