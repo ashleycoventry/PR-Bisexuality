@@ -667,8 +667,45 @@ ltDataRelStat<- ltDataRelStat[!nacheckLtRelStat,]
 
 #omnibus
 
-ltOmnibusRelStat <- lmer(value ~ partnerSex +  trait*sex + rel_status + (1|PIN), 
+ltOmnibusRelStat <- lmer(value ~ partnerSex + trait*rel_status + trait*sex + (1|PIN), 
                   data = ltDataRelStat) 
 
+
+#exploring effect trait*trait
+#tidy format for analyses
+ltDataRelStatTidy <- ltDataRelStat %>%
+  pivot_wider(names_from = trait, 
+              values_from = value)
+
+#standardizing outcome variable (traits)
+
+#health 
+ltHealthRelStat <- lmer(scale(health)  ~ sex + partnerSex + rel_status + (1|PIN),
+                      data = ltDataRelStatTidy)
+
+#kindness 
+
+
+ltKindRelStat <- lmer(scale(kind)  ~ sex + partnerSex + rel_status + (1|PIN),
+                     data = ltDataRelStatTidy)
+
+#physical attractiveness
+
+ltPhysattRelStat <- lmer(scale(physatt)  ~ sex + partnerSex + rel_status + (1|PIN),
+                        data = ltDataRelStatTidy)
+
+#intell
+
+ltIntellRelStat <- lmer(scale(intell) ~ sex + partnerSex + rel_status + (1|PIN),
+                        data = ltDataRelStatTidy)
+
+#resources
+
+ltResourceRelStat <- lmer(scale(resources)  ~ sex + partnerSex + rel_status + (1|PIN),
+                         data = ltDataRelStatTidy)
+
+#ideal age (NOT STANDARDIZED)
+ltAgeRelStat <- lmer(AgeLik ~ sex + partnerSex + rel_status + (1|PIN),
+                    data = ltDataRelStatTidy)
 
 
