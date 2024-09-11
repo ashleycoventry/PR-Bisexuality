@@ -516,7 +516,7 @@ ltAgeRelStatBi <- lmer(AgeLik ~ partnerSex + sex*rel_status + (1|PIN),
                      data = ltDataRelStatBiTidy)
 
 #plotting interaction
-AgeRelStatIntPlot <- plot_model(ltDataRelStatBiTidy, type = "pred", terms = c("rel_status", "sex"))
+AgeRelStatIntPlot <- plot_model(ltAgeRelStatBi, type = "pred", terms = c("rel_status", "sex"))
 
 AgeRelStatIntPlot2 <- ggplot(data = ltDataRelStatBiTidy, aes(x = rel_status, y = AgeLik, fill = sex)) +
   geom_boxplot(position = position_dodge(), color = "black")+
