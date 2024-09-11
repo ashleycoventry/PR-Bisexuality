@@ -460,5 +460,69 @@ ltDataRelStat<- ltDataRelStat[!nacheckLtRelStat,]
 ##only bisexual participants (replicating study 1 analyses)
 ltDataRelStatBi <- ltDataRelStat[ltDataRelStat$sexuality == 0, ]
 
-omnibusBiRelStat <- lmer(value ~ partnerSex + trait*sex + rel_status + (1|PIN), 
+omnibusBiRelStat <- lmer(value ~ partnerSex + trait*sex*rel_status +
+                            (1|PIN), 
                   data = ltDataRelStatBi)
+
+
+
+#exploring effect trait*trait
+#tidy format for analyses
+ltDataRelStatBiTidy <- ltDataRelStatBi %>%
+  pivot_wider(names_from = trait, 
+              values_from = value)
+
+#standardizing outcome variable (traits)
+
+#health 
+ltHealthRelStatBi <- lmer(scale(health)  ~ partnerSex + sex*rel_status + (1|PIN),
+                        data = ltDataRelStatBiTidy)
+ltHealthRelStatBi2 <- lmer(scale(health)  ~ partnerSex + sex + rel_status + (1|PIN),
+                          data = ltDataRelStatBiTidy)
+
+#kindness 
+
+
+ltKindRelStatBi <- lmer(scale(kind)  ~ partnerSex + sex*rel_status + (1|PIN),
+                      data = ltDataRelStatBiTidy)
+ltKindRelStatBi2 <- lmer(scale(kind)  ~ partnerSex + sex + rel_status + (1|PIN),
+                        data = ltDataRelStatBiTidy)
+
+#physical attractiveness
+
+ltPhysattRelStatBi <- lmer(scale(physatt)  ~ partnerSex + sex*rel_status + (1|PIN),
+                         data = ltDataRelStatBiTidy)
+
+ltPhysattRelStatBi2 <- lmer(scale(physatt)  ~ partnerSex + sex + rel_status + (1|PIN),
+                           data = ltDataRelStatBiTidy)
+
+#intell
+
+ltIntellRelStatBi <- lmer(scale(intell) ~ partnerSex + sex*rel_status + (1|PIN),
+                        data = ltDataRelStatBiTidy)
+ltIntellRelStatBi2 <- lmer(scale(intell) ~ partnerSex + sex + rel_status + (1|PIN),
+                          data = ltDataRelStatBiTidy)
+
+#resources
+
+ltResourceRelStatBi <- lmer(scale(resources)  ~ partnerSex + sex*rel_status + (1|PIN),
+                          data = ltDataRelStatBiTidy)
+
+ltResourceRelStatBi2 <- lmer(scale(resources)  ~ partnerSex + sex + rel_status + (1|PIN),
+                          data = ltDataRelStatBiTidy)
+
+#ideal age (NOT STANDARDIZED)
+ltAgeRelStatBi <- lmer(AgeLik ~ partnerSex + sex*rel_status + (1|PIN),
+                     data = ltDataRelStatBiTidy)
+
+#plotting interaction
+AgeRelStatIntPlot <- plot_model(ltDataRelStatBiTidy, type = "pred", terms = c("rel_status", "sex"))
+
+AgeRelStatIntPlot2 <- ggplot(data = ltDataRelStatBiTidy, aes(x = rel_status, y = AgeLik, fill = sex)) +
+  geom_boxplot(position = position_dodge(), color = "black")+
+  xlab("Relationship Status") +
+  ylab("Ideal Age Difference")+
+  scale_x_discrete(labels = c("Single", "Casually Dating", "Seriously Dating", "Engaged", "Married"))+
+  labs(fill = "Participant Sex") +
+  scale_fill_manual(values = c("0" = "maroon", "1" = "blue"), 
+                    labels = c("Female", "Male"))
