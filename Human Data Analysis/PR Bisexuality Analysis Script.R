@@ -10,7 +10,7 @@ library(reshape2)
 library(tidyr)
 library(ggpubr) #for panel plot
 library(ggpattern)
-
+library(simr) # for sensitivity analysis
 
 ### load data ###
 data<-read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
@@ -667,7 +667,7 @@ ltDataRelStat<- ltDataRelStat[!nacheckLtRelStat,]
 
 #omnibus
 
-ltOmnibusRelStat <- lmer(value ~ partnerSex + trait*rel_status + trait*sex + (1|PIN), 
+ltOmnibusRelStat <- lmer(value ~ trait*rel_status + trait*sex + partnerSex + (1|PIN), 
                   data = ltDataRelStat) 
 
 
