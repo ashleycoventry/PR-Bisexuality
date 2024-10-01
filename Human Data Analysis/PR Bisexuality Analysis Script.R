@@ -709,3 +709,16 @@ ltAgeRelStat <- lmer(AgeLik ~ sex + partnerSex + rel_status + (1|PIN),
                     data = ltDataRelStatTidy)
 
 
+
+###reviewer suggested new test -- trait value ~ same vs opposite sex * participant sex 
+
+#create new same vs opp sex variable
+#if participant sex and partner sex are the same = 0, if they're different = 1
+ltData$sameOrOppSex <- ifelse(ltData$sex == ltData$partnerSex, 0, 1) 
+
+
+#testing the interaction between sameOrOppSex and participant sex on trait value
+
+ltOmnibusSameOrOpp <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
+                  data = ltData) 
+
