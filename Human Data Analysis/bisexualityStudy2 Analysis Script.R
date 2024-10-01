@@ -147,6 +147,37 @@ ltAgeCombo <- lm(AgeLik ~ sex*sexuality,
 set.seed(999)
 
 
+#for the main effect of partner sex
+
+#duplicate dataframe used in original lmer
+sensitivityDataMainEffect <- ltDataBi
+
+#do lmer for sensitivity analysis
+cols <- c(2, 4, 5, 6)
+ltOmnibusSensitivityMain <- lmer(value ~ partnerSex + trait*sex + (1|PIN), 
+                       data = sensitivityDataMainEffect[complete.cases(sensitivityDataMainEffect[,cols]),])
+
+
+effectSizesMain <- seq(from = 0.01, to = .5, by = .01)
+
+#Initialize empty data frames to store results
+sensitivityResultsMain <- data.frame(effect = numeric(0), power = numeric(0))
+
+#set number of simulations to run
+nSimMain = 100
+
+for(i in 1:length(effectSizesMain)) {
+  #specify what the effect size is
+  fixef(ltOmnibusSensitivityMain)["partnerSex1"] <-  effectSizes[i]
+  #run power analysis
+  powerMain <- powerSim(ltOmnibusSensitivityMain, nsim = nSimMain, test = fixed("partnerSex"))
+  tempPartnerSex <- expand_grid(effect = effectSizes[i], power = sum(powerMain$pval < .05) / nSimMain)
+  sensitivityResultsMain <- bind_rows(sensitivityResultsMain, tempPartnerSex)
+}
+
+
+
+
 #for 3 way interaction of sex*partnerSex*trait
 
 #duplicate dataframe used in original lmer
@@ -180,6 +211,8 @@ for(i in 1:length(effectSizes)) {
   tempInteraction <- expand_grid(effect = effectSizes[i], power = sum(power$pval < .05) / nSim)
   sensitivityResults <- bind_rows(sensitivityResults, tempInteraction)
 }
+
+
 
 #for 3 way interaction of sex*sexuality*trait
 
@@ -217,6 +250,61 @@ for(i in 1:length(effectSizesCombo)) {
   sensitivityResultsCombo <- bind_rows(sensitivityResultsCombo, tempInteractionCombo)
 }
 
+
+#two way interaction of sex and sexual orientation
+
+#do lmer w data for sensitivity analysis
+#needed to remove the random effects term bc not fitting otherwise (singularity issues)
+#without random effects term, need to use lm instead of lmer function
+lmerComboSensitivitySexSexuality <- lm(value ~ sexNumeric*sexualityNumeric + traitNumeric, 
+                           data = sensitivityComboData[complete.cases(sensitivityComboData[,6:9]),])
+
+
+#make effect size range to test
+effectSizesComboSexSexuality <- seq(from = 0.1, to = 1, by = .01)
+
+#initialize empty data frames to store results
+sensitivityResultsComboSexSexuality <- data.frame(effect = numeric(0), power = numeric(0))
+
+#set number of simulations to run
+nSimSexSexuality = 100
+
+for(i in 1:length(effectSizesComboSexSexuality)) {
+  #specify what the effect size is (coef instead of fixef bc lm and not lmer)
+  coef(lmerComboSensitivitySexSexuality)["sexNumeric:sexualityNumeric"] <-  effectSizesComboSexSexuality[i]
+  #run power analysis
+  powerComboSexSexuality <- powerSim(lmerComboSensitivitySexSexuality, nsim = nSimSexSexuality, test = simr::fixed("sexNumeric:sexualityNumeric"))
+  tempInteractionComboSexSexuality <- expand_grid(effect = effectSizesComboSexSexuality[i], power = sum(powerComboSexSexuality$pval < .05) / nSimSexSexuality)
+  sensitivityResultsComboSexSexuality <- bind_rows(sensitivityResultsComboSexSexuality, tempInteractionComboSexSexuality)
+}
+
+
+#main effect of sexual orientation
+
+#do lmer w data for sensitivity analysis
+#needed to remove the random effects term bc not fitting otherwise (singularity issues)
+#without random effects term, need to use lm instead of lmer function
+lmerComboSensitivitySexuality <- lm(value ~ sexualityNumeric + traitNumeric + sexNumeric, 
+                                       data = sensitivityComboData[complete.cases(sensitivityComboData[,6:9]),])
+
+
+#make effect size range to test
+effectSizesComboSexuality <- seq(from = 0.1, to = 1, by = .01)
+
+#initialize empty data frames to store results
+sensitivityResultsComboSexuality <- data.frame(effect = numeric(0), power = numeric(0))
+
+#set number of simulations to run
+nSimSexuality = 100
+
+for(i in 1:length(effectSizesComboSexuality)) {
+  #specify what the effect size is (coef instead of fixef bc lm and not lmer)
+  coef(lmerComboSensitivitySexuality)["sexualityNumeric"] <-  effectSizesComboSexuality[i]
+  #run power analysis
+  powerComboSexuality <- powerSim(lmerComboSensitivitySexuality, nsim = nSimSexuality, test = simr::fixed("sexualityNumeric"))
+  tempInteractionComboSexuality <- expand_grid(effect = effectSizesComboSexuality[i], power = sum(powerComboSexuality$pval < .05) / nSimSexSexuality)
+  sensitivityResultsComboSexuality <- bind_rows(sensitivityResultsComboSexuality, tempInteractionComboSexuality)
+}
 
 
 
@@ -330,6 +418,46 @@ resourcesOppSexPooled <- lm(scale(resources)  ~ sex + study,
 ageBiPooled <- lmer(AgeLik ~ sex+partnerSex + study + (1|PIN), #ideal age (NOT STANDARDIZED)
                 data = pooledBiDataTidy) #sig main effect of sex and partner sex
 
+
+
+
+##sensitivity analysis 
+
+#for 3 way interaction of sex*partnerSex*trait
+
+#duplicate dataframe used in original lmer
+sensitivityDataPooled <- pooledBiData
+
+
+#need to get one effect size (b) for the three way interaction of sex, trait, target sex
+#so need to make trait numeric instead of character
+#AgeLik = 1, health = 2, intell = 3, kind = 4, physatt = 5, resources = 6
+sensitivityDataPooled$traitNumeric <- as.numeric(factor(sensitivityDataPooled$trait))
+sensitivityDataPooled$sexNumeric <- as.numeric(sensitivityDataPooled$sex) - 1
+sensitivityDataPooled$partnerSexNumeric <- as.numeric(sensitivityDataPooled$partnerSex) -1
+
+#do lmer w data for sensitivity analysis
+lmerSensitivityPooled <- lmer(value ~ partnerSexNumeric*traitNumeric*sexNumeric + study + (1|PIN), 
+                              data = sensitivityDataPooled[complete.cases(sensitivityDataPooled[,5:9]),])
+
+#make effect size range to test
+effectSizesPooled <- seq(from = 0.1, to = 1, by = .01)
+
+#initialize empty data frames to store results
+sensitivityResultsPooled <- data.frame(effect = numeric(0), power = numeric(0))
+
+
+#set number of simulations to run
+nSimPooled = 100
+
+for(i in 1:length(effectSizesPooled)) {
+  #specify what the effect size is
+  fixef(lmerSensitivityPooled)["partnerSexNumeric:traitNumeric:sexNumeric"] <-  effectSizesPooled[i]
+  #run power analysis
+  powerPooled <- powerSim(lmerSensitivityPooled, nsim = nSimPooled, test = simr::fixed("partnerSexNumeric:traitNumeric:sexNumeric"))
+  tempInteractionPooled <- expand_grid(effect = effectSizesPooled[i], power = sum(powerPooled$pval < .05) / nSimPooled)
+  sensitivityResultsPooled <- bind_rows(sensitivityResultsPooled, tempInteractionPooled)
+}
 
 
 
@@ -526,3 +654,5 @@ AgeRelStatIntPlot2 <- ggplot(data = ltDataRelStatBiTidy, aes(x = rel_status, y =
   labs(fill = "Participant Sex") +
   scale_fill_manual(values = c("0" = "maroon", "1" = "blue"), 
                     labels = c("Female", "Male"))
+
+
