@@ -10,7 +10,6 @@ library(reshape2)
 library(tidyr)
 library(ggpubr) #for panel plot
 library(ggpattern)
-library(simr) # for sensitivity analysis
 
 ### load data ###
 data<-read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
@@ -316,78 +315,6 @@ physattSD <- sd(ltDataTidy$physatt, na.rm = TRUE)
 
 resourcesDescriptives <- summary(ltDataTidy$resources)
 resourcesSD <- sd(ltDataTidy$resources, na.rm = TRUE)
-
-
-
-
-###Sensitivity Analysis
-
-#set seed so results are same each time
-set.seed(143)
-
-#create new dataframe with no NAs (NAs cause issue for simr)
-powerData <- ltData[complete.cases(ltData$value),]
-
-#do lmer for sensitivity analysis
-ltOmnibusPower <- lmer(value ~ partnerSex + trait*sex + (1|PIN), 
-                   data = powerData)
-
-modelSim <- ltOmnibusPower
-
-
-effectSizes <- seq(from = 0.01, to = .5, by = .01)
-
-# Initialize empty data frames to store results
-sensitivityResults <- data.frame(effect = numeric(0), power = numeric(0))
-
-#set number of simulations to run
-nSim = 100
-
-for(i in 1:length(effectSizes)) {
-  #specify what the effect size is
-  fixef(modelSim)["partnerSex1"] <-  effectSizes[i]
-  #run power analysis
-  power <- powerSim(modelSim, nsim = nSim, test = fixed("partnerSex"))
-  tempPartnerSex <- expand_grid(effect = effectSizes[i], power = sum(power$pval < .05) / nSim)
-  sensitivityResults <- bind_rows(sensitivityResults, tempPartnerSex)
-}
-
-
-
-#for 3 way interaction of sex*partnerSex*trait
-
-
-#need to get one effect size (b) for the three way interaction of sex, trait, target sex
-#so need to make trait numeric instead of character
-#AgeLik = 1, health = 2, intell = 3, kind = 4, physatt = 5, resources = 6
-powerData$traitNumeric <- as.numeric(factor(powerData$trait))
-powerData$sexNumeric <- as.numeric(powerData$sex) - 1
-powerData$partnerSexNumeric <- as.numeric(powerData$partnerSex) - 1
-#do lmer w data for sensitivity analysis
-columns <- c(5, 7, 8, 9)
-lmerSensitivityInt <- lmer(value ~ partnerSexNumeric*traitNumeric*sexNumeric + (1|PIN), 
-                        data = powerData[complete.cases(powerData[,columns]),])
-
-#make effect size range to test
-effectSizesInt <- seq(from = 0.1, to = 1, by = .01)
-
-#initialize empty data frames to store results
-sensitivityResultsInt <- data.frame(effect = numeric(0), power = numeric(0))
-
-#set number of simulations to run
-nSimInt = 100
-
-for(i in 1:length(effectSizesInt)) {
-  #specify what the effect size is
-  fixef(lmerSensitivityInt)["partnerSexNumeric:traitNumeric:sexNumeric"] <-  effectSizesInt[i]
-  #run power analysis
-  powerInt <- powerSim(lmerSensitivityInt, nsim = nSimInt, test = simr::fixed("partnerSexNumeric:traitNumeric:sexNumeric"))
-  tempInteractionInt <- expand_grid(effect = effectSizesInt[i], power = sum(powerInt$pval < .05) / nSimInt)
-  sensitivityResultsInt <- bind_rows(sensitivityResultsInt, tempInteractionInt)
-}
-
-
-
 
 
 
@@ -721,4 +648,5 @@ ltData$sameOrOppSex <- ifelse(ltData$sex == ltData$partnerSex, 0, 1)
 
 ltOmnibusSameOrOpp <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
                   data = ltData) 
+
 
