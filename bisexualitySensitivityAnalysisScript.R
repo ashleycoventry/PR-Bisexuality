@@ -281,5 +281,41 @@ for(i in 1:length(effectSizesModel6)) {
 }
 
 
+##integrative sensitivity analysis: 3 way interaction of sex, partner sex, trait
 
 
+#load in pooled bi data
+
+pooledData <- read.csv("Human Data/Processed Data/BisexualityPooledData20241008 101955.csv")
+pooledData$sex <- as.factor(pooledData$sex)
+pooledData$partnerSex <- as.factor(pooledData$partnerSex)
+pooledData$trait <- as.factor(pooledData$trait)
+
+#generate lmer with interaction term
+model7 <- lmer(value ~ partnerSex*trait*sex + study + (1|PIN), 
+                    data = pooledData[complete.cases(pooledData[,2:5]),])
+
+#find r squared for the overall 3 way interaction
+rSquaredModel7 <- r2beta(model7, method = "nsj")
+
+#specify range of effect sizes to test
+effectSizesModel7 <- seq(from = -.5, to = .5, by = .05)
+
+##empty data frames to store results
+sensitivityResultsModel7 <- data.frame(effectModel7 = numeric(0), 
+                                       powerModel7 = numeric(0), 
+                                       rSquaredModel7 = numeric(0))
+#number of simulations
+nSimModel7 <- 100
+
+for(i in 1:length(effectSizesModel7)) {
+  #specify the effect size to be changed
+  fixef(model7)["partnerSex1:traithealth:sex1"] <- effectSizesModel7[i]
+  #run power analysis
+  powerModel7 <- powerSim(model7, nsim = nSimModel7, test = fcompare(value~sex*partnerSex+sex*trait+trait*partnerSex))
+  rSquaredModel7 <- r2beta(model7, method = "nsj")
+  tempModel7 <- expand_grid(effectModel7 = effectSizesModel7[i], 
+                            powerModel7 = sum(powerModel7$pval < .05) / nSimModel7, 
+                            rSquaredModel7 = rSquaredModel7[rSquaredModel7$Effect == "partnerSex:trait:sex", "Rsq"])
+  sensitivityResultsModel7 <- bind_rows(sensitivityResultsModel7, tempModel7)
+}
