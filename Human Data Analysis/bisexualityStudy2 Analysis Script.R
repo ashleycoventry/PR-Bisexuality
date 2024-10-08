@@ -210,6 +210,12 @@ ltDataBiStudyTwo$study <- 2
 ##merge 2 dataframes for combined data
 pooledBiData <- rbind(ltDataStudyOne, ltDataBiStudyTwo)
 
+##save pooled dataframe
+#date<-format(Sys.time(),format="%Y%m%d %H%M%S")
+#format<-".csv"
+#file<-file.path(paste0("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/PR-Bisexuality.nosync/Human Data/Processed Data/","/BisexualityPooledData",date,format))
+#write.csv(pooledBiData,file=file,row.names=F)
+
 
 ##omnibus test
 omnibusPooled <- lmer(value ~ partnerSex + study + trait*sex + (1|PIN), 
