@@ -72,7 +72,8 @@ rSquaredModel1 <- r2beta(model1, method = "nsj")
 
 #specify range of effect sizes to test
 
-effectSizesModel1 <- seq(from = -.5, to = .5, by = .05)
+#initially: effectSizesModel1 <- seq(from = 0, to = .5, length.out=20)
+effectSizesModel1 <- seq(from = .1, to = .2, length.out=10)
 
 ##empty data frames to store results
 sensitivityResultsModel1 <- data.frame(effectModel1 = numeric(0), 
@@ -83,7 +84,7 @@ nSimModel1 <- 100
 
 for(i in 1:length(effectSizesModel1)) {
   #specify the effect size to be changed
-  fixef(model1)["partnerSex1:sex1:traithealth"] <- effectSizesModel1[i]
+  fixef(model1)["partnerSex1:sex1:traitphysatt"] <- effectSizesModel1[i]
   #run power analysis
   powerModel1 <- powerSim(model1, nsim = nSimModel1, test = fcompare(value~sex*partnerSex+sex*trait+trait*partnerSex))
   rSquaredModel1 <- r2beta(model1, method = "nsj")
@@ -101,7 +102,8 @@ model2 <- lmer(value ~ partnerSex + trait*sex + (1|PIN),
                data = ltDataStudyOne[complete.cases(ltDataStudyOne[,2:5]),])
 
 
-effectSizesModel2 <- seq(from = 0.05, to = .5, by = .01)
+#initially: effectSizesModel2 <- seq(from = 0, to = .5, length.out=20)
+effectSizesModel2 <- seq(from = .1, to = .2, length.out=10)
 
 #Initialize empty data frames to store results
 sensitivityResultsModel2 <- data.frame(effectModel2 = numeric(0), 
@@ -163,7 +165,8 @@ model3 <- lmer(value ~ partnerSex*sex*trait + (1|PIN), data = ltDataStudy2Bi[com
 rSquaredModel3 <- r2beta(model3, method = "nsj")
 
 #specify range of effect sizes to test
-effectSizesModel3 <- seq(from = 0.01, to = 1, by = .01)
+#initially: effectSizesModel3 <- seq(from = 0, to = 1, length.out=20)
+effectSizesModel3 <- seq(from = .7, to = .9, length.out=10)
 
 ##empty data frames to store results
 sensitivityResultsModel3 <- data.frame(effectModel3 = numeric(0), 
@@ -174,7 +177,7 @@ nSimModel3 <- 100
 
 for(i in 1:length(effectSizesModel3)) {
   #specify the effect size to be changed
-  fixef(model3)["partnerSex1:sex1:traithealth"] <- effectSizesModel3[i]
+  fixef(model3)["partnerSex1:sex1:traitphysatt"] <- effectSizesModel3[i]
   #run power analysis
   powerModel3 <- powerSim(model3, nsim = nSimModel3, test = fcompare(value~sex*partnerSex+sex*trait+trait*partnerSex))
   rSquaredModel3 <- r2beta(model3, method = "nsj")
@@ -194,7 +197,10 @@ model4 <- lmer(value ~ partnerSex + trait*sex + (1|PIN),
                                  data = ltDataStudy2Bi[complete.cases(ltDataStudy2Bi[,2:6]),])
 
 
-effectSizesModel4 <- seq(from = 0.001, to = 1, by = .005)
+#initially: effectSizesModel4 <- seq(from = 0, to = .5, length.out=20)
+
+effectSizesModel4 <- seq(from = .1, to = .2, length.out=10)
+
 
 #Initialize empty data frames to store results
 sensitivityResultsModel4 <- data.frame(effectModel4 = numeric(0), 
@@ -227,7 +233,9 @@ model5 <- lmer(value ~ trait*sex*sexuality + (1|PIN),
 rSquaredModel5 <- r2beta(model5, method = "nsj")
 
 #specify range of effect sizes to test
-effectSizesModel5 <- seq(from = -.5, to = .5, by = .05)
+#initially: effectSizesModel5 <- seq(from = .5, to = 1, length.out=20)
+effectSizesModel5 <- seq(from = 0, to = 1, length.out=20)
+
 
 ##empty data frames to store results
 sensitivityResultsModel5 <- data.frame(effectModel5 = numeric(0), 
@@ -238,7 +246,7 @@ nSimModel5 <- 100
 
 for(i in 1:length(effectSizesModel5)) {
   #specify the effect size to be changed
-  fixef(model5)["traithealth:sex1:sexuality1"] <- effectSizesModel5[i]
+  fixef(model5)["traitresources:sex1:sexuality1"] <- effectSizesModel5[i]
   #run power analysis
   powerModel5 <- powerSim(model5, nsim = nSimModel5, test = fcompare(value~sex*sexuality+sex*trait+trait*sexuality))
   rSquaredModel5 <- r2beta(model5, method = "nsj")
@@ -259,7 +267,7 @@ model6 <- lmer(value ~ trait*sexuality + (1|PIN),
 rSquaredModel6 <- r2beta(model6, method = "nsj")
 
 #specify range of effect sizes to test
-effectSizesModel6 <- seq(from = -.5, to = .5, by = .05)
+effectSizesModel6 <- seq(from = 0, to = 1, length.out =20)
 
 ##empty data frames to store results
 sensitivityResultsModel6 <- data.frame(effectModel6 = numeric(0), 
@@ -270,7 +278,7 @@ nSimModel6 <- 100
 
 for(i in 1:length(effectSizesModel6)) {
   #specify the effect size to be changed
-  fixef(model6)["traithealth:sexuality1"] <- effectSizesModel6[i]
+  fixef(model6)["traitphysatt:sexuality1"] <- effectSizesModel6[i]
   #run power analysis
   powerModel6 <- powerSim(model6, nsim = nSimModel6, test = fcompare(value~sexuality+trait))
   rSquaredModel6 <- r2beta(model6, method = "nsj")
@@ -299,7 +307,9 @@ model7 <- lmer(value ~ partnerSex*trait*sex + study + (1|PIN),
 rSquaredModel7 <- r2beta(model7, method = "nsj")
 
 #specify range of effect sizes to test
-effectSizesModel7 <- seq(from = -.5, to = .5, by = .05)
+#initially: effectSizesModel7 <- seq(from = 0, to = 1, length.out =20)
+effectSizesModel7 <- seq(from = 0.2, to = .4, length.out =10)
+
 
 ##empty data frames to store results
 sensitivityResultsModel7 <- data.frame(effectModel7 = numeric(0), 
@@ -310,7 +320,7 @@ nSimModel7 <- 100
 
 for(i in 1:length(effectSizesModel7)) {
   #specify the effect size to be changed
-  fixef(model7)["partnerSex1:traithealth:sex1"] <- effectSizesModel7[i]
+  fixef(model7)["partnerSex1:traitphysatt:sex1"] <- effectSizesModel7[i]
   #run power analysis
   powerModel7 <- powerSim(model7, nsim = nSimModel7, test = fcompare(value~sex*partnerSex+sex*trait+trait*partnerSex))
   rSquaredModel7 <- r2beta(model7, method = "nsj")
