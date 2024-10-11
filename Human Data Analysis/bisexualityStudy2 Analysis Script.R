@@ -141,6 +141,24 @@ ltAgeCombo <- lm(AgeLik ~ sex*sexuality,
                  data = ltDataComboTidy)
 
 
+###reviewer suggested new test -- trait value ~ same vs opposite sex * participant sex 
+
+#create new same vs opp sex variable
+#if participant sex and partner sex are the same = 0, if they're different = 1
+ltDataBi$sameOrOppSex <- ifelse(ltDataBi$sex == ltDataBi$partnerSex, 0, 1) 
+
+
+#testing the interaction between sameOrOppSex and participant sex on trait value
+
+ltOmnibusBiSameOrOpp <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
+                           data = ltDataBi) 
+ltOmnibusBiSameOrOpp2 <- lmer(value ~ sameOrOppSex*sex + sameOrOppSex*trait +
+                               sex*trait + (1|PIN), data = ltDataBi) 
+
+
+
+
+
 
 ###Integrative sample analyses
 #pooling bisexual study 1 and 2 samples 
