@@ -649,4 +649,3 @@ ltData$sameOrOppSex <- ifelse(ltData$sex == ltData$partnerSex, 0, 1)
 ltOmnibusSameOrOpp <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
                   data = ltData) 
 
-
