@@ -146,7 +146,7 @@ ltAgeCombo <- lm(AgeLik ~ sex*sexuality,
 #create new same vs opp sex variable
 #if participant sex and partner sex are the same = 0, if they're different = 1
 ltDataBi$sameOrOppSex <- ifelse(ltDataBi$sex == ltDataBi$partnerSex, 0, 1) 
-
+ltDataBi$sameOrOppSex <- as.character(ltDataBi$sameOrOppSex)
 
 #testing the interaction between sameOrOppSex and participant sex on trait value
 
@@ -155,7 +155,7 @@ ltOmnibusBiSameOrOpp <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN),
 ltOmnibusBiSameOrOpp2 <- lmer(value ~ sameOrOppSex*sex + sameOrOppSex*trait +
                                sex*trait + (1|PIN), data = ltDataBi) 
 
-
+sameOrOppInteractionPlot <- plot_model(ltOmnibusBiSameOrOpp2, type = "pred", terms = c("sex", "sameOrOppSex"))
 
 
 
