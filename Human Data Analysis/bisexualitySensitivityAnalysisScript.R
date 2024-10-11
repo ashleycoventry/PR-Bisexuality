@@ -126,7 +126,41 @@ for(i in 1:length(effectSizesModel2)) {
 }
 
 
+##Sensitivity Analysis: Interaction of participant sex, trait, same/opp sex partner
 
+#create new same vs opp sex variable
+#if participant sex and partner sex are the same = 0, if they're different = 1
+ltDataStudyOne$sameOrOppSex <- ifelse(ltDataStudyOne$sex == ltDataStudyOne$partnerSex, 0, 1) 
+
+
+#testing the interaction between sameOrOppSex and participant sex on trait value
+
+model3 <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
+               data = ltDataStudyOne[complete.cases(ltDataStudyOne[,2:6]),])
+
+
+#initially: effectSizesModel3 <- seq(from = 0, to = .5, length.out=20)
+effectSizesModel3 <- seq(from = 0.8, to = 1, length.out=10)
+
+#Initialize empty data frames to store results
+sensitivityResultsModel3 <- data.frame(effectModel3 = numeric(0), 
+                                       powerModel3 = numeric(0), 
+                                       rSquaredModel3 = numeric(0))
+
+#set number of simulations to run
+nSimModel3 = 500
+
+for(i in 1:length(effectSizesModel3)) {
+  #specify what the effect size is
+  fixef(model3)["sameOrOppSex:sex1:traitphysatt"] <- effectSizesModel3[i]
+  #run power analysis
+  powerModel3 <- powerSim(model3, nsim = nSimModel3, test = fcompare("value~sex*sameOrOppSex+sex*trait+trait*sameOrOppSex"))
+  rSquaredModel3 <- r2beta(model3, method = "nsj")
+  tempModel3 <- expand_grid(effectModel3 = effectSizesModel3[i], 
+                            powerModel3 = sum(powerModel3$pval < .05) / nSimModel3,
+                            rSquaredModel3 = rSquaredModel3[rSquaredModel3$Effect == "sameOrOppSex:sex:trait", "Rsq"])
+  sensitivityResultsModel3 <- bind_rows(sensitivityResultsModel3, tempModel3)
+}
 
 
 
@@ -159,32 +193,32 @@ ltDataStudy2Combo <- ltDataStudy2[ltDataStudy2$sex != ltDataStudy2$partnerSex, ]
 ##Sensitivity Analysis: 3 way interaction of partner sex, trait, and participant sex
 
 #generate lmer with interaction term
-model3 <- lmer(value ~ partnerSex*sex*trait + (1|PIN), data = ltDataStudy2Bi[complete.cases(ltDataStudy2Bi[,2:6]),])
+model4 <- lmer(value ~ partnerSex*sex*trait + (1|PIN), data = ltDataStudy2Bi[complete.cases(ltDataStudy2Bi[,2:6]),])
 
 #find r squared for the overall 3 way interaction
-rSquaredModel3 <- r2beta(model3, method = "nsj")
+rSquaredModel4 <- r2beta(model4, method = "nsj")
 
 #specify range of effect sizes to test
-#initially: effectSizesModel3 <- seq(from = 0, to = 1, length.out=20)
-effectSizesModel3 <- seq(from = .8, to = .9, length.out=10)
+#initially: effectSizesModel4 <- seq(from = 0, to = 1, length.out=20)
+effectSizesModel4 <- seq(from = .8, to = .9, length.out=10)
 
 ##empty data frames to store results
-sensitivityResultsModel3 <- data.frame(effectModel3 = numeric(0), 
-                                       powerModel3 = numeric(0), 
-                                       rSquaredModel3 = numeric(0))
+sensitivityResultsModel4 <- data.frame(effectModel4 = numeric(0), 
+                                       powerModel4 = numeric(0), 
+                                       rSquaredModel4 = numeric(0))
 #number of simulations
-nSimModel3 <- 400
+nSimModel4 <- 400
 
-for(i in 1:length(effectSizesModel3)) {
+for(i in 1:length(effectSizesModel4)) {
   #specify the effect size to be changed
-  fixef(model3)["partnerSex1:sex1:traitphysatt"] <- effectSizesModel3[i]
+  fixef(model4)["partnerSex1:sex1:traitphysatt"] <- effectSizesModel4[i]
   #run power analysis
-  powerModel3 <- powerSim(model3, nsim = nSimModel3, test = fcompare(value~sex*partnerSex+sex*trait+trait*partnerSex))
-  rSquaredModel3 <- r2beta(model3, method = "nsj")
-  tempModel3 <- expand_grid(effectModel3 = effectSizesModel3[i], 
-                      powerModel3 = sum(powerModel3$pval < .05) / nSimModel3, 
-                      rSquaredModel3 = rSquaredModel3[rSquaredModel3$Effect == "partnerSex:sex:trait", "Rsq"])
-  sensitivityResultsModel3 <- bind_rows(sensitivityResultsModel3, tempModel3)
+  powerModel4 <- powerSim(model4, nsim = nSimModel4, test = fcompare(value~sex*partnerSex+sex*trait+trait*partnerSex))
+  rSquaredModel4 <- r2beta(model4, method = "nsj")
+  tempModel4 <- expand_grid(effectModel4 = effectSizesModel4[i], 
+                      powerModel4 = sum(powerModel4$pval < .05) / nSimModel4, 
+                      rSquaredModel4 = rSquaredModel4[rSquaredModel4$Effect == "partnerSex:sex:trait", "Rsq"])
+  sensitivityResultsModel4 <- bind_rows(sensitivityResultsModel4, tempModel4)
 }
 
 
@@ -193,99 +227,99 @@ for(i in 1:length(effectSizesModel3)) {
 ##Sensitivity Analysis: main effect of partner sex
 
 #do lmer for sensitivity analysis
-model4 <- lmer(value ~ partnerSex + trait*sex + (1|PIN), 
+model5 <- lmer(value ~ partnerSex + trait*sex + (1|PIN), 
                                  data = ltDataStudy2Bi[complete.cases(ltDataStudy2Bi[,2:6]),])
 
 
-#initially: effectSizesModel4 <- seq(from = 0, to = .5, length.out=20)
+#initially: effectSizesModel5 <- seq(from = 0, to = .5, length.out=20)
 
-effectSizesModel4 <- seq(from = .1, to = .2, length.out=20)
+effectSizesModel5 <- seq(from = .1, to = .2, length.out=20)
 
 
 #Initialize empty data frames to store results
-sensitivityResultsModel4 <- data.frame(effectModel4 = numeric(0), 
-                                     powerModel4 = numeric(0), 
-                                     rSquaredModel4 = numeric(0))
+sensitivityResultsModel5 <- data.frame(effectModel5 = numeric(0), 
+                                     powerModel5 = numeric(0), 
+                                     rSquaredModel5 = numeric(0))
 
 #set number of simulations to run
-nSimModel4 = 300
+nSimModel5 = 300
 
-for(i in 1:length(effectSizesModel4)) {
+for(i in 1:length(effectSizesModel5)) {
   #specify what the effect size is
-  fixef(model4)["partnerSex1"] <- effectSizesModel4[i]
+  fixef(model5)["partnerSex1"] <- effectSizesModel5[i]
   #run power analysis
-  powerModel4 <- powerSim(model4, nsim = nSimModel4, test = fixed("partnerSex"))
-  rSquaredModel4 <- r2beta(model4, method = "nsj")
-  tempModel4 <- expand_grid(effectModel4 = effectSizesModel4[i], 
-                                powerModel4 = sum(powerModel4$pval < .05) / nSimModel4,
-                                rSquaredModel4 = rSquaredModel4[rSquaredModel4$Effect == "partnerSex", "Rsq"])
-  sensitivityResultsModel4 <- bind_rows(sensitivityResultsModel4, tempModel4)
+  powerModel5 <- powerSim(model5, nsim = nSimModel5, test = fixed("partnerSex"))
+  rSquaredModel5 <- r2beta(model5, method = "nsj")
+  tempModel5 <- expand_grid(effectModel5 = effectSizesModel5[i], 
+                                powerModel5 = sum(powerModel5$pval < .05) / nSimModel5,
+                                rSquaredModel5 = rSquaredModel5[rSquaredModel5$Effect == "partnerSex", "Rsq"])
+  sensitivityResultsModel5 <- bind_rows(sensitivityResultsModel5, tempModel5)
 }
 
 
 ##Sensitivity Analysis: 3 way interaction of participant sex, sexual orientation, and trait
 
 #generate lmer with interaction term
-model5 <- lmer(value ~ trait*sex*sexuality + (1|PIN), 
+model6 <- lmer(value ~ trait*sex*sexuality + (1|PIN), 
                data = ltDataStudy2Combo[complete.cases(ltDataStudy2Combo[,2:6]),]) 
 
 #find r squared for the overall 3 way interaction
-rSquaredModel5 <- r2beta(model5, method = "nsj")
-
-#specify range of effect sizes to test
-#initially: effectSizesModel5 <- seq(from = 0, to = 1, length.out=20)
-effectSizesModel5 <- seq(from = 0, to = .2, length.out=10)
-
-
-##empty data frames to store results
-sensitivityResultsModel5 <- data.frame(effectModel5 = numeric(0), 
-                                       powerModel5 = numeric(0), 
-                                       rSquaredModel5 = numeric(0))
-#number of simulations
-nSimModel5 <- 600
-
-for(i in 1:length(effectSizesModel5)) {
-  #specify the effect size to be changed
-  fixef(model5)["traitresources:sex1:sexuality1"] <- effectSizesModel5[i]
-  #run power analysis
-  powerModel5 <- powerSim(model5, nsim = nSimModel5, test = fcompare(value~sex*sexuality+sex*trait+trait*sexuality))
-  rSquaredModel5 <- r2beta(model5, method = "nsj")
-  tempModel5 <- expand_grid(effectModel5 = effectSizesModel5[i], 
-                      powerModel5 = sum(powerModel5$pval < .05) / nSimModel5, 
-                      rSquaredModel5 = rSquaredModel5[rSquaredModel5$Effect == "trait:sex:sexuality", "Rsq"])
-  sensitivityResultsModel5 <- bind_rows(sensitivityResultsModel5, tempModel5)
-}
-
-
-##Sensitivity Analysis: 2 way interaction of sexual orientation and trait
-
-#generate lmer with interaction term
-model6 <- lmer(value ~ trait*sexuality + (1|PIN), 
-               data = ltDataStudy2Combo[complete.cases(ltDataStudy2Combo[,2:6]),]) 
-
-#find r squared for the overall 2 way interaction
 rSquaredModel6 <- r2beta(model6, method = "nsj")
 
 #specify range of effect sizes to test
-effectSizesModel6 <- seq(from = 0.3, to = 0.5, length.out =20)
+#initially: effectSizesModel6 <- seq(from = 0, to = 1, length.out=20)
+effectSizesModel6 <- seq(from = 0, to = .2, length.out=10)
+
 
 ##empty data frames to store results
 sensitivityResultsModel6 <- data.frame(effectModel6 = numeric(0), 
                                        powerModel6 = numeric(0), 
                                        rSquaredModel6 = numeric(0))
 #number of simulations
-nSimModel6 <- 400
+nSimModel6 <- 600
 
 for(i in 1:length(effectSizesModel6)) {
   #specify the effect size to be changed
-  fixef(model6)["traitphysatt:sexuality1"] <- effectSizesModel6[i]
+  fixef(model6)["traitresources:sex1:sexuality1"] <- effectSizesModel6[i]
   #run power analysis
-  powerModel6 <- powerSim(model6, nsim = nSimModel6, test = fcompare(value~sexuality+trait))
+  powerModel6 <- powerSim(model6, nsim = nSimModel6, test = fcompare(value~sex*sexuality+sex*trait+trait*sexuality))
   rSquaredModel6 <- r2beta(model6, method = "nsj")
   tempModel6 <- expand_grid(effectModel6 = effectSizesModel6[i], 
-                            powerModel6 = sum(powerModel6$pval < .05) / nSimModel6, 
-                            rSquaredModel6 = rSquaredModel6[rSquaredModel6$Effect == "trait:sexuality", "Rsq"])
+                      powerModel6 = sum(powerModel6$pval < .05) / nSimModel6, 
+                      rSquaredModel6 = rSquaredModel6[rSquaredModel6$Effect == "trait:sex:sexuality", "Rsq"])
   sensitivityResultsModel6 <- bind_rows(sensitivityResultsModel6, tempModel6)
+}
+
+
+##Sensitivity Analysis: 2 way interaction of sexual orientation and trait
+
+#generate lmer with interaction term
+model7 <- lmer(value ~ trait*sexuality + (1|PIN), 
+               data = ltDataStudy2Combo[complete.cases(ltDataStudy2Combo[,2:6]),]) 
+
+#find r squared for the overall 2 way interaction
+rSquaredModel7 <- r2beta(model7, method = "nsj")
+
+#specify range of effect sizes to test
+effectSizesModel7 <- seq(from = 0.3, to = 0.5, length.out =20)
+
+##empty data frames to store results
+sensitivityResultsModel7 <- data.frame(effectModel7 = numeric(0), 
+                                       powerModel7 = numeric(0), 
+                                       rSquaredModel7 = numeric(0))
+#number of simulations
+nSimModel7 <- 400
+
+for(i in 1:length(effectSizesModel7)) {
+  #specify the effect size to be changed
+  fixef(model7)["traitphysatt:sexuality1"] <- effectSizesModel7[i]
+  #run power analysis
+  powerModel7 <- powerSim(model7, nsim = nSimModel7, test = fcompare(value~sexuality+trait))
+  rSquaredModel7 <- r2beta(model7, method = "nsj")
+  tempModel7 <- expand_grid(effectModel7 = effectSizesModel7[i], 
+                            powerModel7 = sum(powerModel7$pval < .05) / nSimModel7, 
+                            rSquaredModel7 = rSquaredModel7[rSquaredModel7$Effect == "trait:sexuality", "Rsq"])
+  sensitivityResultsModel7 <- bind_rows(sensitivityResultsModel7, tempModel7)
 }
 
 
@@ -300,32 +334,74 @@ pooledData$partnerSex <- as.factor(pooledData$partnerSex)
 pooledData$trait <- as.factor(pooledData$trait)
 
 #generate lmer with interaction term
-model7 <- lmer(value ~ partnerSex*trait*sex + study + (1|PIN), 
+model8 <- lmer(value ~ partnerSex*trait*sex + study + (1|PIN), 
                     data = pooledData[complete.cases(pooledData[,2:5]),])
 
 #find r squared for the overall 3 way interaction
-rSquaredModel7 <- r2beta(model7, method = "nsj")
+rSquaredModel8 <- r2beta(model8, method = "nsj")
 
 #specify range of effect sizes to test
-#initially: effectSizesModel7 <- seq(from = 0, to = 1, length.out =20)
-effectSizesModel7 <- seq(from = 0.2, to = .4, length.out =20)
+#initially: effectSizesModel8 <- seq(from = 0, to = 1, length.out =20)
+effectSizesModel8 <- seq(from = 0.2, to = .4, length.out =20)
 
 
 ##empty data frames to store results
-sensitivityResultsModel7 <- data.frame(effectModel7 = numeric(0), 
-                                       powerModel7 = numeric(0), 
-                                       rSquaredModel7 = numeric(0))
+sensitivityResultsModel8 <- data.frame(effectModel8 = numeric(0), 
+                                       powerModel8 = numeric(0), 
+                                       rSquaredModel8 = numeric(0))
 #number of simulations
-nSimModel7 <- 300
+nSimModel8 <- 300
 
-for(i in 1:length(effectSizesModel7)) {
+for(i in 1:length(effectSizesModel8)) {
   #specify the effect size to be changed
-  fixef(model7)["partnerSex1:traitphysatt:sex1"] <- effectSizesModel7[i]
+  fixef(model8)["partnerSex1:traitphysatt:sex1"] <- effectSizesModel8[i]
   #run power analysis
-  powerModel7 <- powerSim(model7, nsim = nSimModel7, test = fcompare(value~sex*partnerSex+sex*trait+trait*partnerSex))
-  rSquaredModel7 <- r2beta(model7, method = "nsj")
-  tempModel7 <- expand_grid(effectModel7 = effectSizesModel7[i], 
-                            powerModel7 = sum(powerModel7$pval < .05) / nSimModel7, 
-                            rSquaredModel7 = rSquaredModel7[rSquaredModel7$Effect == "partnerSex:trait:sex", "Rsq"])
-  sensitivityResultsModel7 <- bind_rows(sensitivityResultsModel7, tempModel7)
+  powerModel8 <- powerSim(model8, nsim = nSimModel8, test = fcompare(value~sex*partnerSex+sex*trait+trait*partnerSex))
+  rSquaredModel8 <- r2beta(model8, method = "nsj")
+  tempModel8 <- expand_grid(effectModel8 = effectSizesModel8[i], 
+                            powerModel8 = sum(powerModel8$pval < .05) / nSimModel8, 
+                            rSquaredModel8 = rSquaredModel8[rSquaredModel8$Effect == "partnerSex:trait:sex", "Rsq"])
+  sensitivityResultsModel8 <- bind_rows(sensitivityResultsModel8, tempModel8)
 }
+
+
+
+##sensitivity analysis: three-way interaction of sex, trait, and same/opp sex target
+
+#create new same vs opp sex variable
+#if participant sex and partner sex are the same = 0, if they're different = 1
+ltDataStudy2Bi$sameOrOppSex <- ifelse(ltDataStudy2Bi$sex == ltDataStudy2Bi$partnerSex, 0, 1) 
+
+
+#testing the interaction between sameOrOppSex and participant sex on trait value
+
+model9 <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
+               data = ltDataStudy2Bi[complete.cases(ltDataStudy2Bi[,2:7]),])
+
+
+#initially: effectSizesModel3 <- seq(from = 0, to = .5, length.out=20)
+effectSizesModel9 <- seq(from = 0.6, to = 0.8, length.out=10)
+
+#Initialize empty data frames to store results
+sensitivityResultsModel9 <- data.frame(effectModel9 = numeric(0), 
+                                       powerModel9 = numeric(0), 
+                                       rSquaredModel9 = numeric(0))
+
+#set number of simulations to run
+nSimModel9 = 400
+
+for(i in 1:length(effectSizesModel9)) {
+  #specify what the effect size is
+  fixef(model9)["sameOrOppSex:sex1:traitphysatt"] <- effectSizesModel9[i]
+  #run power analysis
+  powerModel9 <- powerSim(model9, nsim = nSimModel9, test = fcompare("value~sex*sameOrOppSex+sex*trait+trait*sameOrOppSex"))
+  rSquaredModel9 <- r2beta(model9, method = "nsj")
+  tempModel9 <- expand_grid(effectModel9 = effectSizesModel9[i], 
+                            powerModel9 = sum(powerModel9$pval < .05) / nSimModel9,
+                            rSquaredModel9 = rSquaredModel9[rSquaredModel9$Effect == "sameOrOppSex:sex:trait", "Rsq"])
+  sensitivityResultsModel9 <- bind_rows(sensitivityResultsModel9, tempModel9)
+}
+
+
+
+
