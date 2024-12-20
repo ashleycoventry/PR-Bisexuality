@@ -121,14 +121,48 @@ ltResourceBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
 ltResourceCombo <- lm(scale(resources)  ~ sex*sexuality,
                       data = ltDataComboTidy)
 
+#resources model -- with same/opp sex partner as predictor
 
-#bisexual preferences for resources in opposite sex partners only
-oppSexData <- ltDataBiTidy %>%
-  filter(ltDataBiTidy[[2]] != ltDataBiTidy[[4]])
+#add same or opp variable to lt data tidy (0=same, 1=opp)
+ltDataBiTidy$sameOrOppSex <- ifelse(ltDataBiTidy$sex == ltDataBiTidy$partnerSex, 0, 1) 
+ltDataBiTidy$sameOrOppSex <- as.factor(ltDataBiTidy$sameOrOppSex)
 
-ltResourceOppSex <- lm(scale(resources)  ~ sex,
-                       data = oppSexData) 
+ltResourceSameOpp <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN),
+                          data = ltDataBiTidy)
 
+#plot interaction
+resourceLtIntPlot <- plot_model(ltResourceSameOpp, type = "pred", terms = c("sex", "sameOrOppSex"))
+
+resourceLtIntPlot2 <- ggplot(ltDataBiTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+  stat_summary(fun = "mean", geom = "bar", position = position_dodge(), color = "black") +
+  stat_summary(fun.data = "mean_cl_boot", geom = "errorbar", position = position_dodge(width = 0.9),
+               width = 0.25) +
+  scale_fill_manual(
+    values = c("0" = "#9DC183", "1" = "#FFBF00"), 
+    labels = c("Same Sex", "Opposite Sex")) +
+  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
+  labs(x = "Participant Sex", y = "Resource Preference", 
+       fill = "Target Sex (Same Or Opposite Participant)") +
+  theme_minimal()
+
+resourceLtIntPlot3 <- ggplot(ltDataBiTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+  geom_violin(position = position_dodge(width = 0.9), color = "black", alpha = 0.7) + 
+  geom_boxplot(position = position_dodge(width = 0.9), width = 0.2, color = "black", outlier.shape = NA) + 
+  scale_fill_manual(values = c("0" = "#9DC183", "1" = "#FFBF00"), 
+                    labels = c("Same Sex", "Opposite Sex")) +
+  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
+  labs(x = "Participant Sex", y = "Resource Preference", 
+       fill = "Target Sex (Same Or Opposite Participant)") +
+  theme_minimal()
+
+resourceLtIntPlot4 <- ggplot(ltDataBiTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+  geom_boxplot(position = position_dodge(width = 0.9), width = 0.5, color = "black", outlier.shape = NA) + 
+  scale_fill_manual(values = c("0" = "#9DC183", "1" = "#FFBF00"), 
+                    labels = c("Same Sex", "Opposite Sex")) +
+  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
+  labs(x = "Participant Sex", y = "Resource Preference", 
+       fill = "Target Sex (Same Or Opposite Participant)") +
+  theme_minimal()
 
 
 #ideal age (NOT STANDARDIZED)
@@ -141,21 +175,7 @@ ltAgeCombo <- lm(AgeLik ~ sex*sexuality,
                  data = ltDataComboTidy)
 
 
-###reviewer suggested new test -- trait value ~ same vs opposite sex * participant sex 
 
-#create new same vs opp sex variable
-#if participant sex and partner sex are the same = 0, if they're different = 1
-ltDataBi$sameOrOppSex <- ifelse(ltDataBi$sex == ltDataBi$partnerSex, 0, 1) 
-ltDataBi$sameOrOppSex <- as.character(ltDataBi$sameOrOppSex)
-
-#testing the interaction between sameOrOppSex and participant sex on trait value
-
-ltOmnibusBiSameOrOpp <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
-                           data = ltDataBi) 
-ltOmnibusBiSameOrOpp2 <- lmer(value ~ sameOrOppSex*sex + sameOrOppSex*trait +
-                               sex*trait + (1|PIN), data = ltDataBi) 
-
-sameOrOppInteractionPlot <- plot_model(ltOmnibusBiSameOrOpp2, type = "pred", terms = c("sex", "sameOrOppSex"))
 
 
 
@@ -264,11 +284,11 @@ intellBiPooled <- lmer(scale(intell)  ~ sex+partnerSex + study + (1|PIN),
 resourcesBiPooled <- lmer(scale(resources)  ~ sex+partnerSex + study + (1|PIN),
                      data = pooledBiDataTidy)  #sig main effect of psex (same as study 1)
 
-oppSexDataPooled <- pooledBiDataTidy %>% #bisexual preferences for resources in opposite sex partners only
-  filter(pooledBiDataTidy[[2]] != pooledBiDataTidy[[3]])
+pooledBiDataTidy$sameOrOppSex <- ifelse(pooledBiDataTidy$sex == pooledBiDataTidy$partnerSex, 0, 1) 
+pooledBiDataTidy$sameOrOppSex <- as.factor(pooledBiDataTidy$sameOrOppSex)
 
-resourcesOppSexPooled <- lm(scale(resources)  ~ sex + study,
-                       data = oppSexDataPooled)
+pooledBiResourceSameOpp <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN),
+                          data = pooledBiDataTidy)
 
 ageBiPooled <- lmer(AgeLik ~ sex+partnerSex + study + (1|PIN), #ideal age (NOT STANDARDIZED)
                 data = pooledBiDataTidy) #sig main effect of sex and partner sex
