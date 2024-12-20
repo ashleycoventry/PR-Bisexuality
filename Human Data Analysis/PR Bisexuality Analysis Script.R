@@ -134,13 +134,49 @@ ltIntellMain <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
 ltResourceMain <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                       data = ltDataTidy)  #sig main effect of psex, not sex
 
-#bisexual preferences for resources in opposite sex partners only
-oppSexData <- ltDataTidy %>%
-  filter(ltDataTidy[[2]] != ltDataTidy[[3]])
 
-ltResourceOppSex <- lm(scale(resources)  ~ sex,
-                       data = oppSexData) 
+#resources model -- with same/opp sex partner as predictor
 
+#add same or opp variable to lt data tidy (0=same, 1=opp)
+ltDataTidy$sameOrOppSex <- ifelse(ltDataTidy$sex == ltDataTidy$partnerSex, 0, 1) 
+ltDataTidy$sameOrOppSex <- as.factor(ltDataTidy$sameOrOppSex)
+
+ltResourceSameOpp <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN),
+                          data = ltDataTidy)
+
+#plot interaction
+resourceLtIntPlot <- plot_model(ltResourceSameOpp, type = "pred", terms = c("sex", "sameOrOppSex"))
+
+resourceLtIntPlot2 <- ggplot(ltDataTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+  stat_summary(fun = "mean", geom = "bar", position = position_dodge(), color = "black") +
+  stat_summary(fun.data = "mean_cl_boot", geom = "errorbar", position = position_dodge(width = 0.9),
+    width = 0.25) +
+  scale_fill_manual(
+    values = c("0" = "#9DC183", "1" = "#FFBF00"), 
+    labels = c("Same Sex", "Opposite Sex")) +
+  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
+  labs(x = "Participant Sex", y = "Resource Preference", 
+       fill = "Target Sex (Same Or Opposite Participant)") +
+  theme_minimal()
+
+resourceLtIntPlot3 <- ggplot(ltDataTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+  geom_violin(position = position_dodge(width = 0.9), color = "black", alpha = 0.7) + 
+  geom_boxplot(position = position_dodge(width = 0.9), width = 0.2, color = "black", outlier.shape = NA) + 
+  scale_fill_manual(values = c("0" = "#9DC183", "1" = "#FFBF00"), 
+    labels = c("Same Sex", "Opposite Sex")) +
+  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
+  labs(x = "Participant Sex", y = "Resource Preference", 
+       fill = "Target Sex (Same Or Opposite Participant)") +
+  theme_minimal()
+
+resourceLtIntPlot4 <- ggplot(ltDataTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+  geom_boxplot(position = position_dodge(width = 0.9), width = 0.5, color = "black", outlier.shape = NA) + 
+  scale_fill_manual(values = c("0" = "#9DC183", "1" = "#FFBF00"), 
+                    labels = c("Same Sex", "Opposite Sex")) +
+  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
+  labs(x = "Participant Sex", y = "Resource Preference", 
+       fill = "Target Sex (Same Or Opposite Participant)") +
+  theme_minimal()
 
 #ideal age (NOT STANDARDIZED)
 
@@ -188,6 +224,50 @@ stIntellMain <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
 
 stResourceMain <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                       data = stDataTidy) #sig effect of partner sex
+
+
+#add same or opp variable to lt data tidy (0=same, 1=opp)
+stDataTidy$sameOrOppSex <- ifelse(stDataTidy$sex == stDataTidy$partnerSex, 0, 1) 
+stDataTidy$sameOrOppSex <- as.factor(stDataTidy$sameOrOppSex)
+
+stResourceSameOpp <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN),
+                          data = stDataTidy)
+
+#plot interaction
+resourceStIntPlot <- plot_model(stResourceSameOpp, type = "pred", terms = c("sex", "sameOrOppSex"))
+
+resourceStIntPlot2 <- ggplot(stDataTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+  stat_summary(fun = "mean", geom = "bar", position = position_dodge(), color = "black") +
+  stat_summary(fun.data = "mean_cl_boot", geom = "errorbar", position = position_dodge(width = 0.9),
+               width = 0.25) +
+  scale_fill_manual(
+    values = c("0" = "#9DC183", "1" = "#FFBF00"), 
+    labels = c("Same Sex", "Opposite Sex")) +
+  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
+  labs(x = "Participant Sex", y = "Resource Preference", 
+       fill = "Target Sex (Same Or Opposite Participant)") +
+  theme_minimal()
+
+resourceStIntPlot3 <- ggplot(stDataTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+  geom_violin(position = position_dodge(width = 0.9), color = "black", alpha = 0.7) + 
+  geom_boxplot(position = position_dodge(width = 0.9), width = 0.2, color = "black", outlier.shape = NA) + 
+  scale_fill_manual(values = c("0" = "#9DC183", "1" = "#FFBF00"), 
+                    labels = c("Same Sex", "Opposite Sex")) +
+  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
+  labs(x = "Participant Sex", y = "Resource Preference", 
+       fill = "Target Sex (Same Or Opposite Participant)") +
+  theme_minimal()
+
+resourceStIntPlot4 <- ggplot(stDataTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+  geom_boxplot(position = position_dodge(width = 0.9), width = 0.5, color = "black", outlier.shape = NA) + 
+  scale_fill_manual(values = c("0" = "#9DC183", "1" = "#FFBF00"), 
+                    labels = c("Same Sex", "Opposite Sex")) +
+  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
+  labs(x = "Participant Sex", y = "Resource Preference", 
+       fill = "Target Sex (Same Or Opposite Participant)") +
+  theme_minimal()
+
+
 
 #age (NOT STANDARDIZED)
 
@@ -384,42 +464,30 @@ ltDataBiTidy <- ltDataBi %>%
 #standardizing outcome variable (traits)
 
 #health 
-ltHealthIntBi <- lmer(scale(health)  ~ sex*partnerSex + (1|PIN),
-                    data = ltDataBiTidy)#not sig
 
 ltHealthMainBi <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN),
                      data = ltDataBiTidy) #sig main effect of sex (different)
 #kindness 
-ltKindIntBi <- lmer(scale(kind)  ~ sex*partnerSex + (1|PIN),
-                  data = ltDataBiTidy) #no interaction
 
 ltKindMainBi <- lmer(scale(kind)  ~ sex+partnerSex + (1|PIN),
                    data = ltDataBiTidy) #sig main of sex and psex (same)
 
 #physical attractiveness
-ltPhysattIntBi <- lmer(scale(physatt)  ~ sex*partnerSex + (1|PIN),
-                     data = ltDataBiTidy) #not sig
 
 ltPhysattMainBi <- lmer(scale(physatt)  ~ sex+partnerSex + (1|PIN),
                       data = ltDataBiTidy) #sig main effect of sex (same)
 
 #intell
-ltIntellIntBi <- lmer(scale(intell)  ~ sex*partnerSex + (1|PIN),
-                    data = ltDataBiTidy) #not sig
 
 ltIntellMainBi <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
                      data = ltDataBiTidy) #sig effect of psex (same)
 
 #resources
-ltResourceIntBi <- lmer(scale(resources)  ~ sex*partnerSex + (1|PIN),
-                      data = ltDataBiTidy) #not sig
 
 ltResourceMainBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                        data = ltDataBiTidy)  #sig main effect of psex, not sex (same)
 
 #ideal age (NOT STANDARDIZED)
-ltAgeIntBi <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
-                 data = ltDataBiTidy) #not sig 
 
 ltAgeMainBi <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
                   data = ltDataBiTidy) #sig main effect of sex and partner sex (same)
@@ -440,16 +508,12 @@ stKindMainBi <- lmer(scale(kind) ~ sex + partnerSex + (1|PIN),
 
 
 #physical attractiveness
-stPhysattIntBi <- lmer(scale(physatt) ~ sex*partnerSex + (1|PIN), 
-                     data = stDataBiTidy) 
 
 stPhysattMainBi <- lmer(scale(physatt) ~ sex+partnerSex + (1|PIN), 
                       data = stDataBiTidy) #only sig main effect of partner sex (same)
 
 
 #health
-stHealthIntBi <- lmer(scale(health)  ~ sex*partnerSex + (1|PIN),
-                    data = stDataBiTidy)
 
 stHealthMainBi <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN),
                      data = stDataBiTidy) #sig main effect of partner sex (same)
@@ -457,22 +521,16 @@ stHealthMainBi <- lmer(scale(health)  ~ sex+partnerSex + (1|PIN),
 
 #intelligence
 
-stIntellIntBi <- lmer(scale(intell)  ~ sex*partnerSex + (1|PIN),
-                    data = stDataBiTidy)  
-
 stIntellMainBi <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
                      data = stDataBiTidy) #nothing significant (different)
 
 #resources
-stResourceIntBi <- lmer(scale(resources)  ~ sex*partnerSex + (1|PIN),
-                      data = stDataBiTidy) 
 
 stResourceMainBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                        data = stDataBiTidy) #sig effect of partner sex (same)
 
 #age (NOT STANDARDIZED)
-stAgeIntBi <- lmer(AgeLik ~ sex*partnerSex + (1|PIN), 
-                 data = stDataBiTidy) 
+
 
 stAgeMainBi <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
                   data = stDataBiTidy) #sig main effect of sex and partner sex (same)
@@ -635,17 +693,4 @@ ltResourceRelStat <- lmer(scale(resources)  ~ sex + partnerSex + rel_status + (1
 ltAgeRelStat <- lmer(AgeLik ~ sex + partnerSex + rel_status + (1|PIN),
                     data = ltDataRelStatTidy)
 
-
-
-###reviewer suggested new test -- trait value ~ same vs opposite sex * participant sex 
-
-#create new same vs opp sex variable
-#if participant sex and partner sex are the same = 0, if they're different = 1
-ltData$sameOrOppSex <- ifelse(ltData$sex == ltData$partnerSex, 0, 1) 
-
-
-#testing the interaction between sameOrOppSex and participant sex on trait value
-
-ltOmnibusSameOrOpp <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
-                  data = ltData) 
 
