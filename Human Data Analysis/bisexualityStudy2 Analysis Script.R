@@ -131,38 +131,17 @@ ltResourceSameOpp <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN),
                           data = ltDataBiTidy)
 
 #plot interaction
-resourceLtIntPlot <- plot_model(ltResourceSameOpp, type = "pred", terms = c("sex", "sameOrOppSex"))
-
-resourceLtIntPlot2 <- ggplot(ltDataBiTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
-  stat_summary(fun = "mean", geom = "bar", position = position_dodge(), color = "black") +
-  stat_summary(fun.data = "mean_cl_boot", geom = "errorbar", position = position_dodge(width = 0.9),
-               width = 0.25) +
-  scale_fill_manual(
-    values = c("0" = "#9DC183", "1" = "#FFBF00"), 
-    labels = c("Same Sex", "Opposite Sex")) +
-  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
-  labs(x = "Participant Sex", y = "Resource Preference", 
-       fill = "Target Sex (Same Or Opposite Participant)") +
-  theme_minimal()
-
-resourceLtIntPlot3 <- ggplot(ltDataBiTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
+resourceIntPlot <- ggplot(ltDataBiTidy, aes(x = sameOrOppSex, y = resources, fill = sex))+
   geom_violin(position = position_dodge(width = 0.9), color = "black", alpha = 0.7) + 
   geom_boxplot(position = position_dodge(width = 0.9), width = 0.2, color = "black", outlier.shape = NA) + 
-  scale_fill_manual(values = c("0" = "#9DC183", "1" = "#FFBF00"), 
-                    labels = c("Same Sex", "Opposite Sex")) +
-  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
-  labs(x = "Participant Sex", y = "Resource Preference", 
-       fill = "Target Sex (Same Or Opposite Participant)") +
+  scale_fill_manual(values = c("0" = "#C0392B", "1" = "#2980B9"), 
+                    labels = c("Female", "Male")) +
+  scale_x_discrete(labels = c("0" = "Same Sex", "1" = "Opposite Sex")) +
+  scale_y_continuous(limits = c(0.0, 10.0)) +
+  labs(x = "Sex of Target (Same or Opposite Participant)", y = "Resource Preference", 
+       fill = "Participant Sex") +
   theme_minimal()
-
-resourceLtIntPlot4 <- ggplot(ltDataBiTidy, aes(x = sex, y = resources, fill = sameOrOppSex))+
-  geom_boxplot(position = position_dodge(width = 0.9), width = 0.5, color = "black", outlier.shape = NA) + 
-  scale_fill_manual(values = c("0" = "#9DC183", "1" = "#FFBF00"), 
-                    labels = c("Same Sex", "Opposite Sex")) +
-  scale_x_discrete(labels = c("0" = "Male", "1" = "Female")) +
-  labs(x = "Participant Sex", y = "Resource Preference", 
-       fill = "Target Sex (Same Or Opposite Participant)") +
-  theme_minimal()
+#ggsave("sameOppStudy2.jpeg", plot=last_plot(), width=200, height=125, units="mm", path ="/Users/ashle/Desktop", scale = 1, dpi=300, limitsize=TRUE)
 
 
 #ideal age (NOT STANDARDIZED)
