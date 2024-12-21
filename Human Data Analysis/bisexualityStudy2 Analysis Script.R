@@ -156,124 +156,6 @@ ltAgeCombo <- lm(AgeLik ~ sex*sexuality,
 
 
 
-
-
-
-###Integrative sample analyses
-#pooling bisexual study 1 and 2 samples 
-#will replicate bisexual analyses w pooled sample
-
-##load in study 1 data
-studyOneData <- read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
-
-##processing not added to processing script
-#exclude intersex participants
-studyOneData <-  studyOneData[studyOneData$sex!=2,]
-#exclude people who did not report their sex
-studyOneData <- studyOneData[!is.na(studyOneData[,5]), ]
-
-#converting preferred age to preferred age difference
-#130 = m_lt_age, 142 = f_lt_age, 154 = f_st_age, 166 = m_st_age
-
-#converting participant age to same scale as ideal
-studyOneData$ageLik <- ifelse(studyOneData$age >= 75, 10, 
-                      ifelse(studyOneData$age >= 69, 9,
-                             ifelse(studyOneData$age >= 63, 8,
-                                    ifelse(studyOneData$age >= 57, 7,
-                                           ifelse(studyOneData$age >= 51, 6, 
-                                                  ifelse(studyOneData$age >= 45, 5, 
-                                                         ifelse(studyOneData$age >= 39, 4, 
-                                                                ifelse(studyOneData$age >= 33, 3, 
-                                                                       ifelse(studyOneData$age >= 27, 2, 
-                                                                              ifelse(studyOneData$age >= 21, 1, 0))))))))))
-
-
-#converting ideal partner age to ideal partner age difference
-#male ideal LT
-studyOneData$m_Lt_AgeLik <- studyOneData$m_lt_age - studyOneData$ageLik
-#male ideal ST
-studyOneData$m_St_AgeLik <- studyOneData$m_st_age - studyOneData$ageLik
-#female ideal LT
-studyOneData$f_Lt_AgeLik <- studyOneData$f_lt_age - studyOneData$ageLik
-#female ideal ST
-studyOneData$f_St_AgeLik <- studyOneData$f_st_age - studyOneData$ageLik
-
-##limiting study 1 data to only long-term preferences & changing to longform
-
-ltDataStudyOne <- studyOneData[,c(167, 5, 178:187, 227, 229)]
-ltDataStudyOne <- melt(ltDataStudyOne, id.vars=c("PIN", "sex"))
-ltDataStudyOne <- ltDataStudyOne %>% 
-  separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
-ltDataStudyOne$partnerSex <- ifelse(ltDataStudyOne$partnerSex == "m", 1, 0)
-ltDataStudyOne <- ltDataStudyOne[,c(1:3, 5:6)]
-ltDataStudyOne$sex  <- as.factor(ltDataStudyOne$sex)
-ltDataStudyOne$partnerSex  <- as.factor(ltDataStudyOne$partnerSex)
-
-#make sure there are no NAs in sex or partner sex columns
-nacheckLtStudyOne <- apply(ltDataStudyOne[,2:3], 1, function(x) sum(is.na(x))>0)
-ltDataStudyOne<- ltDataStudyOne[!nacheckLtStudyOne,]
-
-##add study variable for study 1 data
-ltDataStudyOne$study <- 1
-
-
-##new study 2 data frame w/ bi participants, no sexuality or group columns
-cols <- c(1,2,4,5,6)
-ltDataBiStudyTwo <- ltDataBi[,cols]
-
-##add study variable to study 2 data
-ltDataBiStudyTwo$study <- 2
-
-##merge 2 dataframes for combined data
-pooledBiData <- rbind(ltDataStudyOne, ltDataBiStudyTwo)
-
-##save pooled dataframe
-#date<-format(Sys.time(),format="%Y%m%d %H%M%S")
-#format<-".csv"
-#file<-file.path(paste0("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/PR-Bisexuality.nosync/Human Data/Processed Data/","/BisexualityPooledData",date,format))
-#write.csv(pooledBiData,file=file,row.names=F)
-
-
-##omnibus test
-omnibusPooled <- lmer(value ~ partnerSex + study + trait*sex + (1|PIN), 
-                  data = pooledBiData)
-omnibusPooled2 <- lmer(value ~ partnerSex*trait*sex + study + (1|PIN), 
-                   data = pooledBiData)
-
-##exploring the trait*sex interactions
-
-#tidy format for analyses
-pooledBiDataTidy <- pooledBiData %>%
-  pivot_wider(names_from = trait, 
-              values_from = value)
-
-
-healthBiPooled <- lmer(scale(health)  ~ sex+partnerSex + study + (1|PIN), 
-                   data = pooledBiDataTidy) #sig
-
-kindBiPooled <- lmer(scale(kind)  ~ sex+partnerSex + study + (1|PIN),
-                 data = pooledBiDataTidy) #sig main effect of sex and partner sex
-
-physattBiPooled <- lmer(scale(physatt)  ~ sex+partnerSex + study + (1|PIN),
-                    data = pooledBiDataTidy) #sig main effect of sex
-
-intellBiPooled <- lmer(scale(intell)  ~ sex+partnerSex + study + (1|PIN),
-                   data = pooledBiDataTidy) #sig main effect of partner sex
-
-resourcesBiPooled <- lmer(scale(resources)  ~ sex+partnerSex + study + (1|PIN),
-                     data = pooledBiDataTidy)  #sig main effect of psex (same as study 1)
-
-pooledBiDataTidy$sameOrOppSex <- ifelse(pooledBiDataTidy$sex == pooledBiDataTidy$partnerSex, 0, 1) 
-pooledBiDataTidy$sameOrOppSex <- as.factor(pooledBiDataTidy$sameOrOppSex)
-
-pooledBiResourceSameOpp <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN),
-                          data = pooledBiDataTidy)
-
-ageBiPooled <- lmer(AgeLik ~ sex+partnerSex + study + (1|PIN), #ideal age (NOT STANDARDIZED)
-                data = pooledBiDataTidy) #sig main effect of sex and partner sex
-
-
-
 ###plotting
 
 #overall plot faceted by partner sex
@@ -367,6 +249,124 @@ resourcesSD <- sd(ltDataComboTidy$resources, na.rm = TRUE)
 
 
 ###supplemental materials
+
+
+
+##Integrative sample analyses
+#pooling bisexual study 1 and 2 samples 
+#will replicate bisexual analyses w pooled sample
+
+##load in study 1 data
+studyOneData <- read.csv("Human Data/Processed Data/PR Bisexuality Data PROCESSED 12062022 000940.csv")
+
+##processing not added to processing script
+#exclude intersex participants
+studyOneData <-  studyOneData[studyOneData$sex!=2,]
+#exclude people who did not report their sex
+studyOneData <- studyOneData[!is.na(studyOneData[,5]), ]
+
+#converting preferred age to preferred age difference
+#130 = m_lt_age, 142 = f_lt_age, 154 = f_st_age, 166 = m_st_age
+
+#converting participant age to same scale as ideal
+studyOneData$ageLik <- ifelse(studyOneData$age >= 75, 10, 
+                              ifelse(studyOneData$age >= 69, 9,
+                                     ifelse(studyOneData$age >= 63, 8,
+                                            ifelse(studyOneData$age >= 57, 7,
+                                                   ifelse(studyOneData$age >= 51, 6, 
+                                                          ifelse(studyOneData$age >= 45, 5, 
+                                                                 ifelse(studyOneData$age >= 39, 4, 
+                                                                        ifelse(studyOneData$age >= 33, 3, 
+                                                                               ifelse(studyOneData$age >= 27, 2, 
+                                                                                      ifelse(studyOneData$age >= 21, 1, 0))))))))))
+
+
+#converting ideal partner age to ideal partner age difference
+#male ideal LT
+studyOneData$m_Lt_AgeLik <- studyOneData$m_lt_age - studyOneData$ageLik
+#male ideal ST
+studyOneData$m_St_AgeLik <- studyOneData$m_st_age - studyOneData$ageLik
+#female ideal LT
+studyOneData$f_Lt_AgeLik <- studyOneData$f_lt_age - studyOneData$ageLik
+#female ideal ST
+studyOneData$f_St_AgeLik <- studyOneData$f_st_age - studyOneData$ageLik
+
+##limiting study 1 data to only long-term preferences & changing to longform
+
+ltDataStudyOne <- studyOneData[,c(167, 5, 178:187, 227, 229)]
+ltDataStudyOne <- melt(ltDataStudyOne, id.vars=c("PIN", "sex"))
+ltDataStudyOne <- ltDataStudyOne %>% 
+  separate("variable", into = c("partnerSex", "x", "trait"), remove = T)
+ltDataStudyOne$partnerSex <- ifelse(ltDataStudyOne$partnerSex == "m", 1, 0)
+ltDataStudyOne <- ltDataStudyOne[,c(1:3, 5:6)]
+ltDataStudyOne$sex  <- as.factor(ltDataStudyOne$sex)
+ltDataStudyOne$partnerSex  <- as.factor(ltDataStudyOne$partnerSex)
+
+#make sure there are no NAs in sex or partner sex columns
+nacheckLtStudyOne <- apply(ltDataStudyOne[,2:3], 1, function(x) sum(is.na(x))>0)
+ltDataStudyOne<- ltDataStudyOne[!nacheckLtStudyOne,]
+
+##add study variable for study 1 data
+ltDataStudyOne$study <- 1
+
+
+##new study 2 data frame w/ bi participants, no sexuality or group columns
+cols <- c(1,2,4,5,6)
+ltDataBiStudyTwo <- ltDataBi[,cols]
+
+##add study variable to study 2 data
+ltDataBiStudyTwo$study <- 2
+
+##merge 2 dataframes for combined data
+pooledBiData <- rbind(ltDataStudyOne, ltDataBiStudyTwo)
+
+##save pooled dataframe
+#date<-format(Sys.time(),format="%Y%m%d %H%M%S")
+#format<-".csv"
+#file<-file.path(paste0("/Users/ashle/Desktop/Research/Project Rainbow/PR-Bisexuality.nosync/PR-Bisexuality.nosync/Human Data/Processed Data/","/BisexualityPooledData",date,format))
+#write.csv(pooledBiData,file=file,row.names=F)
+
+
+##omnibus test
+omnibusPooled <- lmer(value ~ partnerSex + study + trait*sex + (1|PIN), 
+                      data = pooledBiData)
+omnibusPooled2 <- lmer(value ~ partnerSex*trait*sex + study + (1|PIN), 
+                       data = pooledBiData)
+
+##exploring the trait*sex interactions
+
+#tidy format for analyses
+pooledBiDataTidy <- pooledBiData %>%
+  pivot_wider(names_from = trait, 
+              values_from = value)
+
+
+healthBiPooled <- lmer(scale(health)  ~ sex+partnerSex + study + (1|PIN), 
+                       data = pooledBiDataTidy) #sig
+
+kindBiPooled <- lmer(scale(kind)  ~ sex+partnerSex + study + (1|PIN),
+                     data = pooledBiDataTidy) #sig main effect of sex and partner sex
+
+physattBiPooled <- lmer(scale(physatt)  ~ sex+partnerSex + study + (1|PIN),
+                        data = pooledBiDataTidy) #sig main effect of sex
+
+intellBiPooled <- lmer(scale(intell)  ~ sex+partnerSex + study + (1|PIN),
+                       data = pooledBiDataTidy) #sig main effect of partner sex
+
+resourcesBiPooled <- lmer(scale(resources)  ~ sex+partnerSex + study + (1|PIN),
+                          data = pooledBiDataTidy)  #sig main effect of psex (same as study 1)
+
+pooledBiDataTidy$sameOrOppSex <- ifelse(pooledBiDataTidy$sex == pooledBiDataTidy$partnerSex, 0, 1) 
+pooledBiDataTidy$sameOrOppSex <- as.factor(pooledBiDataTidy$sameOrOppSex)
+
+pooledBiResourceSameOpp <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN),
+                                data = pooledBiDataTidy)
+
+ageBiPooled <- lmer(AgeLik ~ sex+partnerSex + study + (1|PIN), #ideal age (NOT STANDARDIZED)
+                    data = pooledBiDataTidy) #sig main effect of sex and partner sex
+
+
+
 
 ###exploring a potential main effect of relationship status
 

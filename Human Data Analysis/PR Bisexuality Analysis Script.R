@@ -432,6 +432,14 @@ ltIntellMainBi <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
 ltResourceMainBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                        data = ltDataBiTidy)  #sig main effect of psex, not sex (same)
 
+#add same or opp variable to lt data tidy (0=same, 1=opp)
+ltDataBiTidy$sameOrOppSex <- ifelse(ltDataBiTidy$sex == ltDataBiTidy$partnerSex, 0, 1) 
+ltDataBiTidy$sameOrOppSex <- as.factor(ltDataBiTidy$sameOrOppSex)
+
+ltResourceBiSameOpp <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN),
+                          data = ltDataBiTidy)
+
+
 #ideal age (NOT STANDARDIZED)
 
 ltAgeMainBi <- lmer(AgeLik ~ sex+partnerSex + (1|PIN), 
@@ -473,6 +481,14 @@ stIntellMainBi <- lmer(scale(intell)  ~ sex+partnerSex + (1|PIN),
 
 stResourceMainBi <- lmer(scale(resources)  ~ sex+partnerSex + (1|PIN),
                        data = stDataBiTidy) #sig effect of partner sex (same)
+
+#add same or opp variable to lt data tidy (0=same, 1=opp)
+stDataBiTidy$sameOrOppSex <- ifelse(stDataBiTidy$sex == stDataBiTidy$partnerSex, 0, 1) 
+stDataBiTidy$sameOrOppSex <- as.factor(stDataBiTidy$sameOrOppSex)
+
+stResourceBiSameOpp <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN),
+                            data = stDataBiTidy)
+
 
 #age (NOT STANDARDIZED)
 
