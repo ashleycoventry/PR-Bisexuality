@@ -251,6 +251,12 @@ labellerFacet <- function(variable, value){
   return(facetNames[value])
 }
 
+#calculate summary stats for error bars
+confInts <- ltData %>%
+  group_by(trait, partnerSex, group) %>%
+  summarize(mean_cl_normal(value, conf.int = .95)) %>%
+  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .01 * as.numeric(factor(group)))
+
 
 ##facted mirror density plot
 
@@ -261,7 +267,15 @@ ltMirrorPlot <- ggplot(ltData, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = ltData[ltData$partnerSex == 1,], alpha = 0.8) + #male targets
+  #confidence intervals
+  geom_errorbarh(data = confInts, aes(xmin=ymin, xmax=ymax, y=y),
+                 inherit.aes=FALSE, height = .02, color = "black")+
+  #colored dot for mean to distinguish bars
+  geom_point(data = confInts, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
+             inherit.aes = FALSE, shape = 21, size = .7, stroke = 1, color = "black") +
+  #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
+  #adjusting labels/scales
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
                     labels = c("Male Participant/Female Target", "Female Participant/Female Target",
                                "Male Participant/Male Target",  "Female Participant/Male Target"),
@@ -298,6 +312,14 @@ stData$group <- as.factor(stData$group)
 
 ##faceted density plot (mirrored)
 
+#calculate summary stats for error bars
+confIntsSt <- stData %>%
+  group_by(trait, partnerSex, group) %>%
+  summarize(mean_cl_normal(value, conf.int = .95)) %>%
+  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .01 * as.numeric(factor(group)))
+
+#plot
+
 stMirrorPlot <- ggplot(stData, aes(x = value, fill = group)) +
   #top
   geom_density(aes(y = after_stat(density)),
@@ -305,6 +327,13 @@ stMirrorPlot <- ggplot(stData, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = stData[stData$partnerSex == 1,], alpha = 0.8) + #male targets
+  #confidence intervals
+  geom_errorbarh(data = confIntsSt, aes(xmin=ymin, xmax=ymax, y=y),
+                 inherit.aes=FALSE, height = .02, color = "black")+
+  #colored dot for mean to distinguish bars
+  geom_point(data = confIntsSt, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
+             inherit.aes = FALSE, shape = 21, size = .7, stroke = 1, color = "black") +
+  #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
                     labels = c("Male Participant/Female Target", "Female Participant/Female Target",
@@ -514,6 +543,14 @@ ltDataBi$group <- as.factor(ltDataBi$group)
 
 ##faceted density plot (mirrored)
 
+#calculate summary stats for error bars
+confIntsLtBi <- ltDataBi %>%
+  group_by(trait, partnerSex, group) %>%
+  summarize(mean_cl_normal(value, conf.int = .95)) %>%
+  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .01 * as.numeric(factor(group)))
+
+#plot
+
 ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
   #top
   geom_density(aes(y = after_stat(density)),
@@ -521,6 +558,13 @@ ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = ltDataBi[ltDataBi$partnerSex == 1,], alpha = 0.8) + #male targets
+  #confidence intervals
+  geom_errorbarh(data = confIntsLtBi, aes(xmin=ymin, xmax=ymax, y=y),
+                 inherit.aes=FALSE, height = .02, color = "black")+
+  #colored dot for mean to distinguish bars
+  geom_point(data = confIntsLtBi, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
+             inherit.aes = FALSE, shape = 21, size = .7, stroke = 1, color = "black") +
+  #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
                     labels = c("Male Participant/Female Target", "Female Participant/Female Target",
@@ -560,6 +604,14 @@ stDataBi$group <- as.factor(stDataBi$group)
 
 ##faceted density plot (mirrored)
 
+#calculate summary stats for error bars
+confIntsStBi <- stDataBi %>%
+  group_by(trait, partnerSex, group) %>%
+  summarize(mean_cl_normal(value, conf.int = .95)) %>%
+  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .01 * as.numeric(factor(group)))
+
+#plot
+
 stMirrorPlotBi <- ggplot(stDataBi, aes(x = value, fill = group)) +
   #top
   geom_density(aes(y = after_stat(density)),
@@ -567,6 +619,13 @@ stMirrorPlotBi <- ggplot(stDataBi, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = stDataBi[stDataBi$partnerSex == 1,], alpha = 0.8) + #male targets
+  #confidence intervals
+  geom_errorbarh(data = confIntsStBi, aes(xmin=ymin, xmax=ymax, y=y),
+                 inherit.aes=FALSE, height = .02, color = "black")+
+  #colored dot for mean to distinguish bars
+  geom_point(data = confIntsStBi, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
+             inherit.aes = FALSE, shape = 21, size = .7, stroke = 1, color = "black") +
+  #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
                     labels = c("Male Participant/Female Target", "Female Participant/Female Target",
