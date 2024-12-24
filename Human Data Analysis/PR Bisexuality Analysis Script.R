@@ -255,7 +255,7 @@ labellerFacet <- function(variable, value){
 confInts <- ltData %>%
   group_by(trait, partnerSex, group) %>%
   summarize(mean_cl_normal(value, conf.int = .95)) %>%
-  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .01 * as.numeric(factor(group)))
+  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .02 * as.numeric(factor(group)))
 
 
 ##facted mirror density plot
@@ -272,7 +272,7 @@ ltMirrorPlot <- ggplot(ltData, aes(x = value, fill = group)) +
                  inherit.aes=FALSE, height = .02, color = "black")+
   #colored dot for mean to distinguish bars
   geom_point(data = confInts, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
-             inherit.aes = FALSE, shape = 21, size = .7, stroke = 1, color = "black") +
+             inherit.aes = FALSE, shape = 21, size = 1.2, stroke = 1, color = "black") +
   #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   #adjusting labels/scales
@@ -316,7 +316,7 @@ stData$group <- as.factor(stData$group)
 confIntsSt <- stData %>%
   group_by(trait, partnerSex, group) %>%
   summarize(mean_cl_normal(value, conf.int = .95)) %>%
-  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .01 * as.numeric(factor(group)))
+  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .02 * as.numeric(factor(group)))
 
 #plot
 
@@ -332,7 +332,7 @@ stMirrorPlot <- ggplot(stData, aes(x = value, fill = group)) +
                  inherit.aes=FALSE, height = .02, color = "black")+
   #colored dot for mean to distinguish bars
   geom_point(data = confIntsSt, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
-             inherit.aes = FALSE, shape = 21, size = .7, stroke = 1, color = "black") +
+             inherit.aes = FALSE, shape = 21, size = 1.2, stroke = 1, color = "black") +
   #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
@@ -547,7 +547,7 @@ ltDataBi$group <- as.factor(ltDataBi$group)
 confIntsLtBi <- ltDataBi %>%
   group_by(trait, partnerSex, group) %>%
   summarize(mean_cl_normal(value, conf.int = .95)) %>%
-  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .01 * as.numeric(factor(group)))
+  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .02 * as.numeric(factor(group)))
 
 #plot
 
@@ -563,7 +563,7 @@ ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
                  inherit.aes=FALSE, height = .02, color = "black")+
   #colored dot for mean to distinguish bars
   geom_point(data = confIntsLtBi, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
-             inherit.aes = FALSE, shape = 21, size = .7, stroke = 1, color = "black") +
+             inherit.aes = FALSE, shape = 21, size = 1.2, stroke = 1, color = "black") +
   #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
@@ -608,7 +608,7 @@ stDataBi$group <- as.factor(stDataBi$group)
 confIntsStBi <- stDataBi %>%
   group_by(trait, partnerSex, group) %>%
   summarize(mean_cl_normal(value, conf.int = .95)) %>%
-  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .01 * as.numeric(factor(group)))
+  mutate(y = ifelse(group %in% c(0, 2), -1, 1) * .02 * as.numeric(factor(group)))
 
 #plot
 
@@ -624,7 +624,7 @@ stMirrorPlotBi <- ggplot(stDataBi, aes(x = value, fill = group)) +
                  inherit.aes=FALSE, height = .02, color = "black")+
   #colored dot for mean to distinguish bars
   geom_point(data = confIntsStBi, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
-             inherit.aes = FALSE, shape = 21, size = .7, stroke = 1, color = "black") +
+             inherit.aes = FALSE, shape = 21, size = 1.2, stroke = 1, color = "black") +
   #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 

@@ -73,14 +73,14 @@ rSquaredModel1 <- r2beta(model1, method = "nsj")
 #specify range of effect sizes to test
 
 #initially: effectSizesModel1 <- seq(from = 0, to = .5, length.out=20)
-effectSizesModel1 <- seq(from = .1, to = .2, length.out=20)
+effectSizesModel1 <- seq(from = 0, to = .2, length.out=20)
 
 ##empty data frames to store results
 sensitivityResultsModel1 <- data.frame(effectModel1 = numeric(0), 
                                        powerModel1 = numeric(0), 
                                        rSquaredModel1 = numeric(0))
 #number of simulations
-nSimModel1 <- 300
+nSimModel1 <- 400
 
 for(i in 1:length(effectSizesModel1)) {
   #specify the effect size to be changed
@@ -134,13 +134,17 @@ ltDataStudyOne$sameOrOppSex <- ifelse(ltDataStudyOne$sex == ltDataStudyOne$partn
 
 
 #testing the interaction between sameOrOppSex and participant sex on trait value
+#tidy format data
+ltDataStudyOneTidy <- ltDataStudyOne %>%
+  pivot_wider(names_from = trait, 
+              values_from = value)
+sameOppCompleteCols <- c(1:4,9)
 
-model3 <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
-               data = ltDataStudyOne[complete.cases(ltDataStudyOne[,2:6]),])
+model3 <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN), 
+               data = ltDataStudyOneTidy[complete.cases(ltDataStudyOneTidy[,sameOppCompleteCols]),])
 
 
-#initially: effectSizesModel3 <- seq(from = 0, to = .5, length.out=20)
-effectSizesModel3 <- seq(from = 0.8, to = 1, length.out=10)
+effectSizesModel3 <- seq(from = .3, to = .4, length.out=10)
 
 #Initialize empty data frames to store results
 sensitivityResultsModel3 <- data.frame(effectModel3 = numeric(0), 
@@ -148,17 +152,17 @@ sensitivityResultsModel3 <- data.frame(effectModel3 = numeric(0),
                                        rSquaredModel3 = numeric(0))
 
 #set number of simulations to run
-nSimModel3 = 500
+nSimModel3 = 300
 
 for(i in 1:length(effectSizesModel3)) {
   #specify what the effect size is
-  fixef(model3)["sameOrOppSex:sex1:traitphysatt"] <- effectSizesModel3[i]
+  fixef(model3)["sex1:sameOrOppSex"] <- effectSizesModel3[i]
   #run power analysis
-  powerModel3 <- powerSim(model3, nsim = nSimModel3, test = fcompare("value~sex*sameOrOppSex+sex*trait+trait*sameOrOppSex"))
+  powerModel3 <- powerSim(model3, nsim = nSimModel3, test = fixed("sex:sameOrOppSex"))
   rSquaredModel3 <- r2beta(model3, method = "nsj")
   tempModel3 <- expand_grid(effectModel3 = effectSizesModel3[i], 
                             powerModel3 = sum(powerModel3$pval < .05) / nSimModel3,
-                            rSquaredModel3 = rSquaredModel3[rSquaredModel3$Effect == "sameOrOppSex:sex:trait", "Rsq"])
+                            rSquaredModel3 = rSquaredModel3[rSquaredModel3$Effect == "sex:sameOrOppSex", "Rsq"])
   sensitivityResultsModel3 <- bind_rows(sensitivityResultsModel3, tempModel3)
 }
 
@@ -207,7 +211,7 @@ sensitivityResultsModel4 <- data.frame(effectModel4 = numeric(0),
                                        powerModel4 = numeric(0), 
                                        rSquaredModel4 = numeric(0))
 #number of simulations
-nSimModel4 <- 400
+nSimModel4 <- 500
 
 for(i in 1:length(effectSizesModel4)) {
   #specify the effect size to be changed
@@ -233,7 +237,7 @@ model5 <- lmer(value ~ partnerSex + trait*sex + (1|PIN),
 
 #initially: effectSizesModel5 <- seq(from = 0, to = .5, length.out=20)
 
-effectSizesModel5 <- seq(from = .1, to = .2, length.out=20)
+effectSizesModel5 <- seq(from = .1, to = .2, length.out=10)
 
 
 #Initialize empty data frames to store results
@@ -242,7 +246,7 @@ sensitivityResultsModel5 <- data.frame(effectModel5 = numeric(0),
                                      rSquaredModel5 = numeric(0))
 
 #set number of simulations to run
-nSimModel5 = 300
+nSimModel5 = 400
 
 for(i in 1:length(effectSizesModel5)) {
   #specify what the effect size is
@@ -308,7 +312,7 @@ sensitivityResultsModel7 <- data.frame(effectModel7 = numeric(0),
                                        powerModel7 = numeric(0), 
                                        rSquaredModel7 = numeric(0))
 #number of simulations
-nSimModel7 <- 400
+nSimModel7 <- 500
 
 for(i in 1:length(effectSizesModel7)) {
   #specify the effect size to be changed
@@ -350,7 +354,7 @@ sensitivityResultsModel8 <- data.frame(effectModel8 = numeric(0),
                                        powerModel8 = numeric(0), 
                                        rSquaredModel8 = numeric(0))
 #number of simulations
-nSimModel8 <- 300
+nSimModel8 <- 400
 
 for(i in 1:length(effectSizesModel8)) {
   #specify the effect size to be changed
@@ -366,41 +370,47 @@ for(i in 1:length(effectSizesModel8)) {
 
 
 
-##sensitivity analysis: three-way interaction of sex, trait, and same/opp sex target
+##Study 2 sensitivity analysis: the interaction between sameOrOppSex and participant sex on trait value
 
 #create new same vs opp sex variable
 #if participant sex and partner sex are the same = 0, if they're different = 1
 ltDataStudy2Bi$sameOrOppSex <- ifelse(ltDataStudy2Bi$sex == ltDataStudy2Bi$partnerSex, 0, 1) 
 
 
-#testing the interaction between sameOrOppSex and participant sex on trait value
+#tidy format data
+ltDataStudy2BiTidy <- ltDataStudy2Bi %>%
+  pivot_wider(names_from = trait, 
+              values_from = value)
 
-model9 <- lmer(value ~ sameOrOppSex*sex*trait + (1|PIN), 
-               data = ltDataStudy2Bi[complete.cases(ltDataStudy2Bi[,2:7]),])
+sameOppCompleteCols <- c(1:5,10)
+
+model9 <- lmer(scale(resources) ~ sex*sameOrOppSex + (1|PIN), 
+               data = ltDataStudy2BiTidy[complete.cases(ltDataStudy2BiTidy[,sameOppCompleteCols]),])
 
 
-#initially: effectSizesModel3 <- seq(from = 0, to = .5, length.out=20)
-effectSizesModel9 <- seq(from = 0.6, to = 0.8, length.out=10)
+effectSizesModel9 <- seq(from = 0.25, to = .35, length.out=10)
 
 #Initialize empty data frames to store results
 sensitivityResultsModel9 <- data.frame(effectModel9 = numeric(0), 
-                                       powerModel9 = numeric(0), 
+                                       powerModel9= numeric(0), 
                                        rSquaredModel9 = numeric(0))
 
 #set number of simulations to run
-nSimModel9 = 400
+nSimModel9 = 500
 
 for(i in 1:length(effectSizesModel9)) {
   #specify what the effect size is
-  fixef(model9)["sameOrOppSex:sex1:traitphysatt"] <- effectSizesModel9[i]
+  fixef(model9)["sex1:sameOrOppSex"] <- effectSizesModel9[i]
   #run power analysis
-  powerModel9 <- powerSim(model9, nsim = nSimModel9, test = fcompare("value~sex*sameOrOppSex+sex*trait+trait*sameOrOppSex"))
+  powerModel9 <- powerSim(model9, nsim = nSimModel9, test = fixed("sex:sameOrOppSex"))
   rSquaredModel9 <- r2beta(model9, method = "nsj")
   tempModel9 <- expand_grid(effectModel9 = effectSizesModel9[i], 
                             powerModel9 = sum(powerModel9$pval < .05) / nSimModel9,
-                            rSquaredModel9 = rSquaredModel9[rSquaredModel9$Effect == "sameOrOppSex:sex:trait", "Rsq"])
+                            rSquaredModel9 = rSquaredModel9[rSquaredModel9$Effect == "sex:sameOrOppSex", "Rsq"])
   sensitivityResultsModel9 <- bind_rows(sensitivityResultsModel9, tempModel9)
 }
+
+
 
 
 
