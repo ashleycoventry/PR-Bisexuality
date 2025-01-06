@@ -267,12 +267,9 @@ ltMirrorPlot <- ggplot(ltData, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = ltData[ltData$partnerSex == 1,], alpha = 0.8) + #male targets
-  #confidence intervals
-  geom_errorbarh(data = confInts, aes(xmin=ymin, xmax=ymax, y=y),
-                 inherit.aes=FALSE, height = .02, color = "black")+
   #colored dot for mean to distinguish bars
   geom_point(data = confInts, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
-             inherit.aes = FALSE, shape = 21, size = 1.2, stroke = 1, color = "black") +
+             inherit.aes = FALSE, shape = 21, size = 6, stroke = 1, color = "black") +
   #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   #adjusting labels/scales
@@ -327,12 +324,9 @@ stMirrorPlot <- ggplot(stData, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = stData[stData$partnerSex == 1,], alpha = 0.8) + #male targets
-  #confidence intervals
-  geom_errorbarh(data = confIntsSt, aes(xmin=ymin, xmax=ymax, y=y),
-                 inherit.aes=FALSE, height = .02, color = "black")+
   #colored dot for mean to distinguish bars
   geom_point(data = confIntsSt, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
-             inherit.aes = FALSE, shape = 21, size = 1.2, stroke = 1, color = "black") +
+             inherit.aes = FALSE, shape = 21, size = 6, stroke = 1, color = "black") +
   #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
@@ -558,12 +552,9 @@ ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = ltDataBi[ltDataBi$partnerSex == 1,], alpha = 0.8) + #male targets
-  #confidence intervals
-  geom_errorbarh(data = confIntsLtBi, aes(xmin=ymin, xmax=ymax, y=y),
-                 inherit.aes=FALSE, height = .02, color = "black")+
   #colored dot for mean to distinguish bars
   geom_point(data = confIntsLtBi, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
-             inherit.aes = FALSE, shape = 21, size = 1.2, stroke = 1, color = "black") +
+             inherit.aes = FALSE, shape = 21, size = 6, stroke = 1, color = "black") +
   #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
@@ -619,12 +610,9 @@ stMirrorPlotBi <- ggplot(stDataBi, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = stDataBi[stDataBi$partnerSex == 1,], alpha = 0.8) + #male targets
-  #confidence intervals
-  geom_errorbarh(data = confIntsStBi, aes(xmin=ymin, xmax=ymax, y=y),
-                 inherit.aes=FALSE, height = .02, color = "black")+
   #colored dot for mean to distinguish bars
   geom_point(data = confIntsStBi, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
-             inherit.aes = FALSE, shape = 21, size = 1.2, stroke = 1, color = "black") +
+             inherit.aes = FALSE, shape = 21, size = 6, stroke = 1, color = "black") +
   #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
