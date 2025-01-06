@@ -203,12 +203,9 @@ ltMirrorPlotBi <- ggplot(ltDataBi, aes(x = value, fill = group)) +
   #bottom
   geom_density(aes(y = -after_stat(density)),
                data = ltDataBi[ltDataBi$partnerSex == 1,], alpha = 0.8) + #male targets
-  #confidence intervals
-  geom_errorbarh(data = confInts, aes(xmin=ymin, xmax=ymax, y=y),
-                 inherit.aes=FALSE, height = .02, color = "black")+
   #colored dot for mean to distinguish bars
   geom_point(data = confInts, aes(x = (ymin+ymax)/2, y = y, fill = as.factor(group)), 
-             inherit.aes = FALSE, shape = 21, size = 1.2, stroke = 1, color = "black") +
+             inherit.aes = FALSE, shape = 21, size = 6, stroke = 1, color = "black") +
   #faceting
   facet_wrap(~trait, ncol = 3, scales = "free", labeller = labellerFacet)+
   scale_fill_manual(values = c("1" = "darkblue", "3" = "orangered", "0" = "lightblue", "2" ="orange"), 
