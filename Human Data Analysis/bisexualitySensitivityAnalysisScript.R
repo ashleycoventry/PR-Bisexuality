@@ -272,7 +272,7 @@ rSquaredModel6 <- r2beta(model6, method = "nsj")
 
 #specify range of effect sizes to test
 #initially: effectSizesModel6 <- seq(from = 0, to = 1, length.out=20)
-effectSizesModel6 <- seq(from = 0, to = .2, length.out=10)
+effectSizesModel6 <- seq(from = 0.06, to = .1, length.out=5)
 
 
 ##empty data frames to store results
@@ -280,7 +280,7 @@ sensitivityResultsModel6 <- data.frame(effectModel6 = numeric(0),
                                        powerModel6 = numeric(0), 
                                        rSquaredModel6 = numeric(0))
 #number of simulations
-nSimModel6 <- 600
+nSimModel6 <- 2500
 
 for(i in 1:length(effectSizesModel6)) {
   #specify the effect size to be changed
@@ -305,14 +305,14 @@ model7 <- lmer(value ~ trait*sexuality + (1|PIN),
 rSquaredModel7 <- r2beta(model7, method = "nsj")
 
 #specify range of effect sizes to test
-effectSizesModel7 <- seq(from = 0.3, to = 0.5, length.out =20)
+effectSizesModel7 <- seq(from = 0.41, to = 0.45, length.out =4)
 
 ##empty data frames to store results
 sensitivityResultsModel7 <- data.frame(effectModel7 = numeric(0), 
                                        powerModel7 = numeric(0), 
                                        rSquaredModel7 = numeric(0))
 #number of simulations
-nSimModel7 <- 500
+nSimModel7 <- 2000
 
 for(i in 1:length(effectSizesModel7)) {
   #specify the effect size to be changed
